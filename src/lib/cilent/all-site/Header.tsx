@@ -21,11 +21,16 @@ export function Header() {
           <Link to="/" className="flex items-center w-24 h-10">
             <img src={logo} alt="SitePlus Logo" className="h-auto w-full" />
           </Link>
-          <Divider />
+          <div className="lg:hidden md:hidden">
+            <Divider />
+          </div>
+
           <NavigationMenuDemo />
           {/* Divider */}
 
-          <Divider />
+          <div className="lg:hidden md:hidden">
+            <Divider />
+          </div>
 
           <div className="lg:w-auto flex items-center space-x-4 sm:justify-between sm:w-full xs:space-x-2 xs:w-full  xs:justify-center">
             <div className="lg:hidden sm:flex sm:flex-row  xs:flex xs:flex-row xs:items-center ">
