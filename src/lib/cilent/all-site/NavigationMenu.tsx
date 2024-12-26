@@ -99,7 +99,7 @@ export function NavigationMenuDemo() {
         </NavigationMenuItem>
 
         <NavigationMenuItem>
-          <Link to="/contactpage">
+          <Link to="/contact-page">
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               Liên Hệ
             </NavigationMenuLink>
