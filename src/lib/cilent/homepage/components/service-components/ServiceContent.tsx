@@ -64,7 +64,7 @@ export default function ServiceContent() {
       </div>
 
       {/* Mobile/Tablet view with Carousel */}
-      <div className="lg:hidden w-full max-w-[370.667px]">
+      <div className="lg:hidden w-full max-w-[370.667px] relative px-8">
         <Carousel className="w-full">
           <CarouselContent>
             {services.map((service, index) => (
@@ -78,8 +78,8 @@ export default function ServiceContent() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden sm:flex -left-4" />
-          <CarouselNext className="hidden sm:flex -right-4" />
+          <CarouselPrevious className="absolute left-[-32px] flex" />
+          <CarouselNext className="absolute right-[-32px] flex" />
         </Carousel>
       </div>
     </div>

@@ -9,7 +9,7 @@ export default function MainContent() {
         {" "}
         <div className="grid lg:grid-cols-2 justify-between  gap-[89px]">
           {/* text */}
-          <div className="flex flex-col gap-[47px] md:w-full sm:w-full xs:w-full">
+          <div className="flex flex-col gap-[47px] md:w-full sm:w-full xs:w-full xs:p-6">
             <h3 className="scroll-m-20 text-2xl font-bold tracking-tight">
               SITE PLUS
             </h3>

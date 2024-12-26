@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import * as React from "react";
-
+import Heading from "../../all-site/Heading";
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -54,12 +54,9 @@ export default function ModernContactForm() {
                 animate="show"
               >
                 <div className="text-center space-y-4">
-                  <motion.h2
-                    className="text-4xl font-bold text-gray-900"
-                    {...fadeInUp}
-                  >
-                    LIÊN HỆ NGAY
-                  </motion.h2>
+                  <motion.div>
+                    <Heading text="Liên Hệ Ngay" />
+                  </motion.div>
                   <motion.p
                     className="text-lg text-gray-600 leading-relaxed"
                     {...fadeInUp}

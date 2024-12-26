@@ -87,7 +87,7 @@ const CaseStudyCard2 = ({ title, content, images, labels }) => (
               <img
                 src={image}
                 alt={labels[index]}
-                className="w-full h-[600px] object-cover transform transition-all duration-500 hover:scale-105"
+                className="w-full lg:h-[600px] object-cover transform transition-all duration-500 hover:scale-105"
               />
             </div>
             <p className="text-center mt-3 text-sm font-medium text-[#020403]/80">
