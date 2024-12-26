@@ -210,10 +210,10 @@ const RegisterForm: React.FC = () => {
         <p className="text-center text-sm text-gray-600">
           Already have an account?{" "}
           <Link
-            to="/login"
+            to="/sign-in"
             className="text-orange-500 hover:text-orange-600 font-medium"
           >
-            Login
+            Login an account
           </Link>
         </p>
       </form>

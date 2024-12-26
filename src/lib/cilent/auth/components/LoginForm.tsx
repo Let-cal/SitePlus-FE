@@ -60,7 +60,7 @@ const LoginForm: React.FC = () => {
   return (
     <div className="w-full max-w-md space-y-6 p-6 bg-white rounded-lg shadow-lg">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
+        <h2 className="text-3xl font-bold text-gray-900">Log in Account</h2>
         <p className="mt-2 text-sm text-gray-600">
           Join our exclusive community
         </p>
@@ -147,16 +147,16 @@ const LoginForm: React.FC = () => {
           type="submit"
           className="w-full bg-orange-500 hover:bg-orange-600 text-white"
         >
-          Create Account
+          LOGIN
         </Button>
 
         <p className="text-center text-sm text-gray-600">
-          Already have an account?{" "}
+          Don't have an account?{" "}
           <Link
-            to="/login"
+            to="/sign-up"
             className="text-orange-500 hover:text-orange-600 font-medium"
           >
-            Login
+            Create an account
           </Link>
         </p>
       </form>
