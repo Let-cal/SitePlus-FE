@@ -36,7 +36,7 @@ export function Header() {
       }`}
     >
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center  w-full">
+        <div className="flex items-center  w-full ">
           <div className="flex items-center gap-4 justify-between w-full">
             <Link to="/" className="flex items-center w-24 h-10">
               <img src={logo} alt="SitePlus Logo" className="h-auto w-full" />
@@ -50,7 +50,7 @@ export function Header() {
           </div>
 
           {/* Desktop Language and Auth */}
-          <div className="hidden lg:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center ">
             <Select>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Language" />
