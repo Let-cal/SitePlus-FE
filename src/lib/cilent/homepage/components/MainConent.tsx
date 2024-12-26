@@ -7,9 +7,9 @@ export default function MainContent() {
     <div>
       <div className="flex flex-col py-[164px] gap-4">
         {" "}
-        <div className="flex flex-row justify-between  gap-[89px]">
+        <div className="grid lg:grid-cols-2 justify-between  gap-[89px]">
           {/* text */}
-          <div className="flex flex-col gap-[47px] w-[60%]">
+          <div className="flex flex-col gap-[47px] md:w-full sm:w-full xs:w-full">
             <h3 className="scroll-m-20 text-2xl font-bold tracking-tight">
               SITE PLUS
             </h3>
@@ -27,7 +27,7 @@ export default function MainContent() {
             </h3>
           </div>
           {/* image */}
-          <div className="relative lg:h-[300px] lg:w-[40%] hidden md:block overflow-hidden rounded-lg ">
+          <div className="relative lg:h-[300px] lg:block hidden md:block overflow-hidden rounded-lg ">
             <img
               src={BackgroundMain}
               alt="SitePlus Logo"
@@ -39,13 +39,12 @@ export default function MainContent() {
           {/* {" buttons"} */}
           <Button
             type="submit"
-            className="w-[20%]  items-center bg-orange-500 hover:bg-orange-600 text-white"
+            className="lg:w-[20%]  items-center bg-orange-500 hover:bg-orange-600 text-white"
           >
             LIÊN HỆ NGAY
           </Button>
         </div>
       </div>
-     
     </div>
   );
 }
