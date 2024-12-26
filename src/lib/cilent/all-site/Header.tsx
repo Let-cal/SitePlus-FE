@@ -6,63 +6,63 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Divider } from "@/lib/cilent/all-site/divider";
 import { Bell } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { AuthLinks } from "../auth/components/AuthLink";
+import { MobileNavigationMenu } from "./MobileNavigationMenu";
 import { NavigationMenuDemo } from "./NavigationMenu";
 import logo from "/images/logo-site-plus/logo.png";
+
 export function Header() {
+  const [isScrolled, setIsScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="border-b">
+    <header
+      className={`sticky top-0 z-50 bg-white transition-all duration-300 ${
+        isScrolled
+          ? "shadow-md transform -translate-y-0"
+          : "transform -translate-y-0"
+      }`}
+    >
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between lg:flex-row md:flex-col sm:flex-col xs:flex-col xs:gap-3 sm:gap-5">
-          <Link to="/" className="flex items-center w-24 h-10">
-            <img src={logo} alt="SitePlus Logo" className="h-auto w-full" />
-          </Link>
-          <div className="lg:hidden md:hidden">
-            <Divider />
+        <div className="flex items-center  w-full">
+          <div className="flex items-center gap-4 justify-between w-full">
+            <Link to="/" className="flex items-center w-24 h-10">
+              <img src={logo} alt="SitePlus Logo" className="h-auto w-full" />
+            </Link>
+            <MobileNavigationMenu />
           </div>
 
-          <NavigationMenuDemo />
-          {/* Divider */}
-
-          <div className="lg:hidden md:hidden">
-            <Divider />
+          {/* Desktop Navigation */}
+          <div className="hidden lg:block">
+            <NavigationMenuDemo />
           </div>
 
-          <div className="lg:w-auto flex items-center space-x-4 sm:justify-between sm:w-full xs:space-x-2 xs:w-full  xs:justify-center">
-            <div className="lg:hidden sm:flex sm:flex-row  xs:flex xs:flex-row xs:items-center ">
-              <Select>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="vi">Tiếng Việt</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5 text-gray-600" />
-              </Button>
-            </div>
-
-            <div className="sm:hidden lg:flex gap-3 xs:hidden">
-              <Select>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="vi">Tiếng Việt</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5 text-gray-600" />
-              </Button>
-            </div>
-
+          {/* Desktop Language and Auth */}
+          <div className="hidden lg:flex items-center space-x-4">
+            <Select>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="vi">Tiếng Việt</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="ghost" size="icon">
+              <Bell className="h-5 w-5 text-gray-600" />
+            </Button>
             <AuthLinks />
           </div>
         </div>

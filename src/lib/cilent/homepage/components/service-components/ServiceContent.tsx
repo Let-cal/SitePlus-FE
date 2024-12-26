@@ -1,8 +1,17 @@
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import Heading from "@/lib/cilent/all-site/Heading";
 import * as React from "react";
 import BoxContent from "./BoxContent";
 import IconService2 from "/icons/Base feature icon (1).svg";
 import IconService3 from "/icons/Base feature icon (2).svg";
 import IconService1 from "/icons/Base feature icon.svg";
+
 export default function ServiceContent() {
   const services = [
     {
@@ -35,16 +44,14 @@ export default function ServiceContent() {
   ];
 
   return (
-    <div className="flex flex-col gap-[26px] pb-[20px] justify-center items-center">
+    <div className="flex flex-col gap-[26px] pb-[20px] justify-center items-center px-4">
       <h3 className="scroll-m-20 text-2xl font-bold tracking-tight">
         TÌM HIỂU NGAY
       </h3>
+      <Heading text="Dịch Vụ Của Site Plus" />
 
-      <h1 className="scroll-m-20 text-3xl font-extrabold tracking-tight lg:text-5xl text-theme-orange-500">
-        Dịch Vụ Của Site Plus
-      </h1>
-
-      <div className="flex flex-row space-x-4 h-[386.667px]">
+      {/* Desktop view */}
+      <div className="hidden lg:flex lg:flex-row lg:space-x-4 lg:h-[420.667px]">
         {services.map((service, index) => (
           <BoxContent
             key={index}
@@ -54,6 +61,26 @@ export default function ServiceContent() {
             bulletPoints={service.bulletPoints}
           />
         ))}
+      </div>
+
+      {/* Mobile/Tablet view with Carousel */}
+      <div className="lg:hidden w-full max-w-[370.667px]">
+        <Carousel className="w-full">
+          <CarouselContent>
+            {services.map((service, index) => (
+              <CarouselItem key={index}>
+                <BoxContent
+                  iconUrl={service.iconUrl}
+                  title={service.title}
+                  description={service.description}
+                  bulletPoints={service.bulletPoints}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="hidden sm:flex -left-4" />
+          <CarouselNext className="hidden sm:flex -right-4" />
+        </Carousel>
       </div>
     </div>
   );
