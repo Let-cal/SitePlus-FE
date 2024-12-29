@@ -91,19 +91,19 @@ const LoginForm: React.FC = () => {
           // Navigate based on role
           switch (response.role) {
             case "Admin":
-              navigate("/Admin-page");
+              navigate("/admin-page");
               break;
             case "Customer":
-              navigate("/Customer-page");
+              navigate("/customer-page");
               break;
             case "Manager":
-              navigate("/Manager-page");
+              navigate("/manager-page");
               break;
             case "Area-Manager":
-              navigate("/Area-manager-page");
+              navigate("/area-manager-page");
               break;
             case "Staff":
-              navigate("/Staff-page");
+              navigate("/staff-page");
               break;
           }
         }

@@ -68,7 +68,7 @@ export function MobileNavigationMenu() {
           {/* Navigation Links */}
           <nav className="flex flex-col gap-2">
             <Link
-              to="/home-page"
+              to="/"
               className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
             >
               Trang chủ

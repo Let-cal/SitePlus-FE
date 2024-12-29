@@ -40,7 +40,7 @@ createRoot(document.getElementById("root")!).render(
                 }
               />
               <Route
-                path="/Customer-page"
+                path="/customer-page"
                 element={
                   <ProtectedRoute
                     element={<HomePage />}
@@ -55,7 +55,7 @@ createRoot(document.getElementById("root")!).render(
                 <ProtectedRoute element={<AdminPage />} roles={["Admin"]} />
               }
             /> */}
-              <Route path="/Admin-page" element={<AdminPage />} />
+              <Route path="/admin-page" element={<AdminPage />} />
               <Route path="/sign-up" element={<RegisterPage />} />
               <Route path="/sign-in" element={<LoginPage />} />
               <Route path="/contact-page" element={<ContactPage />} />
