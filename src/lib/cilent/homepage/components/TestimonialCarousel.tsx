@@ -7,7 +7,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import * as React from "react";
-import Heading from "../../all-site/Heading";
+import Heading from "../../../all-site/Heading";
 const testimonials = [
   {
     image:
@@ -38,7 +38,6 @@ export function TestimonialCarousel() {
   return (
     <div className="w-full bg-[#fdf4ea] py-12">
       <div className="container mx-auto px-4">
-        
         <Heading text="Khách Hàng Nói Gì Về Site Plus ?" />
         <Carousel className="w-full max-w-5xl mx-auto">
           <CarouselContent>

@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Divider } from "../../all-site/divider";
-import { Footer } from "../../all-site/Footer";
-import { Header } from "../../all-site/Header";
+import { Divider } from "../../../all-site/divider";
+import { Footer } from "../../../all-site/Footer";
+import { Header } from "../../../all-site/Header";
 import MainContent from "../../homepage/components/MainConent";
 import ContactComponent from "../components/ContactComponent";
 import ModernCaseStudy from "../components/ModernCaseStudy";
@@ -17,7 +17,7 @@ export default function HomePage() {
         <MainContent />
         <div className="flex flex-row gap-5 items-center">
           <Divider />
-          <p className=" w-[60%] text-gray-500 xs:w-full ">
+          <p className=" lg:w-[60%] text-gray-500 xs:w-full ">
             “Chọn sai mặt bằng là mất cả gia tài”
           </p>
           <Divider />

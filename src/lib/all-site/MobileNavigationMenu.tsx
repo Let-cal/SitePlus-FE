@@ -1,19 +1,10 @@
-import * as React from "react";
-import { Link } from "react-router-dom";
-import { Menu } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -21,12 +12,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Bell } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Bell, Menu } from "lucide-react";
+import * as React from "react";
+import { Link } from "react-router-dom";
 import { AuthLinks } from "../auth/components/AuthLink";
+import { useAuth } from "../auth/services/AuthContext";
+import UserMenu from "./UserMenu";
 import logo from "/images/logo-site-plus/logo.png";
-
 export function MobileNavigationMenu() {
+  const { isAuthenticated } = useAuth();
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -61,7 +62,7 @@ export function MobileNavigationMenu() {
 
           {/* Auth Links */}
           <div className="flex flex-col gap-2">
-            <AuthLinks />
+            {isAuthenticated ? <UserMenu /> : <AuthLinks />}
           </div>
 
           {/* Navigation Links */}

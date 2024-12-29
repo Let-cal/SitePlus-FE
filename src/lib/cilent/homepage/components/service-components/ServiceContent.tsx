@@ -5,7 +5,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import Heading from "@/lib/cilent/all-site/Heading";
+import Heading from "@/lib/all-site/Heading";
 import * as React from "react";
 import BoxContent from "./BoxContent";
 import IconService2 from "/icons/Base feature icon (1).svg";

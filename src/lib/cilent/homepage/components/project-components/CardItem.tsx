@@ -15,7 +15,7 @@ export const CardItem: React.FC<CardItemProps> = ({ image, title }) => {
       <img
         src={image}
         alt={title}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform select-none"
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform select-none "
       />
       {/* Gradient phủ toàn bộ */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>

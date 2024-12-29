@@ -56,10 +56,13 @@ export function CarouselList() {
       >
         <CarouselContent>
           {items.map((item, index) => (
-            <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/4">
-              <div className="p-1">
+            <CarouselItem
+              key={index}
+              className="md:basis-1/3 lg:basis-1/4 xs:basis-1/2"
+            >
+              <div>
                 <Card>
-                  <CardContent className="flex aspect-square items-center justify-center">
+                  <CardContent className="p-0 flex aspect-square items-center justify-center">
                     <CardItem image={item.image} title={item.title} />
                   </CardContent>
                 </Card>

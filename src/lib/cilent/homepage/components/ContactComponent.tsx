@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import * as React from "react";
-import Heading from "../../all-site/Heading";
+import Heading from "../../../all-site/Heading";
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
