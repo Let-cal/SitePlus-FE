@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Lock, LayoutGrid, Wallet, Flag } from "lucide-react";
-import Heading from "../../all-site/Heading";
+import Heading from "../../../all-site/Heading";
 
 const Benefit = () => {
   const benefits = [

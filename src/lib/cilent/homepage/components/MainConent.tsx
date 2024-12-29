@@ -5,11 +5,11 @@ import BackgroundMain from "/images/client/homepage/imageMainContent.png";
 export default function MainContent() {
   return (
     <div>
-      <div className="flex flex-col py-[164px] gap-4">
+      <div className="flex flex-col py-[164px] gap-4 ">
         {" "}
         <div className="grid lg:grid-cols-2 justify-between  gap-[89px]">
           {/* text */}
-          <div className="flex flex-col gap-[47px] md:w-full sm:w-full xs:w-full">
+          <div className="flex flex-col gap-[47px] md:w-full sm:w-full xs:w-full xs:p-6">
             <h3 className="scroll-m-20 text-2xl font-bold tracking-tight">
               SITE PLUS
             </h3>
@@ -27,7 +27,7 @@ export default function MainContent() {
             </h3>
           </div>
           {/* image */}
-          <div className="relative lg:h-[300px] lg:block hidden md:block overflow-hidden rounded-lg ">
+          <div className="relative lg:h-[400px] lg:block hidden md:block overflow-hidden rounded-lg ">
             <img
               src={BackgroundMain}
               alt="SitePlus Logo"

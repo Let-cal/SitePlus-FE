@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import * as React from "react";
-import Heading from "../../all-site/Heading";
+import Heading from "../../../all-site/Heading";
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -87,7 +87,7 @@ const CaseStudyCard2 = ({ title, content, images, labels }) => (
               <img
                 src={image}
                 alt={labels[index]}
-                className="w-full h-[600px] object-cover transform transition-all duration-500 hover:scale-105"
+                className="w-full lg:h-[600px] object-cover transform transition-all duration-500 hover:scale-105"
               />
             </div>
             <p className="text-center mt-3 text-sm font-medium text-[#020403]/80">

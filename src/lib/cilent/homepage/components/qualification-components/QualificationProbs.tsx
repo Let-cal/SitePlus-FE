@@ -75,7 +75,7 @@ export default function QualificationProbs({
           </div>
           {hero.backgroundImage && (
             <div
-              className="h-64 md:h-96 rounded-2xl bg-cover bg-center"
+              className="h-64 md:h-96 rounded-2xl bg-cover bg-center xs:hidden"
               style={{ backgroundImage: `url(${hero.backgroundImage})` }}
             />
           )}

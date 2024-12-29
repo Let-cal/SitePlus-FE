@@ -1,6 +1,6 @@
 import * as React from "react";
-import Heading from "../../all-site/Heading"
-import Content from "../../all-site/Content";
+import Heading from "../../../all-site/Heading"
+import Content from "../../../all-site/Content";
 
 const About: React.FC = () => {
   const headingText = "VỀ SITE PLUS";

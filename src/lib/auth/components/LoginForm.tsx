@@ -1,10 +1,14 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { authService } from "@/lib/auth/services/auth.service";
+import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
-// Define interfaces for form data and errors
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../services/AuthContext";
+import Heading from "@/lib/all-site/Heading";
 interface FormData {
   email: string;
   password: string;
@@ -16,14 +20,19 @@ interface FormErrors {
 }
 
 const LoginForm: React.FC = () => {
+  const navigate = useNavigate();
+  const { setIsAuthenticated, setUserRole } = useAuth();
+  const { enqueueSnackbar } = useSnackbar();
+
   const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
   });
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
-
   const [errors, setErrors] = useState<FormErrors>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [checked, setChecked] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -44,23 +53,116 @@ const LoginForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log("Registration attempt with:", formData);
-      // Handle registration logic here
+      setIsLoading(true);
+
+      try {
+        const response = await authService.login(formData);
+
+        if (response.success) {
+          // Store user data
+          localStorage.setItem("token", response.token);
+          localStorage.setItem("role", response.role);
+          localStorage.setItem("email", formData.email);
+          localStorage.setItem("hint", response.hint.toString());
+
+          // Store password if remember me is checked
+          if (checked) {
+            localStorage.setItem("password", formData.password);
+          } else {
+            localStorage.removeItem("password");
+          }
+
+          // Update auth context
+          setIsAuthenticated(true);
+          setUserRole(response.role);
+
+          enqueueSnackbar("Logged in successfully", {
+            variant: "success",
+            preventDuplicate: true,
+            anchorOrigin: {
+              horizontal: "left",
+              vertical: "bottom",
+            },
+          });
+
+          // Navigate based on role
+          switch (response.role) {
+            case "Admin":
+              navigate("/AdminPage");
+              break;
+            case "Customer":
+              navigate("/Customer-page");
+              break;
+            case "Staff":
+              navigate("/StaffPage");
+              break;
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          enqueueSnackbar(error.message, {
+            variant: "error",
+            preventDuplicate: true,
+            anchorOrigin: {
+              horizontal: "left",
+              vertical: "bottom",
+            },
+          });
+        } else {
+          enqueueSnackbar("An error occurred during login", {
+            variant: "error",
+            preventDuplicate: true,
+            anchorOrigin: {
+              horizontal: "left",
+              vertical: "bottom",
+            },
+          });
+        }
+        console.error("Login failed:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   const handleGoogleSignIn = () => {
     // Handle Google sign-in logic here
-    console.log("Google sign-in attempted");
+    enqueueSnackbar("Google sign-in is not implemented yet", {
+      variant: "error",
+      preventDuplicate: true,
+      anchorOrigin: {
+        horizontal: "left",
+        vertical: "bottom",
+      },
+    });
   };
+  const handleRememberMe = (checked: boolean) => {
+    setChecked(checked);
+    // If unchecked, remove stored password
+    if (!checked) {
+      localStorage.removeItem("password");
+    }
+  };
+  React.useEffect(() => {
+    const storedPassword = localStorage.getItem("password");
+    const storedEmail = localStorage.getItem("email");
+    if (storedPassword && storedEmail) {
+      setFormData({
+        email: storedEmail,
+        password: storedPassword,
+      });
+      setChecked(true);
+    }
+  }, []);
 
   return (
     <div className="w-full max-w-md space-y-6 p-6 bg-white rounded-lg shadow-lg">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900">Log in Account</h2>
+        
+        <Heading text="Log in Account" hasMargin={false} size="sm"/>
         <p className="mt-2 text-sm text-gray-600">
           Join our exclusive community
         </p>
@@ -68,6 +170,7 @@ const LoginForm: React.FC = () => {
 
       <Button
         onClick={handleGoogleSignIn}
+        disabled={isLoading}
         className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -105,6 +208,7 @@ const LoginForm: React.FC = () => {
           <Input
             type="email"
             placeholder="Email Address"
+            disabled={isLoading}
             className={errors.email ? "border-red-500" : ""}
             value={formData.email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -122,6 +226,7 @@ const LoginForm: React.FC = () => {
           <Input
             type={showPassword ? "text" : "password"}
             placeholder="Password"
+            disabled={isLoading}
             className={errors.password ? "border-red-500" : ""}
             value={formData.password}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -142,12 +247,25 @@ const LoginForm: React.FC = () => {
             </Alert>
           )}
         </div>
-
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="remember-me"
+            checked={checked}
+            onCheckedChange={handleRememberMe}
+          />
+          <label
+            htmlFor="remember-me"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Remember me
+          </label>
+        </div>
         <Button
           type="submit"
+          disabled={isLoading}
           className="w-full bg-orange-500 hover:bg-orange-600 text-white"
         >
-          LOGIN
+          {isLoading ? "LOGGING IN..." : "LOGIN"}
         </Button>
 
         <p className="text-center text-sm text-gray-600">
@@ -157,6 +275,15 @@ const LoginForm: React.FC = () => {
             className="text-orange-500 hover:text-orange-600 font-medium"
           >
             Create an account
+          </Link>
+        </p>
+        <p className="text-center text-sm text-gray-600">
+          Did you forget your account?{" "}
+          <Link
+            to="/forgot-password"
+            className="text-orange-500 hover:text-orange-600 font-medium"
+          >
+            Click here!!!
           </Link>
         </p>
       </form>

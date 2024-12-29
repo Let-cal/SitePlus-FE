@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { Header } from '../../all-site/Header'
-import { Footer } from '../../all-site/Footer'
-import { Divider } from "../../all-site/divider";
+import { Header } from '../../../all-site/Header'
+import { Footer } from '../../../all-site/Footer'
+import { Divider } from "../../../all-site/divider";
 import About from '../components/About'
 import Ability from '../components/Ability'
 import Expert from '../components/Expert'

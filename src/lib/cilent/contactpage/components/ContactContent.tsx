@@ -8,7 +8,7 @@ const ContactPage = () => {
         {/* First section content remains the same */}
         <div className="lg:w-1/3 flex flex-col justify-between lg:h-full mb-12 lg:mb-0 text-center lg:text-left">
           <div>
-            <p className="text-sm font-bold text-gray-600 uppercase mb-2">LIÊN HỌ CHÚNG TÔI</p>
+            <p className="text-sm font-bold text-gray-600 uppercase mb-2">LIÊN HỆ CHÚNG TÔI</p>
             <h1 className="text-4xl font-bold text-gray-800 my-8">Hãy liên hệ ngay hôm nay!</h1>
             <p className="text-gray-600 mb-6">
               Chúng tôi am hiểu chiến lược tổng thể và tỉ mỉ trong từng chi tiết để chọn mặt bằng tối ưu.

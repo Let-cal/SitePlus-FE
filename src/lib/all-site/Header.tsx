@@ -10,12 +10,15 @@ import { Bell } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { AuthLinks } from "../auth/components/AuthLink";
+import { useAuth } from "../auth/services/AuthContext";
 import { MobileNavigationMenu } from "./MobileNavigationMenu";
 import { NavigationMenuDemo } from "./NavigationMenu";
+import UserMenu from "./UserMenu";
 import logo from "/images/logo-site-plus/logo.png";
 
 export function Header() {
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const { isAuthenticated } = useAuth();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -36,7 +39,7 @@ export function Header() {
       }`}
     >
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center  w-full ">
+        <div className="flex items-center w-full">
           <div className="flex items-center gap-4 justify-between w-full">
             <Link to="/" className="flex items-center w-24 h-10">
               <img src={logo} alt="SitePlus Logo" className="h-auto w-full" />
@@ -50,7 +53,7 @@ export function Header() {
           </div>
 
           {/* Desktop Language and Auth */}
-          <div className="hidden lg:flex items-center ">
+          <div className="hidden lg:flex items-center gap-2">
             <Select>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Language" />
@@ -63,7 +66,7 @@ export function Header() {
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5 text-gray-600" />
             </Button>
-            <AuthLinks />
+            {isAuthenticated ? <UserMenu /> : <AuthLinks />}
           </div>
         </div>
       </div>
