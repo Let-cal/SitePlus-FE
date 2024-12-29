@@ -2,13 +2,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import Heading from "@/lib/all-site/Heading";
 import { authService } from "@/lib/auth/services/auth.service";
 import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../services/AuthContext";
-import Heading from "@/lib/all-site/Heading";
 interface FormData {
   email: string;
   password: string;
@@ -91,13 +91,19 @@ const LoginForm: React.FC = () => {
           // Navigate based on role
           switch (response.role) {
             case "Admin":
-              navigate("/AdminPage");
+              navigate("/Admin-page");
               break;
             case "Customer":
               navigate("/Customer-page");
               break;
+            case "Manager":
+              navigate("/Manager-page");
+              break;
+            case "Area-Manager":
+              navigate("/Area-manager-page");
+              break;
             case "Staff":
-              navigate("/StaffPage");
+              navigate("/Staff-page");
               break;
           }
         }
@@ -161,8 +167,7 @@ const LoginForm: React.FC = () => {
   return (
     <div className="w-full max-w-md space-y-6 p-6 bg-white rounded-lg shadow-lg">
       <div className="text-center">
-        
-        <Heading text="Log in Account" hasMargin={false} size="sm"/>
+        <Heading text="Log in Account" hasMargin={false} size="sm" />
         <p className="mt-2 text-sm text-gray-600">
           Join our exclusive community
         </p>

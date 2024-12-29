@@ -7,4 +7,5 @@ export const API_ENDPOINTS = {
     VERIFY_OTP: "/api/Authen/verify-otp",
     RESET_PASS: "/api/Authen/reset-password",
   },
+  
 };

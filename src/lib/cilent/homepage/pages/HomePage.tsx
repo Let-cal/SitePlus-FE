@@ -15,9 +15,9 @@ export default function HomePage() {
       <Header />
       <div className="flex flex-col lg:px-[124px]  h-auto w-full gap-[26px]">
         <MainContent />
-        <div className="flex flex-row gap-5 items-center">
+        <div className="flex flex-row  items-center justify-center">
           <Divider />
-          <p className=" lg:w-[60%] text-gray-500 xs:w-full ">
+          <p className=" lg:w-full text-gray-500 flex justify-center">
             “Chọn sai mặt bằng là mất cả gia tài”
           </p>
           <Divider />

@@ -1,8 +1,8 @@
-import { ReactNode, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSnackbar } from 'notistack';
-import { useAuth } from './AuthContext';
-import * as React from 'react';
+import { useSnackbar } from "notistack";
+import * as React from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 interface ProtectedRouteProps {
   element: ReactNode;
   roles?: string[];
@@ -22,30 +22,30 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   useEffect(() => {
     if (!loading) {
       if (!isAuthenticated && !allowGuest) {
-        navigate('/login');
+        navigate("/sign-in");
       } else if (roles && !roles.includes(userRole!) && isAuthenticated) {
         if (!showNotification) {
-          enqueueSnackbar('You do not have permission to access this page.', {
-            variant: 'error',
+          enqueueSnackbar("You do not have permission to access this page.", {
+            variant: "error",
             preventDuplicate: true,
-            anchorOrigin: { 
-              horizontal: 'right', 
-              vertical: 'top' 
-            }
+            anchorOrigin: {
+              horizontal: "right",
+              vertical: "top",
+            },
           });
           setShowNotification(true);
         }
-        
+
         // Navigate based on userRole
         switch (userRole) {
-          case 'Admin':
-            navigate('/AdminPage');
+          case "Admin":
+            navigate("/AdminPage");
             break;
-          case 'Customer':
-            navigate('/customer-page');
+          case "Customer":
+            navigate("/customer-page");
             break;
-          case 'Staff':
-            navigate('/StaffPage');
+          case "Staff":
+            navigate("/StaffPage");
             break;
         }
       }
@@ -58,7 +58,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     showNotification,
     loading,
     allowGuest,
-    enqueueSnackbar
+    enqueueSnackbar,
   ]);
 
   if (loading) {
