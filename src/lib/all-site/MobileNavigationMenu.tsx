@@ -99,7 +99,7 @@ export function MobileNavigationMenu() {
             </Accordion>
 
             <Link
-              to="/giai-phap"
+              to="/info-page"
               className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
             >
               Giới Thiệu
@@ -111,7 +111,7 @@ export function MobileNavigationMenu() {
               Khảo Sát Của Bạn
             </Link>
             <Link
-              to="/contactpage"
+              to="/contact-page"
               className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
             >
               Liên Hệ

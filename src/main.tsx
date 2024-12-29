@@ -13,6 +13,7 @@ import { AuthProvider } from "./lib/auth/services/AuthContext";
 import ProtectedRoute from "./lib/auth/services/ProtectedRoute";
 import ContactPage from "./lib/cilent/contactpage/pages/ContactPage";
 import HomePage from "./lib/cilent/homepage/pages/HomePage";
+import InfoPage from "./lib/cilent/infopage/pages/InfoPage";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <SnackbarProvider
@@ -47,10 +48,11 @@ createRoot(document.getElementById("root")!).render(
             />
             <Route path="/sign-up" element={<RegisterPage />} />
             <Route path="/sign-in" element={<LoginPage />} />
-            <Route path="/contactpage" element={<ContactPage />} />
+            <Route path="/contact-page" element={<ContactPage />} />
             <Route path="/forgot-password" element={<ForgotPassPage />} />
-            <Route path="/OTP_page" element={<OTP_Page />} />
-            <Route path="/reset_page" element={<ResetPassPage />} />
+            <Route path="/OTP-page" element={<OTP_Page />} />
+            <Route path="/reset-page" element={<ResetPassPage />} />
+            <Route path="/info-page" element={<InfoPage />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

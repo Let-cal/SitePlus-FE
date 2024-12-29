@@ -47,7 +47,7 @@ const ForgotForm: React.FC = () => {
         );
         setFormData({ email: "" });
         localStorage.setItem("email", formData.email);
-        navigate("/OTP_page");
+        navigate("/OTP-page");
       } catch (error) {
         setErrors({
           email: error instanceof Error ? error.message : "An error occurred",

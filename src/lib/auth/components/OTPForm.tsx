@@ -103,7 +103,7 @@ const OTPForm: React.FC = () => {
             vertical: "bottom",
           },
         });
-        navigate("/reset_page");
+        navigate("/reset-page");
       } else {
         throw new Error(response.message || "Verification failed");
       }
