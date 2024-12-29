@@ -83,7 +83,7 @@ export function NavigationMenuDemo() {
 
         {/* Các liên kết khác */}
         <NavigationMenuItem>
-          <Link to="/giai-phap">
+          <Link to="/info-page">
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               Giới Thiệu
             </NavigationMenuLink>

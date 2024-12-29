@@ -7,6 +7,7 @@ import LoginPage from "./lib/cilent/auth/pages/LoginPage";
 import RegisterPage from "./lib/cilent/auth/pages/RegisterPage";
 import ContactPage from "./lib/cilent/contactpage/pages/ContactPage";
 import HomePage from "./lib/cilent/homepage/pages/HomePage";
+import InfoPage from "./lib/cilent/infopage/pages/InfoPage";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -18,6 +19,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/sign-up" element={<RegisterPage />} />
         <Route path="/sign-in" element={<LoginPage />} />
         <Route path="/contact-page" element={<ContactPage />} />
+        <Route path="/info-page" element={<InfoPage />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>

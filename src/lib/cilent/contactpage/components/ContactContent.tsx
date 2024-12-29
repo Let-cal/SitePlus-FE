@@ -8,17 +8,21 @@ const ContactPage = () => {
         {/* First section content remains the same */}
         <div className="lg:w-1/3 flex flex-col justify-between lg:h-full mb-12 lg:mb-0 text-center lg:text-left">
           <div>
-            <p className="text-sm font-bold text-gray-600 uppercase mb-2">CONTACT US</p>
-            <h1 className="text-4xl font-bold text-gray-800 my-8">Get in touch today!</h1>
+            <p className="text-sm font-bold text-gray-600 uppercase mb-2">LIÊN HỌ CHÚNG TÔI</p>
+            <h1 className="text-4xl font-bold text-gray-800 my-8">Hãy liên hệ ngay hôm nay!</h1>
             <p className="text-gray-600 mb-6">
-              We know how large objects will act, but things on a small scale.
+              Chúng tôi am hiểu chiến lược tổng thể và tỉ mỉ trong từng chi tiết để chọn mặt bằng tối ưu.
             </p>
             <div className="space-y-4">
               <div className="text-gray-700">
-                <span className="font-bold">Phone: +451 215 215 </span>
+                <span className="font-bold text-gray-600 ">Hotline: </span>
+                <span className="text-blue-500">0915057079</span>
               </div>
               <div className="text-gray-700">
-                <span className="font-bold">Fax: +451 215 215 </span>
+                <span className="font-bold text-gray-600 ">Email: </span>
+                <span className="text-blue-500 hover:underline">
+                  <a href="mailto:minh@siteplus.vn">minh@siteplus.vn</a>
+                </span>
               </div>
             </div>
           </div>
@@ -46,7 +50,7 @@ const ContactPage = () => {
 
         <div className="lg:w-5/12">
           <img
-            src="https://www.shiftbase.com/hubfs/6a0fa8af-1b1a-4f25-aa51-3ae2579d4e95%5B1%5D.jpeg"
+            src="https://siteplus.vn/wp-content/uploads/2024/06/khoa-hoc.jpg"
             alt="Team partners"
             className="w-full object-cover rounded-lg shadow-lg max-h-[400px]"
           />
@@ -54,10 +58,10 @@ const ContactPage = () => {
       </div>
 
       <div className="flex flex-col items-center text-center max-w-4xl mx-auto px-4 my-16">
-        <p className="uppercase text-sm font-bold tracking-wide mb-4">VISIT OUR OFFICE</p>
+        <p className="uppercase text-sm font-bold tracking-wide mb-4">MỜI BẠN GHÉ THĂM VĂN PHÒNG</p>
 
         <h2 className="text-4xl font-bold text-gray-900 mb-16">
-          We help small businesses<br />with big ideas
+          Hỗ trợ doanh nghiệp nhỏ<br />hiện thực ý tưởng lớn
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mb-20">
@@ -70,7 +74,7 @@ const ContactPage = () => {
                 <p className="mb-2">0915057079</p>
                 <p className="mb-4">0826521234</p>
               </div>
-              <button className="font-semibold">Get Support</button>
+              <button className="font-semibold">Nhận hỗ trợ</button>
             </div>
           </div>
 
@@ -81,9 +85,8 @@ const ContactPage = () => {
             <div className="flex-grow flex flex-col justify-between">
               <div>
                 <p className="mb-2">Tầng 2 - 13 Quách Văn Tuấn, Phường 12, Tân Bình, Hồ Chí Minh</p>
-                {/* <p className="mb-4">sangtran.dna@gmail.com</p> */}
               </div>
-              <button className="font-semibold">Get Support</button>
+              <button className="font-semibold">Nhận hỗ trợ</button>
             </div>
           </div>
 
@@ -93,20 +96,23 @@ const ContactPage = () => {
             </div>
             <div className="flex-grow flex flex-col justify-between">
               <div>
-                <p className="mb-2">minh@siteplus.vn</p>
-                <p className="mb-4">sangtran.dna@gmail.com</p>
+                <span className="hover:underline cursor-pointer">
+                  <a href="mailto:minh@siteplus.vn">minh@siteplus.vn</a>
+                </span>
+                <br />
+                <span className="hover:underline cursor-pointer">
+                  <a href="mailto:sangtran.dna@gmail.com">sangtran.dna@gmail.com</a>
+                </span>
               </div>
-              <button className="font-semibold">Get Support</button>
+              <button className="font-semibold">Nhận hỗ trợ</button>
             </div>
           </div>
-
         </div>
 
         <div className="flex flex-col items-center">
-          {/* <img src="/api/placeholder/48/48" alt="Arrow down" className="mb-6" /> */}
-          <p className="uppercase font-bold text-xs text-gray-700 tracking-wide mb-4">WE CAN'T WAIT TO MEET YOU</p>
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">Let's Talk</h2>
-          <button className="bg-orange-500 text-white px-8 py-3 rounded-md uppercase">
+          <p className="uppercase font-bold text-xs text-gray-700 tracking-wide mb-4">Rất mong được gặp bạn!</p>
+          <h2 className="text-5xl font-bold text-gray-900 mb-6">Cùng trao đổi!</h2>
+          <button className="bg-orange-500 text-white px-8 py-3 rounded-md uppercase hover:bg-orange-600">
             Liên hệ ngay
           </button>
         </div>
