@@ -8,6 +8,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./index.css";
 import AdminPage from "./lib/admin/pages/AdminPage";
+import AdminUserPage from "./lib/admin/pages/AdminUserPage";
 import { ThemeProvider } from "./lib/all-site/ThemeProvider";
 import OTP_Page from "./lib/auth/pages/OTP_Page";
 import ResetPassPage from "./lib/auth/pages/ResetPassPage";
@@ -53,6 +54,15 @@ createRoot(document.getElementById("root")!).render(
                 path="/admin-page"
                 element={
                   <ProtectedRoute element={<AdminPage />} roles={["Admin"]} />
+                }
+              />
+              <Route
+                path="/admin-users"
+                element={
+                  <ProtectedRoute
+                    element={<AdminUserPage />}
+                    roles={["Admin"]}
+                  />
                 }
               />
               <Route path="/sign-up" element={<RegisterPage />} />
