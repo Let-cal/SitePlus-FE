@@ -1,6 +1,6 @@
-// ThemeProvider.tsx
-import  { createContext, useContext, useEffect, useState } from 'react';
-import * as React from 'react';
+import { useAuth } from "@/services/AuthContext";
+import * as React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 interface ThemeContextType {
   isDarkMode: boolean;
   toggleTheme: () => void;
@@ -8,35 +8,54 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+// Tách useTheme thành một function riêng và export
+function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error("useTheme must be used within a ThemeProvider");
+  }
+  return context;
+}
+
+// Component ThemeProvider
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const { userRole } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check local storage for saved theme preference
-    const savedTheme = localStorage.getItem('theme');
-    return savedTheme === 'dark';
+    const savedTheme = localStorage.getItem("theme");
+    return savedTheme === "dark";
   });
 
+  const shouldApplyTheme = () => {
+    if (!userRole) return false;
+    return userRole !== "Customer";
+  };
+
   useEffect(() => {
-    // Update class on document root element
-    document.documentElement.classList.toggle('dark', isDarkMode);
-    // Save theme preference
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-  }, [isDarkMode]);
+    if (shouldApplyTheme()) {
+      document.documentElement.classList.toggle("dark", isDarkMode);
+      localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.removeItem("theme");
+    }
+  }, [isDarkMode, userRole]);
 
   const toggleTheme = () => {
-    setIsDarkMode(prev => !prev);
+    if (shouldApplyTheme()) {
+      setIsDarkMode((prev) => !prev);
+    }
   };
+
+  if (!shouldApplyTheme()) {
+    return <>{children}</>;
+  }
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
-};
+}
 
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
+// Export cả component và hook
+export { ThemeProvider, useTheme };

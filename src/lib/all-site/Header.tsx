@@ -9,8 +9,8 @@ import {
 import { Bell } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../services/AuthContext";
 import { AuthLinks } from "../auth/components/AuthLink";
-import { useAuth } from "../auth/services/AuthContext";
 import { MobileNavigationMenu } from "./MobileNavigationMenu";
 import { NavigationMenuDemo } from "./NavigationMenu";
 import UserMenu from "./UserMenu";

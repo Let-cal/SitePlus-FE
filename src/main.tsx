@@ -11,11 +11,11 @@ import AdminPage from "./lib/admin/pages/AdminPage";
 import { ThemeProvider } from "./lib/all-site/ThemeProvider";
 import OTP_Page from "./lib/auth/pages/OTP_Page";
 import ResetPassPage from "./lib/auth/pages/ResetPassPage";
-import { AuthProvider } from "./lib/auth/services/AuthContext";
-import ProtectedRoute from "./lib/auth/services/ProtectedRoute";
 import ContactPage from "./lib/cilent/contact-page/pages/ContactPage";
 import HomePage from "./lib/cilent/homepage/pages/HomePage";
 import InfoPage from "./lib/cilent/infopage/pages/InfoPage";
+import { AuthProvider } from "./services/AuthContext";
+import ProtectedRoute from "./services/ProtectedRoute";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <SnackbarProvider
@@ -49,13 +49,12 @@ createRoot(document.getElementById("root")!).render(
                   />
                 }
               />
-              {/* <Route
-              path="/Admin-page"
-              element={
-                <ProtectedRoute element={<AdminPage />} roles={["Admin"]} />
-              }
-            /> */}
-              <Route path="/admin-page" element={<AdminPage />} />
+              <Route
+                path="/admin-page"
+                element={
+                  <ProtectedRoute element={<AdminPage />} roles={["Admin"]} />
+                }
+              />
               <Route path="/sign-up" element={<RegisterPage />} />
               <Route path="/sign-in" element={<LoginPage />} />
               <Route path="/contact-page" element={<ContactPage />} />

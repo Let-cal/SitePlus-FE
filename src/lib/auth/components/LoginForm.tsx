@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import Heading from "@/lib/all-site/Heading";
-import { authService } from "@/lib/auth/services/auth.service";
+import { authService } from "@/services/auth.service";
 import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../services/AuthContext";
+import { useAuth } from "../../../services/AuthContext";
 interface FormData {
   email: string;
   password: string;
@@ -45,8 +45,8 @@ const LoginForm: React.FC = () => {
 
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     setErrors(newErrors);
@@ -67,7 +67,7 @@ const LoginForm: React.FC = () => {
           localStorage.setItem("role", response.role);
           localStorage.setItem("email", formData.email);
           localStorage.setItem("hint", response.hint.toString());
-
+          console.log(localStorage.getItem("token"));
           // Store password if remember me is checked
           if (checked) {
             localStorage.setItem("password", formData.password);
@@ -209,7 +209,7 @@ const LoginForm: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+        <div className="dark:text-theme-primary-dark">
           <Input
             type="email"
             placeholder="Email Address"
@@ -227,7 +227,7 @@ const LoginForm: React.FC = () => {
           )}
         </div>
 
-        <div className="relative">
+        <div className="relative dark:text-theme-primary-dark">
           <Input
             type={showPassword ? "text" : "password"}
             placeholder="Password"

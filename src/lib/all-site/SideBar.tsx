@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Moon, Sun } from "lucide-react";
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "./ThemeProvider";
 
@@ -19,6 +19,7 @@ interface SidebarProps {
   mainNavItems: NavItem[];
   className?: string;
   defaultCollapsed?: boolean;
+  onLogout?: () => void;
 }
 
 const Sidebar = ({
@@ -27,9 +28,24 @@ const Sidebar = ({
   mainNavItems,
   className,
   defaultCollapsed = false,
+  onLogout,
 }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const { isDarkMode, toggleTheme } = useTheme();
+  const [scrollPosition, setScrollPosition] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const position = window.scrollY;
+      setScrollPosition(position);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
@@ -40,20 +56,35 @@ const Sidebar = ({
       className={cn(
         "flex flex-col",
         isCollapsed ? "w-20" : "w-64",
-        "transition-all duration-300 ease-in-out",
-        "min-h-screen border-r",
+        // Đảm bảo animation cho width khi collapse/expand
+        "transition-[width,transform] duration-300 ease-in-out",
+        "border-r",
         "bg-primary-light dark:bg-primary-dark",
         "border-border-light dark:border-border-dark",
+        "sticky top-0 h-screen overflow-y-auto overflow-x-hidden",
         className
       )}
+      style={{
+        transform: `translateY(${Math.min(scrollPosition, 20)}px)`,
+        transition: "transform 0.3s ease-out, width 0.3s ease-in-out",
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border-light dark:border-border-dark">
+      <div
+        className={cn(
+          "flex items-center justify-between p-4 border-b border-border-light dark:border-border-dark",
+          "sticky top-0 bg-primary-light dark:bg-primary-dark z-10",
+          // Thêm transition cho content bên trong
+          "transition-all duration-300 ease-in-out"
+        )}
+      >
         <div
           className={cn(
             "flex items-center gap-2",
             isCollapsed && "justify-center",
-            "min-w-0"
+            "min-w-0",
+            // Thêm transition cho content bên trong
+            "transition-all duration-300 ease-in-out"
           )}
         >
           {!isCollapsed ? (
@@ -62,16 +93,16 @@ const Sidebar = ({
                 <img
                   src={logoHref}
                   alt="Logo"
-                  className="w-8 h-8 object-contain"
+                  className="w-8 h-8 object-contain transition-transform duration-300 ease-in-out"
                   style={{ imageRendering: "auto" }}
                 />
               </Link>
-              <h1 className="font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis text-text-light dark:text-text-dark">
+              <h1 className="font-bold text-xl whitespace-nowrap overflow-hidden text-ellipsis text-text-light dark:text-text-dark transition-all duration-300 ease-in-out">
                 {title}
               </h1>
             </>
           ) : (
-            <h1 className="font-bold text-xl text-text-light dark:text-text-dark">
+            <h1 className="font-bold text-xl text-text-light dark:text-text-dark transition-all duration-300 ease-in-out">
               {title.charAt(0)}
             </h1>
           )}
@@ -80,16 +111,16 @@ const Sidebar = ({
           variant="ghost"
           size="icon"
           onClick={toggleCollapse}
-          className="hover:bg-secondary-light dark:hover:bg-secondary-dark flex-shrink-0"
+          className="hover:bg-secondary-light dark:hover:bg-secondary-dark flex-shrink-0 transition-transform duration-300 ease-in-out"
         >
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </Button>
       </div>
 
       {/* Navigation Items */}
-      <div className="flex-1 py-4">
+      <div className="flex-1 py-4 transition-all duration-300 ease-in-out">
         <div className="px-3">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-4">
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-4 transition-opacity duration-300 ease-in-out">
             {!isCollapsed && "Main"}
           </p>
         </div>
@@ -102,12 +133,13 @@ const Sidebar = ({
                   "w-full justify-start gap-3",
                   isCollapsed && "justify-center",
                   "text-text-light dark:text-text-dark",
-                  "hover:bg-secondary-light dark:hover:bg-secondary-dark"
+                  "hover:bg-secondary-light dark:hover:bg-secondary-dark",
+                  "transition-all duration-300 ease-in-out"
                 )}
               >
                 {item.icon}
                 {!isCollapsed && (
-                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+                  <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
                     {item.label}
                   </span>
                 )}
@@ -117,8 +149,36 @@ const Sidebar = ({
         </nav>
       </div>
 
+      {/* Logout Section */}
+      <div className="px-2 mb-4">
+        <Button
+          variant="ghost"
+          className={cn(
+            "w-full justify-start gap-3",
+            isCollapsed && "justify-center",
+            "text-text-light dark:text-text-dark",
+            "hover:bg-secondary-light dark:hover:bg-secondary-dark",
+            "transition-all duration-300 ease-in-out"
+          )}
+          onClick={onLogout}
+        >
+          <LogOut size={20} />
+          {!isCollapsed && (
+            <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
+              Đăng xuất
+            </span>
+          )}
+        </Button>
+      </div>
+
       {/* Footer with Theme Toggle */}
-      <div className="border-t border-border-light dark:border-border-dark p-4">
+      <div
+        className={cn(
+          "border-t border-border-light dark:border-border-dark p-4",
+          "sticky bottom-0 bg-primary-light dark:bg-primary-dark",
+          "transition-all duration-300 ease-in-out"
+        )}
+      >
         <div className="flex justify-center bg-secondary-light dark:bg-secondary-dark rounded-lg p-1">
           <Button
             variant={!isDarkMode ? "secondary" : "ghost"}
@@ -126,11 +186,16 @@ const Sidebar = ({
             onClick={toggleTheme}
             className={cn(
               "flex items-center gap-2",
-              isCollapsed && "w-full justify-center"
+              isCollapsed && "w-full justify-center",
+              "transition-all duration-300 ease-in-out"
             )}
           >
             <Sun size={16} />
-            {!isCollapsed && <span>Sáng</span>}
+            {!isCollapsed && (
+              <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
+                Sáng
+              </span>
+            )}
           </Button>
           <Button
             variant={isDarkMode ? "secondary" : "ghost"}
@@ -138,11 +203,16 @@ const Sidebar = ({
             onClick={toggleTheme}
             className={cn(
               "flex items-center gap-2",
-              isCollapsed && "w-full justify-center"
+              isCollapsed && "w-full justify-center",
+              "transition-all duration-300 ease-in-out"
             )}
           >
             <Moon size={16} />
-            {!isCollapsed && <span>Tối</span>}
+            {!isCollapsed && (
+              <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
+                Tối
+              </span>
+            )}
           </Button>
         </div>
       </div>
