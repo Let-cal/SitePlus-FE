@@ -10,7 +10,7 @@ import {
 import { UserCircle } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../auth/services/AuthContext";
+import { useAuth } from "../../services/AuthContext";
 export default function UserMenu() {
   const { userEmail, userRole, handleLogout } = useAuth();
   return (

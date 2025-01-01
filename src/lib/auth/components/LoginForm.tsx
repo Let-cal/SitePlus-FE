@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import Heading from "@/lib/all-site/Heading";
-import { authService } from "@/lib/auth/services/auth.service";
+import { authService } from "@/services/auth.service";
 import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../services/AuthContext";
+import { useAuth } from "../../../services/AuthContext";
 interface FormData {
   email: string;
   password: string;
@@ -45,9 +45,10 @@ const LoginForm: React.FC = () => {
 
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    }
+    } 
+    // else if (formData.password.length < 8) {
+    //   newErrors.password = "Password must be at least 8 characters";
+    // }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

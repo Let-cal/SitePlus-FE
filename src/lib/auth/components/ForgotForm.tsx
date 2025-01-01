@@ -1,7 +1,7 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authService } from "@/lib/auth/services/auth.service";
+import { authService } from "@/services/auth.service";
 import * as React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Moon, Sun } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Moon, Sun } from "lucide-react";
 import * as React from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -19,6 +19,7 @@ interface SidebarProps {
   mainNavItems: NavItem[];
   className?: string;
   defaultCollapsed?: boolean;
+  onLogout?: () => void; // Thêm prop mới cho hàm xử lý logout
 }
 
 const Sidebar = ({
@@ -27,6 +28,7 @@ const Sidebar = ({
   mainNavItems,
   className,
   defaultCollapsed = false,
+  onLogout, // Thêm prop mới
 }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const { isDarkMode, toggleTheme } = useTheme();
@@ -115,6 +117,23 @@ const Sidebar = ({
             </Link>
           ))}
         </nav>
+      </div>
+
+      {/* Logout Section */}
+      <div className="px-2 mb-4">
+        <Button
+          variant="ghost"
+          className={cn(
+            "w-full justify-start gap-3",
+            isCollapsed && "justify-center",
+            "text-text-light dark:text-text-dark",
+            "hover:bg-secondary-light dark:hover:bg-secondary-dark"
+          )}
+          onClick={onLogout}
+        >
+          <LogOut size={20} />
+          {!isCollapsed && <span>ĐĂNG XUẤT</span>}
+        </Button>
       </div>
 
       {/* Footer with Theme Toggle */}

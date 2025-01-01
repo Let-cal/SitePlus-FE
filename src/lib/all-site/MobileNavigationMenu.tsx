@@ -23,7 +23,7 @@ import { Bell, Menu } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { AuthLinks } from "../auth/components/AuthLink";
-import { useAuth } from "../auth/services/AuthContext";
+import { useAuth } from "../../services/AuthContext";
 import UserMenu from "./UserMenu";
 import logo from "/images/logo-site-plus/logo.png";
 export function MobileNavigationMenu() {

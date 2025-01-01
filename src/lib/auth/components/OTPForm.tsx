@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { authService } from "@/lib/auth/services/auth.service";
+import { authService } from "@/services/auth.service";
 import { enqueueSnackbar } from "notistack";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";

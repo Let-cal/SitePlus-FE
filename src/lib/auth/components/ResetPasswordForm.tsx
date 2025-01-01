@@ -2,7 +2,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Heading from "@/lib/all-site/Heading";
-import { authService } from "@/lib/auth/services/auth.service";
+import { authService } from "@/services/auth.service";
 import { enqueueSnackbar } from "notistack";
 import * as React from "react";
 import { useState } from "react";

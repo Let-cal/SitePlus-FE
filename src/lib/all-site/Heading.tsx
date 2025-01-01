@@ -4,9 +4,17 @@ interface HeadingProps {
   text: string; // Nội dung sẽ hiển thị trong heading
   hasMargin?: boolean; // Điều chỉnh việc thêm class mb-12
   size?: "sm" | "md" | "lg"; // Kích cỡ chữ: sm, md, lg
+  color?: boolean; //
+  center?: boolean;
 }
 
-const Heading: React.FC<HeadingProps> = ({ text, hasMargin = true, size = "md" }) => {
+const Heading: React.FC<HeadingProps> = ({
+  text,
+  hasMargin = true,
+  size = "md",
+  color = true,
+  center = true,
+}) => {
   // Xác định class kích cỡ chữ dựa vào size
   const sizeClass =
     size === "sm"
@@ -17,9 +25,13 @@ const Heading: React.FC<HeadingProps> = ({ text, hasMargin = true, size = "md" }
 
   return (
     <h2
-      className={`text-center font-extrabold tracking-tight text-theme-orange-500 ${
+      className={`${
+        center ? "text-center" : ""
+      } font-extrabold tracking-tight text-theme-orange-500  ${
         hasMargin ? "mb-12" : ""
-      } ${sizeClass}`}
+      } ${sizeClass} ${
+        color ? "text-theme-orange-500" : " text-theme-text-light"
+      }`}
     >
       {text}
     </h2>

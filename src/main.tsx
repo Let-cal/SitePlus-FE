@@ -11,11 +11,13 @@ import AdminPage from "./lib/admin/pages/AdminPage";
 import { ThemeProvider } from "./lib/all-site/ThemeProvider";
 import OTP_Page from "./lib/auth/pages/OTP_Page";
 import ResetPassPage from "./lib/auth/pages/ResetPassPage";
-import { AuthProvider } from "./lib/auth/services/AuthContext";
-import ProtectedRoute from "./lib/auth/services/ProtectedRoute";
+import { AuthProvider } from "./services/AuthContext";
+import ProtectedRoute from "./services/ProtectedRoute";
 import ContactPage from "./lib/cilent/contact-page/pages/ContactPage";
 import HomePage from "./lib/cilent/homepage/pages/HomePage";
 import InfoPage from "./lib/cilent/infopage/pages/InfoPage";
+import ManagerPage from "./lib/manager/pages/ManagerPage";
+import AreaManagerPage from "./lib/area-manager/pages/AreaManagerPage";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <SnackbarProvider
@@ -63,6 +65,8 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/OTP-page" element={<OTP_Page />} />
               <Route path="/reset-page" element={<ResetPassPage />} />
               <Route path="/info-page" element={<InfoPage />} />
+              <Route path="/manager-page" element={<ProtectedRoute element={<ManagerPage />} roles={["Manager"]} />} />
+              <Route path="/area-manager-page" element={<ProtectedRoute element={<AreaManagerPage />} roles={["Area-Manager"]} />} />
             </Routes>
           </BrowserRouter>
         </ThemeProvider>
