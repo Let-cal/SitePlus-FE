@@ -1,12 +1,12 @@
 import Header from "@/lib/all-site/HeaderOtherRole";
 import Heading from "@/lib/all-site/Heading";
 import Sidebar from "@/lib/all-site/SideBar";
-import { ClipboardList, Home, User } from "lucide-react";
+import { Home, User } from "lucide-react";
 import * as React from "react";
 import { useAuth } from "../../../services/AuthContext";
-import UsageChart from "../components/ChartTotal";
-import StatCardGrid from "../components/StatCardGrid";
-import RequestTable from "../components/TableRequests";
+import UsageChart from "../components/home-page/ChartTotal";
+import StatCardGrid from "../components/home-page/StatCardGrid";
+import RequestTable from "../components/home-page/TableRequests";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
 
 export default function AdminPage() {
@@ -22,12 +22,6 @@ export default function AdminPage() {
       icon: <User size={20} />,
       label: "Users",
       href: "/admin-users",
-    },
-
-    {
-      icon: <ClipboardList size={20} />,
-      label: "Feedback",
-      href: "/admin-feedback",
     },
   ];
   const cards = [
