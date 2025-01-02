@@ -27,7 +27,7 @@ const Heading: React.FC<HeadingProps> = ({
     <h2
       className={`${
         center ? "text-center" : ""
-      } font-extrabold tracking-tight text-theme-orange-500  ${
+      } font-extrabold tracking-tight text-theme-orange-500  dark:text-theme-primary-light ${
         hasMargin ? "mb-12" : ""
       } ${sizeClass} ${
         color ? "text-theme-orange-500" : " text-theme-text-light"

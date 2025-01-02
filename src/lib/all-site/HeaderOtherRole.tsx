@@ -54,7 +54,7 @@ const Header = ({
 
   return (
     <div
-      className={`flex w-full max-w-[1147px] p-2.5 justify-between items-center mx-auto ${className}`}
+      className={`flex w-full  p-2.5 justify-between items-center mx-auto ${className}`}
     >
       {/* Search Input */}
       <div className="relative w-[388px]">

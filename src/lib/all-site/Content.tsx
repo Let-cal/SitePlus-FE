@@ -6,7 +6,7 @@ interface ContentProps {
 
 const Content: React.FC<ContentProps> = ({ text }) => {
   return (
-    <blockquote className="text-lg md:text-xl text-[#020403] text-center mb-6 max-w-2xl mx-auto leading-relaxed">
+    <blockquote className="text-lg md:text-xl text-theme-text-light dark:text-theme-text-dark text-center mb-6 max-w-2xl mx-auto leading-relaxed">
       {text}
     </blockquote>
   );

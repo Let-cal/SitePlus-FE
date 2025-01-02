@@ -4,24 +4,22 @@ import * as React from "react";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
-import StatsCards from "../components/home-manager/StatsCard";
-import DashboardCharts from "../components/home-manager/DashboardCharts";
-import UserManagement from "../components/home-manager/UserManagement";
+import BarChart from "../components/request-manager/BarChart";
+import RequestTable from "../components/request-manager/RequestTable";
 
 
-
-export default function ManagerPage() {
+export default function ManagerRequest() {
   const managerItems = [
     {
       icon: <Home size={20} />,
       label: "TRANG CHỦ",
       href: "/manager-page",
-      isActive: true,
     },
     {
       icon: <FileText size={20} />,
       label: "YÊU CẦU",
       href: "/manager-request",
+      isActive: true,
     },
     {
       icon: <Briefcase size={20} />,
@@ -38,9 +36,9 @@ export default function ManagerPage() {
   const { handleLogout } = useAuth();
 
   return (
-    <div className="flex h-screen overflow-hidden"> {/* Thêm overflow-hidden và h-screen */}
+    <div className="flex h-screen overflow-hidden"> 
       {/* Sidebar container */}
-      <div className="flex-none"> {/* Đổi thành flex-none */}
+      <div className="flex-none"> 
         <Sidebar
           onLogout={handleLogout}
           logoHref={LogoSitePlus}
@@ -50,7 +48,7 @@ export default function ManagerPage() {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0"> 
         <Header
           defaultLocation="Quận 7 - TPHCM"
           onSearch={() => {
@@ -62,12 +60,11 @@ export default function ManagerPage() {
         />
 
         {/* Content area */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="space-y-12 max-w-full">
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">TRANG CHỦ</h2>
-            <StatsCards />
-            <DashboardCharts />
-            <UserManagement />
+        <div className="flex-1 p-6 overflow-y-auto"> 
+          <div className="space-y-12 max-w-full"> 
+            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">YÊU CẦU</h2>
+            <BarChart/>
+            <RequestTable/> 
           </div>
         </div>
       </div>

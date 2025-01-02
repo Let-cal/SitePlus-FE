@@ -1,13 +1,13 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Heading from "@/lib/all-site/Heading";
 import { showToast } from "@/lib/all-site/toast-provider";
 import { authService } from "@/services/auth.service";
 import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Heading from "@/lib/all-site/Heading";
 // Define interfaces for form data and errors
 interface FormData {
   fullName: string;
@@ -181,8 +181,7 @@ const RegisterForm: React.FC = () => {
     <>
       <div className="w-full max-w-md space-y-6 p-6 bg-white rounded-lg shadow-lg">
         <div className="text-center">
-          
-          <Heading text="Create Account" hasMargin={false} size="sm"/>
+          <Heading text="Create Account" hasMargin={false} size="sm" />
           <p className="mt-2 text-sm text-gray-600">
             Join our exclusive community
           </p>

@@ -1,22 +1,16 @@
-import * as React from "react";
-import StatsCards from './StatsCard';
-import DashboardCharts from "./DashboardCharts";
-import UserManagement from "./UserManagement";
+import * as React from 'react'
+import StatsCards from './StatsCard'
+import DashboardCharts from './DashboardCharts'
+import UserManagement from './UserManagement'
 
-const ManagerHome = () => {
-    return (
-        <div className="">
-            <div className="mb-12">  
-                <StatsCards />
-            </div>
-            <div className="mb-12">  
-                <DashboardCharts />
-            </div>
-            <div className="mb-12">  
-                <UserManagement />
-            </div>
-        </div>
-    );
-};
+function ManagerHome() {
+  return (
+    <div>
+        <StatsCards />
+        <DashboardCharts />
+        <UserManagement />
+    </div>
+  )
+}
 
-export default ManagerHome;
+export default ManagerHome

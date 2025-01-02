@@ -8,16 +8,20 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./index.css";
 import AdminPage from "./lib/admin/pages/AdminPage";
+import AdminUserPage from "./lib/admin/pages/AdminUserPage";
 import { ThemeProvider } from "./lib/all-site/ThemeProvider";
 import OTP_Page from "./lib/auth/pages/OTP_Page";
 import ResetPassPage from "./lib/auth/pages/ResetPassPage";
-import { AuthProvider } from "./services/AuthContext";
-import ProtectedRoute from "./services/ProtectedRoute";
 import ContactPage from "./lib/cilent/contact-page/pages/ContactPage";
 import HomePage from "./lib/cilent/homepage/pages/HomePage";
 import InfoPage from "./lib/cilent/infopage/pages/InfoPage";
 import ManagerPage from "./lib/manager/pages/ManagerPage";
 import AreaManagerPage from "./lib/area-manager/pages/AreaManagerPage";
+import { AuthProvider } from "./services/AuthContext";
+import ProtectedRoute from "./services/ProtectedRoute";
+import ManagerRequest from "./lib/manager/pages/ManagerRequest";
+import ManagerTask from "./lib/manager/pages/ManagerTask";
+import ManagerSurvey from "./lib/manager/pages/ManagerSurvey";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <SnackbarProvider
@@ -51,13 +55,21 @@ createRoot(document.getElementById("root")!).render(
                   />
                 }
               />
-              {/* <Route
-              path="/Admin-page"
-              element={
-                <ProtectedRoute element={<AdminPage />} roles={["Admin"]} />
-              }
-            /> */}
-              <Route path="/admin-page" element={<AdminPage />} />
+              <Route
+                path="/admin-page"
+                element={
+                  <ProtectedRoute element={<AdminPage />} roles={["Admin"]} />
+                }
+              />
+              <Route
+                path="/admin-users"
+                element={
+                  <ProtectedRoute
+                    element={<AdminUserPage />}
+                    roles={["Admin"]}
+                  />
+                }
+              />
               <Route path="/sign-up" element={<RegisterPage />} />
               <Route path="/sign-in" element={<LoginPage />} />
               <Route path="/contact-page" element={<ContactPage />} />
@@ -66,6 +78,9 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/reset-page" element={<ResetPassPage />} />
               <Route path="/info-page" element={<InfoPage />} />
               <Route path="/manager-page" element={<ProtectedRoute element={<ManagerPage />} roles={["Manager"]} />} />
+              <Route path="/manager-request" element={<ProtectedRoute element={<ManagerRequest />} roles={["Manager"]} />} />
+              <Route path="/manager-task" element={<ProtectedRoute element={<ManagerTask />} roles={["Manager"]} />} />
+              <Route path="/manager-survey" element={<ProtectedRoute element={<ManagerSurvey />} roles={["Manager"]} />} />
               <Route path="/area-manager-page" element={<ProtectedRoute element={<AreaManagerPage />} roles={["Area-Manager"]} />} />
             </Routes>
           </BrowserRouter>

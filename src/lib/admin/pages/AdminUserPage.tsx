@@ -1,27 +1,26 @@
+import { Button } from "@/components/ui/button";
 import Header from "@/lib/all-site/HeaderOtherRole";
 import Heading from "@/lib/all-site/Heading";
 import Sidebar from "@/lib/all-site/SideBar";
 import { ClipboardList, Home, User } from "lucide-react";
 import * as React from "react";
 import { useAuth } from "../../../services/AuthContext";
-import UsageChart from "../components/ChartTotal";
-import StatCardGrid from "../components/StatCardGrid";
-import RequestTable from "../components/TableRequests";
+import UsersChart from "../components/ChartUsers";
+import UserTable from "../components/TableUsers";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
-
-export default function AdminPage() {
+export default function AdminUserPage() {
   const { handleLogout } = useAuth();
   const adminItems = [
     {
       icon: <Home size={20} />,
       label: "Home",
       href: "/admin-page",
-      isActive: true,
     },
     {
       icon: <User size={20} />,
       label: "Users",
       href: "/admin-users",
+      isActive: true,
     },
 
     {
@@ -30,41 +29,7 @@ export default function AdminPage() {
       href: "/admin-feedback",
     },
   ];
-  const cards = [
-    {
-      title: "Total Users",
-      value: "40,689",
-      changeValue: "8.5%",
-      changeText: "Up from yesterday",
-      trend: "up",
-      iconUrl: "https://cdn.lordicon.com/gznfrpfp.json",
-    },
-    {
-      title: "Total Employees",
-      value: "2040",
-      changeValue: "8.5%",
-      changeText: "Up from yesterday",
-      trend: "up",
-      iconUrl: "https://cdn.lordicon.com/fqbvgezn.json",
-    },
-    {
-      title: "Total Feedbacks",
-      value: "560",
-      changeValue: "8.5%",
-      changeText: "Up from yesterday",
-      trend: "down",
-      iconUrl: "https://cdn.lordicon.com/fozsorqm.json",
-    },
-    {
-      title: "Total Requests",
-      value: "10293",
-      changeValue: "8.5%",
-      changeText: "Up from yesterday",
-      trend: "down",
-      iconUrl: "https://cdn.lordicon.com/jdgfsfzr.json",
-    },
-    // Add more card configs...
-  ];
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar container */}
@@ -87,12 +52,22 @@ export default function AdminPage() {
             // Xử lý khi click vào notification
           }}
         />
-        <div className="flex-grow p-6 space-y-6">
-          <Heading text="Dashboard" color={false} size="sm" center={false} />
 
-          <StatCardGrid cards={cards} />
-          <UsageChart />
-          <RequestTable />
+        <div className="flex-grow p-6 space-y-6">
+          <div className="flex flex-row justify-between">
+            <Heading
+              text="User Management"
+              color={false}
+              size="sm"
+              center={false}
+            />
+            <Button type="submit" className="lg:w-[15%]  items-center  ">
+              Create User
+            </Button>
+          </div>
+
+          <UsersChart />
+          <UserTable />
         </div>
       </div>
     </div>

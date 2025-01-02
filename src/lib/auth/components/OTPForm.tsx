@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
+import Heading from "@/lib/all-site/Heading";
 import { authService } from "@/services/auth.service";
 import { enqueueSnackbar } from "notistack";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Heading from "@/lib/all-site/Heading";
 const OTPForm: React.FC = () => {
   const [otp, setOTP] = useState<string[]>(Array(6).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -127,8 +127,7 @@ const OTPForm: React.FC = () => {
   return (
     <div className="w-full max-w-md space-y-6 p-6 bg-white rounded-lg shadow-lg">
       <div className="text-center">
-        
-        <Heading text="Enter OTP Code" hasMargin={false} size="sm"/>
+        <Heading text="Enter OTP Code" hasMargin={false} size="sm" />
         <p className="mt-2 text-sm text-gray-600">
           Enter the 6-digit code sent to your email <br />
           <span className="font-bold text-orange-500">{email || ""}</span>

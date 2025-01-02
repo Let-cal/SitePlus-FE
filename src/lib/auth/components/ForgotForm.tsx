@@ -1,11 +1,11 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Heading from "@/lib/all-site/Heading";
 import { authService } from "@/services/auth.service";
 import * as React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Heading from "@/lib/all-site/Heading";
 interface FormData {
   email: string;
 }
@@ -61,8 +61,7 @@ const ForgotForm: React.FC = () => {
   return (
     <div className="w-full max-w-md space-y-6 p-6 bg-white rounded-lg shadow-lg">
       <div className="text-center">
-   
-        <Heading text="Forgot Your Password" hasMargin={false} size="sm"/>
+        <Heading text="Forgot Your Password" hasMargin={false} size="sm" />
         <p className="mt-2 text-sm text-gray-600">
           Enter your email to receive OTP code
         </p>
