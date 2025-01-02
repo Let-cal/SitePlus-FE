@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Filter } from "lucide-react";
+import { ChevronDown} from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -148,7 +148,7 @@ export default function ReceiveSurvey() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8">
-                <Filter className="mr-2 h-4 w-4" />
+                {/* <Filter className="mr-2 h-4 w-4" /> */}
                 {filterLabels[filterStatus]}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>

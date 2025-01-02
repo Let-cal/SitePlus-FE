@@ -6,31 +6,45 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts/lib/index.js";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from "recharts/lib/index.js";
 
-import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-
-import { ChartContainer } from "@/components/ui/chart";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 type ChartConfig = {
   stats: {
     label: string;
+    color: string;
+    fillColor: string;
   };
   client: {
     label: string;
     color: string;
+    fillColor: string;
   };
   manager: {
     label: string;
     color: string;
+    fillColor: string;
   };
   area_Manager: {
     label: string;
     color: string;
+    fillColor: string;
   };
   staff: {
     label: string;
     color: string;
+    fillColor: string;
   };
 };
 
@@ -124,22 +138,28 @@ const chartData = [
 const chartConfig = {
   stats: {
     label: "Statistics",
+    color: "#9E9E9E",
+    fillColor: "#9E9E9E20",
   },
   client: {
     label: "Clients",
-    color: "#4CAF50", // Example color for clients
+    color: "#4CAF50",
+    fillColor: "#4CAF5020",
   },
   manager: {
     label: "Managers",
-    color: "#2196F3", // Example color for managers
+    color: "#2196F3",
+    fillColor: "#2196F320",
   },
   area_Manager: {
     label: "Area Managers",
-    color: "#FFC107", // Example color for area managers
+    color: "#FFC107",
+    fillColor: "#FFC10720",
   },
   staff: {
     label: "Staff",
-    color: "#FF5722", // Example color for staff
+    color: "#FF5722",
+    fillColor: "#FF572220",
   },
 } satisfies ChartConfig;
 
@@ -161,8 +181,10 @@ export default function UsersChart() {
     <Card>
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
-          <CardTitle>Users Statistics</CardTitle>
-          <CardDescription>Monthly users overview for the year</CardDescription>
+          <CardTitle>Users Growth</CardTitle>
+          <CardDescription>
+            Monthly users growth trend for the year
+          </CardDescription>
         </div>
         <div className="flex">
           {["client", "manager", "area_Manager", "staff"].map((key) => {
@@ -190,15 +212,16 @@ export default function UsersChart() {
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <BarChart
-            accessibilityLayer
+          <AreaChart
             data={chartData}
             margin={{
               left: 12,
               right: 12,
+              top: 12,
+              bottom: 12,
             }}
           >
-            <CartesianGrid vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="date"
               tickLine={false}
@@ -211,6 +234,12 @@ export default function UsersChart() {
                   month: "short",
                 });
               }}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
             />
             <ChartTooltip
               content={
@@ -225,8 +254,17 @@ export default function UsersChart() {
                 />
               }
             />
-            <Bar dataKey={activeChart} fill={`var(--color-${activeChart})`} />
-          </BarChart>
+            <Area
+              type="monotone"
+              dataKey={activeChart}
+              stroke={chartConfig[activeChart].color}
+              fill={chartConfig[activeChart].fillColor}
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 6 }}
+              fillOpacity={1}
+            />
+          </AreaChart>
         </ChartContainer>
       </CardContent>
     </Card>
