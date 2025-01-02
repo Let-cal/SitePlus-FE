@@ -3,6 +3,7 @@ import * as React from "react";
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+
 interface ProtectedRouteProps {
   element: ReactNode;
   roles?: string[];
@@ -39,14 +40,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         // Navigate based on userRole
         switch (userRole) {
           case "Admin":
-            navigate("/AdminPage");
-            break;
-          case "Customer":
-            navigate("/customer-page");
-            break;
-          case "Staff":
-            navigate("/StaffPage");
-            break;
+              navigate("/admin-page");
+              break;
+            case "Customer":
+              navigate("/customer-page");
+              break;
+            case "Manager":
+              navigate("/manager-page");
+              break;
+            case "Area-Manager":
+              navigate("/area-manager-page");
+              break;
+            case "Staff":
+              navigate("/staff-page");
+              break;
         }
       }
     }

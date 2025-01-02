@@ -17,8 +17,13 @@ import RatingRequestsPage from "./lib/cilent/homepage/components/survey-form/pag
 import SurveyRequestsPage from "./lib/cilent/homepage/components/survey-form/pages/SurveyRequestsPage";
 import HomePage from "./lib/cilent/homepage/pages/HomePage";
 import InfoPage from "./lib/cilent/infopage/pages/InfoPage";
+import ManagerPage from "./lib/manager/pages/ManagerPage";
+import AreaManagerPage from "./lib/area-manager/pages/AreaManagerPage";
 import { AuthProvider } from "./services/AuthContext";
 import ProtectedRoute from "./services/ProtectedRoute";
+import ManagerRequest from "./lib/manager/pages/ManagerRequest";
+import ManagerTask from "./lib/manager/pages/ManagerTask";
+import ManagerSurvey from "./lib/manager/pages/ManagerSurvey";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <SnackbarProvider
@@ -92,6 +97,11 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/OTP-page" element={<OTP_Page />} />
               <Route path="/reset-page" element={<ResetPassPage />} />
               <Route path="/info-page" element={<InfoPage />} />
+              <Route path="/manager-page" element={<ProtectedRoute element={<ManagerPage />} roles={["Manager"]} />} />
+              <Route path="/manager-request" element={<ProtectedRoute element={<ManagerRequest />} roles={["Manager"]} />} />
+              <Route path="/manager-task" element={<ProtectedRoute element={<ManagerTask />} roles={["Manager"]} />} />
+              <Route path="/manager-survey" element={<ProtectedRoute element={<ManagerSurvey />} roles={["Manager"]} />} />
+              <Route path="/area-manager-page" element={<ProtectedRoute element={<AreaManagerPage />} roles={["Area-Manager"]} />} />
             </Routes>
           </BrowserRouter>
         </ThemeProvider>

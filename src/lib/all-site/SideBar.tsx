@@ -11,6 +11,7 @@ interface NavItem {
   label: string;
   href: string;
   isActive?: boolean;
+  onClick?: () => void;
 }
 
 interface SidebarProps {
@@ -30,7 +31,12 @@ const Sidebar = ({
   defaultCollapsed = false,
   onLogout,
 }: SidebarProps) => {
-  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  // Đọc trạng thái thu gọn từ localStorage hoặc defaultCollapsed
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const savedState = localStorage.getItem("sidebarCollapsed");
+    return savedState ? JSON.parse(savedState) : defaultCollapsed;
+  });
+
   const { isDarkMode, toggleTheme } = useTheme();
   const [scrollPosition, setScrollPosition] = useState(0);
 
@@ -47,8 +53,11 @@ const Sidebar = ({
     };
   }, []);
 
+  // Hàm toggleCollapse để thay đổi trạng thái và lưu vào localStorage
   const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    localStorage.setItem("sidebarCollapsed", JSON.stringify(newState));
   };
 
   return (
@@ -56,7 +65,6 @@ const Sidebar = ({
       className={cn(
         "flex flex-col",
         isCollapsed ? "w-20" : "w-64",
-        // Đảm bảo animation cho width khi collapse/expand
         "transition-[width,transform] duration-300 ease-in-out",
         "border-r",
         "bg-primary-light dark:bg-primary-dark",
@@ -74,7 +82,6 @@ const Sidebar = ({
         className={cn(
           "flex items-center justify-between p-4 border-b border-border-light dark:border-border-dark",
           "sticky top-0 bg-primary-light dark:bg-primary-dark z-10",
-          // Thêm transition cho content bên trong
           "transition-all duration-300 ease-in-out"
         )}
       >
@@ -83,7 +90,6 @@ const Sidebar = ({
             "flex items-center gap-2",
             isCollapsed && "justify-center",
             "min-w-0",
-            // Thêm transition cho content bên trong
             "transition-all duration-300 ease-in-out"
           )}
         >
