@@ -7,5 +7,9 @@ export const API_ENDPOINTS = {
     VERIFY_OTP: "/api/Authen/verify-otp",
     RESET_PASS: "/api/Authen/reset-password",
   },
-  
+  ADMIN: {
+    GET_ROLES: '/api/roles',
+    GET_PROVINCES: "/api/provinces",
+    GET_DISTRICTS: "/api/districts",
+  },
 };

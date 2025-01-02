@@ -34,7 +34,7 @@ export default function AdminPage() {
       iconUrl: "https://cdn.lordicon.com/gznfrpfp.json",
     },
     {
-      title: "Total Employees",
+      title: "Total Customers",
       value: "2040",
       changeValue: "8.5%",
       changeText: "Up from yesterday",
@@ -42,23 +42,24 @@ export default function AdminPage() {
       iconUrl: "https://cdn.lordicon.com/fqbvgezn.json",
     },
     {
-      title: "Total Feedbacks",
+      title: "Total Rating-Requests",
       value: "560",
       changeValue: "8.5%",
-      changeText: "Up from yesterday",
+      changeText: "Down from yesterday",
       trend: "down",
       iconUrl: "https://cdn.lordicon.com/fozsorqm.json",
     },
     {
-      title: "Total Requests",
+      title: "Total Survey-Requests",
       value: "10293",
       changeValue: "8.5%",
-      changeText: "Up from yesterday",
+      changeText: "Down from yesterday",
       trend: "down",
       iconUrl: "https://cdn.lordicon.com/jdgfsfzr.json",
     },
     // Add more card configs...
   ];
+  console.log(localStorage.getItem("tokens"));
   return (
     <div className="flex min-h-screen">
       {/* Sidebar container */}

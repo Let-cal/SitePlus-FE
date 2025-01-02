@@ -5,7 +5,7 @@ import Heading from "@/lib/all-site/Heading";
 import { authService } from "@/services/auth.service";
 import { enqueueSnackbar } from "notistack";
 import * as React from "react";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 interface FormData {
   email: string;
@@ -28,23 +28,23 @@ const ResetPasswordForm: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  //   useEffect(() => {
-  //     const savedEmail = localStorage.getItem("email");
-  //     if (!savedEmail) {
-  //       // Redirect back to forgot password if no email is found
-  //       navigate("/forgot-password");
-  //       enqueueSnackbar("Plese enter your email again !!!", {
-  //         variant: "error",
-  //         preventDuplicate: true,
-  //         anchorOrigin: {
-  //           horizontal: "left",
-  //           vertical: "bottom",
-  //         },
-  //       });
-  //       return;
-  //     }
-  //     setFormData((prev) => ({ ...prev, email: savedEmail }));
-  //   }, [navigate]);
+    useEffect(() => {
+      const savedEmail = localStorage.getItem("email");
+      if (!savedEmail) {
+        // Redirect back to forgot password if no email is found
+        navigate("/forgot-password");
+        enqueueSnackbar("Plese enter your email again !!!", {
+          variant: "error",
+          preventDuplicate: true,
+          anchorOrigin: {
+            horizontal: "left",
+            vertical: "bottom",
+          },
+        });
+        return;
+      }
+      setFormData((prev) => ({ ...prev, email: savedEmail }));
+    }, [navigate]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Heading from "@/lib/all-site/Heading";
 import { authService } from "@/services/auth.service";
+import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +16,7 @@ interface FormErrors {
 }
 
 const ForgotForm: React.FC = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     email: "",
@@ -42,15 +44,28 @@ const ForgotForm: React.FC = () => {
       setIsLoading(true);
       try {
         await authService.forgotPassword(formData.email);
-        setSuccessMessage(
-          "Password reset instructions have been sent to your email"
-        );
-        setFormData({ email: "" });
+        setSuccessMessage("OTP code have been sent to your email");
         localStorage.setItem("email", formData.email);
+        enqueueSnackbar(successMessage, {
+          variant: "success",
+          preventDuplicate: true,
+          anchorOrigin: {
+            horizontal: "left",
+            vertical: "bottom",
+          },
+        });
         navigate("/OTP-page");
       } catch (error) {
         setErrors({
           email: error instanceof Error ? error.message : "An error occurred",
+        });
+        enqueueSnackbar(errors.email, {
+          variant: "error",
+          preventDuplicate: true,
+          anchorOrigin: {
+            horizontal: "left",
+            vertical: "bottom",
+          },
         });
       } finally {
         setIsLoading(false);
