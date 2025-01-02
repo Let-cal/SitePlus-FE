@@ -38,7 +38,7 @@ export function Header() {
           : "transform -translate-y-0"
       }`}
     >
-      <div className="container mx-auto px-4 py-3">
+      <div className="container mx-auto px-4 py-3 ">
         <div className="flex items-center w-full">
           <div className="flex items-center gap-4 justify-between w-full">
             <Link to="/" className="flex items-center w-24 h-10">

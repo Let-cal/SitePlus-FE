@@ -63,14 +63,14 @@ export function NavigationMenuDemo() {
 
               {/* Các ListItem */}
               <ListItem
-                href="/khao-sat-tim-mat-bang"
+                href="/survey-requests-page"
                 title="Khảo sát tìm mặt bằng"
               >
                 Site Plus phân tích, tư vấn và lập chiến lược mở điểm bán tiềm
                 năng, phù hợp với định hướng của doanh nghiệp.
               </ListItem>
               <ListItem
-                href="/khao-sat-mat-bang-cua-ban"
+                href="/rating-requests-page"
                 title="Khảo sát mặt bằng của bạn"
               >
                 Đánh giá chi tiết mặt bằng hiện tại để tìm ra các giải pháp cải

@@ -82,13 +82,13 @@ export function MobileNavigationMenu() {
                 <AccordionContent>
                   <div className="flex flex-col gap-2 pl-6">
                     <Link
-                      to="/khao-sat-tim-mat-bang"
+                      to="/survey-requests-page"
                       className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
                     >
                       Khảo sát tìm mặt bằng
                     </Link>
                     <Link
-                      to="/khao-sat-mat-bang-cua-ban"
+                      to="/rating-requests-pagen"
                       className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
                     >
                       Khảo sát mặt bằng của bạn

@@ -13,6 +13,8 @@ import { ThemeProvider } from "./lib/all-site/ThemeProvider";
 import OTP_Page from "./lib/auth/pages/OTP_Page";
 import ResetPassPage from "./lib/auth/pages/ResetPassPage";
 import ContactPage from "./lib/cilent/contact-page/pages/ContactPage";
+import RatingRequestsPage from "./lib/cilent/homepage/components/survey-form/pages/RatingRequestsPage";
+import SurveyRequestsPage from "./lib/cilent/homepage/components/survey-form/pages/SurveyRequestsPage";
 import HomePage from "./lib/cilent/homepage/pages/HomePage";
 import InfoPage from "./lib/cilent/infopage/pages/InfoPage";
 import { AuthProvider } from "./services/AuthContext";
@@ -62,6 +64,24 @@ createRoot(document.getElementById("root")!).render(
                   <ProtectedRoute
                     element={<AdminUserPage />}
                     roles={["Admin"]}
+                  />
+                }
+              />
+              <Route
+                path="/rating-requests-page"
+                element={
+                  <ProtectedRoute
+                    element={<RatingRequestsPage />}
+                    roles={["Customer"]}
+                  />
+                }
+              />
+              <Route
+                path="/survey-requests-page"
+                element={
+                  <ProtectedRoute
+                    element={<SurveyRequestsPage />}
+                    roles={["Customer"]}
                   />
                 }
               />
