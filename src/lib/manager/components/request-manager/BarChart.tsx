@@ -1,49 +1,48 @@
-import { useEffect, useState } from "react";
-import * as React from "react";
-import { Doughnut } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
   ArcElement,
-  Tooltip,
-  Legend,
+  Chart as ChartJS,
   ChartOptions,
+  Legend,
+  Tooltip,
 } from "chart.js";
+import * as React from "react";
+import { useEffect, useState } from "react";
+import { Doughnut } from "react-chartjs-2";
+import RequestsChart from "./RequestsChart";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const BarChart: React.FC = () => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    setTheme(isDark ? 'dark' : 'light');
+    const isDark = document.documentElement.classList.contains("dark");
+    setTheme(isDark ? "dark" : "light");
 
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          const isDark = document.documentElement.classList.contains('dark');
-          setTheme(isDark ? 'dark' : 'light');
+        if (mutation.attributeName === "class") {
+          const isDark = document.documentElement.classList.contains("dark");
+          setTheme(isDark ? "dark" : "light");
         }
       });
     });
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class'],
+      attributeFilter: ["class"],
     });
 
     return () => observer.disconnect();
   }, []);
 
-  // Define chart colors
   const chartColors = {
-    purple: '#A855F7',
-    green: '#22C55E',
+    purple: "#A855F7",
+    green: "#22C55E",
   };
 
-  // Doughnut chart data
   const doughnutData = {
-    labels: ["Tìm mặt bằng mới", "Đánh giá mặt bằng"],
+    labels: ["Finding new locations", "Evaluating locations"],
     datasets: [
       {
         label: "%",
@@ -60,34 +59,64 @@ const BarChart: React.FC = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "right" as const,
+        position: "bottom" as const, // Chuyển legend xuống dưới
+        align: "center" as const,
         labels: {
           font: {
-            size: 12,
+            size: 13,
             weight: 500,
           },
-          color: theme === 'dark' ? '#fff' : '#000',
-          padding: 20,
+          color: theme === "dark" ? "#fff" : "#64748b", // Màu text hiện đại hơn
+          padding: 16,
+          usePointStyle: true, // Sử dụng style point thay vì hình chữ nhật
+          pointStyle: "circle",
         },
       },
       tooltip: {
-        backgroundColor: theme === 'dark' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
-        titleColor: theme === 'dark' ? '#000' : '#fff',
-        bodyColor: theme === 'dark' ? '#000' : '#fff',
+        backgroundColor:
+          theme === "dark"
+            ? "rgba(30, 41, 59, 0.95)"
+            : "rgba(255, 255, 255, 0.95)",
+        titleColor: theme === "dark" ? "#fff" : "#1e293b",
+        bodyColor: theme === "dark" ? "#cbd5e1" : "#475569",
         padding: 12,
-        cornerRadius: 4,
-      }
+        cornerRadius: 8,
+        boxPadding: 6,
+        bodyFont: {
+          size: 13,
+        },
+        titleFont: {
+          size: 14,
+          weight: 600,
+        },
+        callbacks: {
+          label: (context) => `${context.label}: ${context.parsed}%`,
+        },
+      },
     },
-    cutout: "70%",
-    radius: "80%",
+    cutout: "75%", // Tăng kích thước lỗ trong
+    radius: "90%", // Tăng kích thước tổng thể
   };
 
   return (
-    <div className="w-full bg-background border border-border rounded-lg p-6 shadow-md" style={{ height: "500px" }}>
-      <h3 className="text-lg font-semibold mb-6 text-foreground">
-        Số lượng mỗi yêu cầu
-      </h3>
-      <Doughnut data={doughnutData} options={doughnutOptions} />
+    <div className="flex flex-row space-x-6">
+      <div className="w-[70%]">
+        <RequestsChart />
+      </div>
+
+      <div className="bg-background border border-border rounded-xl p-6 shadow-sm w-[30%] hover:shadow-md transition-shadow duration-200">
+        <div className="h-[350px] flex flex-col">
+          <h3 className="text-lg font-semibold mb-2 text-foreground">
+            Requests breakdown
+          </h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            Distribution of location requests
+          </p>
+          <div className="flex-1 flex items-center justify-center">
+            <Doughnut data={doughnutData} options={doughnutOptions} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

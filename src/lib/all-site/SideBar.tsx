@@ -171,7 +171,7 @@ const Sidebar = ({
           <LogOut size={20} />
           {!isCollapsed && (
             <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
-              Đăng xuất
+              Logout
             </span>
           )}
         </Button>
@@ -199,7 +199,7 @@ const Sidebar = ({
             <Sun size={16} />
             {!isCollapsed && (
               <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
-                Sáng
+                Light
               </span>
             )}
           </Button>
@@ -216,7 +216,7 @@ const Sidebar = ({
             <Moon size={16} />
             {!isCollapsed && (
               <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
-                Tối
+                Dark
               </span>
             )}
           </Button>
