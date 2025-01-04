@@ -28,21 +28,21 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, increase, icon, ico
 const StatsCards: React.FC = () => {
   const stats = [
     { 
-      title: "Tổng yêu cầu", 
+      title: "Total request", 
       value: "700", 
       increase: "+20.1%",
       icon: <MessageSquare />,
       iconColor: "text-blue-500"  
     },
     { 
-      title: "Khảo sát thành công", 
+      title: "Survey successful", 
       value: "520", 
       increase: "+10.1%",
       icon: <ClipboardCheck />,
       iconColor: "text-green-500"  
     },
     { 
-      title: "Dự án thành công", 
+      title: "Project success", 
       value: "300", 
       increase: "+12.2%",
       icon: <Briefcase />,

@@ -62,7 +62,7 @@ export default function ManagerRequest() {
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto"> 
           <div className="space-y-12 max-w-full"> 
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">YÊU CẦU</h2>
+            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">REQUEST</h2>
             <BarChart/>
             <RequestTable/> 
           </div>

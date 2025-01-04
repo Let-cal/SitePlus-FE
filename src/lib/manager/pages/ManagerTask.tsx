@@ -62,7 +62,7 @@ export default function ManagerTask() {
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto"> 
           <div className="space-y-12 max-w-full"> 
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">GIAO VIỆC</h2>
+            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">ASSIGN TASK</h2>
             <AssignTask/>
           </div>
         </div>

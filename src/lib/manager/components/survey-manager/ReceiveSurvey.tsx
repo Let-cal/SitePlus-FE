@@ -94,8 +94,8 @@ export default function ReceiveSurvey() {
         <Badge
           className={
             survey.status === "accepted"
-              ? "bg-emerald-500 hover:bg-emerald-600 w-24 justify-center"
-              : "bg-rose-500 hover:bg-rose-600 w-24 justify-center"
+              ? "bg-emerald-500 hover:bg-emerald-600 w-24 justify-center px-2 py-1.5"
+              : "bg-rose-500 hover:bg-rose-600 w-24 justify-center px-2 py-1.5"
           }
         >
           {survey.status === "accepted" ? "Chấp nhận" : "Từ chối"}

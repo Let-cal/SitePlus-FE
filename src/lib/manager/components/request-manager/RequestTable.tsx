@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown} from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -52,9 +52,9 @@ const processedData: Request[] = [
 type FilterStatus = "all" | "accepted" | "rejected";
 
 const filterLabels = {
-  all: "Tất cả",
-  accepted: "Chấp nhận",
-  rejected: "Từ chối"
+  all: "All",
+  accepted: "Accepted",
+  rejected: "Rejected",
 };
 
 export default function RequestTableWithTabs() {
@@ -65,7 +65,7 @@ export default function RequestTableWithTabs() {
 
   const getFilteredData = () => {
     if (activeTab === "new") return sampleData;
-    
+
     let data = processedData;
     if (filterStatus !== "all") {
       data = processedData.filter(item => item.status === filterStatus);
@@ -110,16 +110,16 @@ export default function RequestTableWithTabs() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="default" className="w-[90px] px-2 h-7 text-sm">
-            Xử lý
+            Handle
             <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onClick={() => handleAction(request.id, "accepted")}>
-            Chấp nhận
+            Accept
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleAction(request.id, "rejected")}>
-            Từ chối
+            Reject
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -137,13 +137,13 @@ export default function RequestTableWithTabs() {
               setFilterStatus("all");
             }}
           >
-            Yêu cầu mới
+            New requests
           </Button>
           <Button
             variant={activeTab === "processed" ? "default" : "outline"}
             onClick={() => setActiveTab("processed")}
           >
-            Đã xử lý
+            Handled
           </Button>
         </div>
 
@@ -158,13 +158,13 @@ export default function RequestTableWithTabs() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setFilterStatus("all")}>
-                Tất cả
+                All
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setFilterStatus("accepted")}>
-                Chấp nhận
+                Accepted
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setFilterStatus("rejected")}>
-                Từ chối
+                Rejected
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -174,12 +174,12 @@ export default function RequestTableWithTabs() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[20%]">Mã yêu cầu</TableHead>
-            <TableHead className="w-[20%]">Loại</TableHead>
-            <TableHead className="w-[15%]">Hạn yêu cầu</TableHead>
-            <TableHead className="w-[20%]">Khách hàng</TableHead>
-            <TableHead className="w-[15%]">Xem chi tiết</TableHead>
-            <TableHead className="w-[10%]">{activeTab === "new" ? "Hành động" : "Trạng thái"}</TableHead>
+            <TableHead className="w-[20%]">Request ID</TableHead>
+            <TableHead className="w-[20%]">Type</TableHead>
+            <TableHead className="w-[15%]">Deadline</TableHead>
+            <TableHead className="w-[20%]">Client</TableHead>
+            <TableHead className="w-[15%]">View detail</TableHead>
+            <TableHead className="w-[10%]">{activeTab === "new" ? "Action" : "Status"}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

@@ -61,18 +61,18 @@ const UserManagement = () => {
     <>
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">Quản lý khu vực</CardTitle>
+          <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">Area Manager</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[23%]">Tên</TableHead>
-                <TableHead className="w-[17%]">Khu vực</TableHead>
-                <TableHead className="w-[15%]">Thành phố</TableHead>
-                <TableHead className="w-[12%]">Số điện thoại</TableHead>
+                <TableHead className="w-[23%]">Name</TableHead>
+                <TableHead className="w-[17%]">Area</TableHead>
+                <TableHead className="w-[15%]">City</TableHead>
+                <TableHead className="w-[12%]">Phone</TableHead>
                 <TableHead className="w-[20%]">Email</TableHead>
-                <TableHead className="w-[10%]">Trạng thái</TableHead>
+                <TableHead className="w-[10%]">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -134,14 +134,14 @@ const UserManagement = () => {
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận thay đổi trạng thái</AlertDialogTitle>
+            <AlertDialogTitle>Confirm status change</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn thay đổi trạng thái của {selectedDistrict?.name} từ {selectedDistrict?.status} sang {selectedDistrict?.status === 'Active' ? 'Inactive' : 'Active'}?
+              Are you sure you want to change the status of {selectedDistrict?.name} from {selectedDistrict?.status} to {selectedDistrict?.status === 'Active' ? 'Inactive' : 'Active'}?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleStatusChange}>Xác nhận</AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleStatusChange}>Confirm</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -150,4 +150,3 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
-

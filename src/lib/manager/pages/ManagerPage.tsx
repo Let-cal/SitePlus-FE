@@ -14,23 +14,23 @@ export default function ManagerPage() {
   const managerItems = [
     {
       icon: <Home size={20} />,
-      label: "TRANG CHỦ",
+      label: "HOME",
       href: "/manager-page",
       isActive: true,
     },
     {
       icon: <FileText size={20} />,
-      label: "YÊU CẦU",
+      label: "REQUEST",
       href: "/manager-request",
     },
     {
       icon: <Briefcase size={20} />,
-      label: "GIAO VIỆC",
+      label: "ASSIGN TASK",
       href: "/manager-task",
     },
     {
       icon: <FileText size={20} />,
-      label: "NHẬN KHẢO SÁT",
+      label: "SURVEY",
       href: "/manager-survey",
     },
   ];
@@ -38,9 +38,9 @@ export default function ManagerPage() {
   const { handleLogout } = useAuth();
 
   return (
-    <div className="flex h-screen overflow-hidden"> {/* Thêm overflow-hidden và h-screen */}
-      {/* Sidebar container */}
-      <div className="flex-none"> {/* Đổi thành flex-none */}
+    <div className="flex h-screen overflow-hidden"> 
+      
+      <div className="flex-none"> 
         <Sidebar
           onLogout={handleLogout}
           logoHref={LogoSitePlus}
@@ -64,7 +64,7 @@ export default function ManagerPage() {
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">TRANG CHỦ</h2>
+            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">HOME</h2>
             <StatsCards />
             <DashboardCharts />
             <UserManagement />

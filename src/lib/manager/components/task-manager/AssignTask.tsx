@@ -108,12 +108,12 @@ export default function AssignTask() {
         <>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[15%]">Mã yêu cầu</TableHead>
-              <TableHead className="w-[15%]">Loại</TableHead>
-              <TableHead className="w-[14%]">Hạn yêu cầu</TableHead>
-              <TableHead className="w-[23%]">Khách hàng</TableHead>
-              <TableHead className="w-[23%]">Xem chi tiết</TableHead>
-              <TableHead className="w-[10%]">Hành động</TableHead>
+              <TableHead className="w-[15%]">Request ID</TableHead>
+              <TableHead className="w-[15%]">Type</TableHead>
+              <TableHead className="w-[14%]">Deadline</TableHead>
+              <TableHead className="w-[23%]">Client</TableHead>
+              <TableHead className="w-[23%]">View detail</TableHead>
+              <TableHead className="w-[10%]">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -124,8 +124,8 @@ export default function AssignTask() {
                 <TableCell>{task.date}</TableCell>
                 <TableCell>{task.customer}</TableCell>
                 <TableCell>
-                  <Button variant="link" className="text-blue-500 p-0">
-                    Xem chi tiết
+                  <Button variant="link" className="text-blue-500 p-0 underline">
+                    View detail
                   </Button>
                 </TableCell>
                 <TableCell>
@@ -142,12 +142,12 @@ export default function AssignTask() {
       <>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[15%]">Mã yêu cầu</TableHead>
-            <TableHead className="w-[15%]">Loại</TableHead>
-            <TableHead className="w-[14%]">Hạn yêu cầu</TableHead>
-            <TableHead className="w-[23%]">Khách hàng</TableHead>
-            <TableHead className="w-[23%]">Quản lý khu vực</TableHead>
-            <TableHead className="w-[10%]">Xem chi tiết</TableHead>
+            <TableHead className="w-[15%]">Request ID</TableHead>
+            <TableHead className="w-[15%]">Type</TableHead>
+            <TableHead className="w-[14%]">Deadline</TableHead>
+            <TableHead className="w-[23%]">Client</TableHead>
+            <TableHead className="w-[23%]">Area manager</TableHead>
+            <TableHead className="w-[10%]">View detail</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -161,8 +161,8 @@ export default function AssignTask() {
                 <ActionButton task={task} />
               </TableCell>
               <TableCell>
-                <Button variant="link" className="text-blue-500 p-0">
-                  Xem chi tiết
+                <Button variant="link" className="text-blue-500 p-0 underline">
+                  View detail
                 </Button>
               </TableCell>
             </TableRow>
@@ -179,13 +179,13 @@ export default function AssignTask() {
           variant={activeTab === "pending" ? "default" : "outline"}
           onClick={() => setActiveTab("pending")}
         >
-          Chờ giao
+          Wait for assign
         </Button>
         <Button
           variant={activeTab === "assigned" ? "default" : "outline"}
           onClick={() => setActiveTab("assigned")}
         >
-          Đã giao
+          Assigned
         </Button>
       </div>
 
