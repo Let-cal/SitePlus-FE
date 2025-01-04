@@ -32,6 +32,7 @@
     "chart.js": "^4.4.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.5.1",
     "framer-motion": "^11.15.0",
     "jwt-decode": "^4.0.0",
@@ -50,6 +51,7 @@
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@shadcn/ui": "^0.0.4",
+    "@types/date-fns": "^2.5.3",
     "@types/node": "^22.10.5",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",

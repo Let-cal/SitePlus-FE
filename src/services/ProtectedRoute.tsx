@@ -24,14 +24,23 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (!loading) {
       if (!isAuthenticated && !allowGuest) {
         navigate("/sign-in");
+        enqueueSnackbar("You do not have permission to access this page.", {
+          variant: "error",
+          preventDuplicate: true,
+          anchorOrigin: {
+            horizontal: "left",
+            vertical: "bottom",
+          },
+        });
+        setShowNotification(true);
       } else if (roles && !roles.includes(userRole!) && isAuthenticated) {
         if (!showNotification) {
           enqueueSnackbar("You do not have permission to access this page.", {
             variant: "error",
             preventDuplicate: true,
             anchorOrigin: {
-              horizontal: "right",
-              vertical: "top",
+              horizontal: "left",
+              vertical: "bottom",
             },
           });
           setShowNotification(true);
@@ -40,20 +49,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         // Navigate based on userRole
         switch (userRole) {
           case "Admin":
-              navigate("/admin-page");
-              break;
-            case "Customer":
-              navigate("/customer-page");
-              break;
-            case "Manager":
-              navigate("/manager-page");
-              break;
-            case "Area-Manager":
-              navigate("/area-manager-page");
-              break;
-            case "Staff":
-              navigate("/staff-page");
-              break;
+            navigate("/admin-page");
+            break;
+          case "Customer":
+            navigate("/customer-page");
+            break;
+          case "Manager":
+            navigate("/manager-page");
+            break;
+          case "Area-Manager":
+            navigate("/area-manager-page");
+            break;
+          case "Staff":
+            navigate("/staff-page");
+            break;
         }
       }
     }

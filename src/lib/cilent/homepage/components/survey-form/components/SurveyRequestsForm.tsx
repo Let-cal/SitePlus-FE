@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import * as React from "react";
 import { useState } from "react";
-const FindSpaceSurveyForm = () => {
+const SurveyRequestsForm = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -172,4 +172,4 @@ const FindSpaceSurveyForm = () => {
   );
 };
 
-export default FindSpaceSurveyForm;
+export default SurveyRequestsForm;

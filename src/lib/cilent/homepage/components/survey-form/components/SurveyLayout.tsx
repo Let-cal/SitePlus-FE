@@ -21,8 +21,8 @@ const SurveyLayout = ({ children }) => {
           <Button variant="outline" className="group relative overflow-hidden">
             <span className="relative z-10 group-hover:text-theme-primary-light">
               {isRatingPage
-                ? "Chuyển sang Khảo sát mặt bằng của bạn"
-                : "Chuyển sang Khảo sát tìm mặt bằng"}
+                ? "Chuyển sang Khảo sát tìm mặt bằng"
+                : "Chuyển sang Khảo sát mặt bằng của bạn"}
             </span>
             <div className="absolute inset-0 bg-theme-orange-500 transform -translate-x-full group-hover:translate-x-0 group-hover:bg-theme-orange-600 transition-transform duration-300" />
           </Button>

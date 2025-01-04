@@ -19,7 +19,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import * as React from "react";
 import { useState } from "react";
-const YourSpaceSurveyForm = () => {
+const RatingRequestForm = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -283,4 +283,4 @@ const YourSpaceSurveyForm = () => {
   );
 };
 
-export default YourSpaceSurveyForm;
+export default RatingRequestForm;
