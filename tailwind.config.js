@@ -7,6 +7,9 @@ module.exports = {
       screens: {
         xs: "400px",
       },
+      fontFamily: {
+        playwrite: ['"Playwrite AU SA"', "serif"], // Thêm font mới
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

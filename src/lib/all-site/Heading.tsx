@@ -1,5 +1,5 @@
+import { AnimatePresence, motion } from "framer-motion";
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface HeadingProps {
   text: string;
@@ -7,6 +7,7 @@ interface HeadingProps {
   size?: "sm" | "md" | "lg";
   color?: boolean;
   center?: boolean;
+  setColor?: string;
 }
 
 const Heading: React.FC<HeadingProps> = ({
@@ -15,6 +16,7 @@ const Heading: React.FC<HeadingProps> = ({
   size = "md",
   color = true,
   center = true,
+  setColor,
 }) => {
   const sizeClass =
     size === "sm"
@@ -33,7 +35,7 @@ const Heading: React.FC<HeadingProps> = ({
         transition={{ duration: 0.3 }}
         className={`${
           center ? "text-center" : ""
-        } font-extrabold tracking-tight text-theme-orange-500 dark:text-theme-primary-light ${
+        } ${setColor} font-extrabold tracking-tight dark:text-theme-primary-light ${
           hasMargin ? "mb-12" : ""
         } ${sizeClass} ${
           color ? "text-theme-orange-500" : "text-theme-text-light"

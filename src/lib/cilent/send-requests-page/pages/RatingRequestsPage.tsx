@@ -11,8 +11,9 @@ export default function RatingRequestsPage() {
       <div className="min-h-screen w-full flex flex-col space-y-4">
         <Header />
         <div className="flex-1 w-full px-4 lg:px-[124px] py-8">
-          <div className="max-w-4xl mx-auto w-full space-y-8">
+          <div className="max-w-4xl mx-auto w-full ">
             {/* Rating Request Form */}
+
             <RatingRequestForm />
           </div>
         </div>
