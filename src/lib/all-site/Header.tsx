@@ -1,11 +1,4 @@
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Bell } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
@@ -39,34 +32,29 @@ export function Header() {
       }`}
     >
       <div className="container mx-auto px-4 py-3 ">
-        <div className="flex items-center w-full">
-          <div className="flex items-center gap-4 justify-between w-full">
-            <Link to="/" className="flex items-center w-24 h-10">
+        <div className="flex items-center justify-between w-full relative">
+          {/* Logo */}
+          <div className="flex items-center w-24 h-10">
+            <Link to="/" className="flex items-center">
               <img src={logo} alt="SitePlus Logo" className="h-auto w-full" />
             </Link>
-            <MobileNavigationMenu />
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2">
             <NavigationMenuDemo />
           </div>
 
-          {/* Desktop Language and Auth */}
-          <div className="hidden lg:flex items-center gap-2">
-            <Select>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="vi">Tiếng Việt</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Desktop Auth */}
+          <div className="hidden lg:flex items-center gap-2 border-l-2 border-solid pl-3">
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5 text-gray-600" />
             </Button>
             {isAuthenticated ? <UserMenu /> : <AuthLinks />}
+          </div>
+          {/* Mobile Navigation */}
+          <div className="flex lg:hidden">
+            <MobileNavigationMenu />
           </div>
         </div>
       </div>

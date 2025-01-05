@@ -6,13 +6,6 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -44,27 +37,17 @@ export function MobileNavigationMenu() {
           </SheetTitle>
         </SheetHeader>
         <div className="flex flex-col gap-6 mt-6">
-          {/* Language and Notifications */}
-          <div className="flex items-center gap-2">
-            <Select>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="vi">Tiếng Việt</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Notifications */}
+          <div className="flex flex-row items-center gap-2">
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5 text-gray-600" />
             </Button>
-          </div>
 
-          {/* Auth Links */}
-          <div className="flex flex-col gap-2">
-            {isAuthenticated ? <UserMenu /> : <AuthLinks />}
+            {/* Auth Links */}
+            <div className="flex flex-col gap-2">
+              {isAuthenticated ? <UserMenu /> : <AuthLinks />}
+            </div>
           </div>
-
           {/* Navigation Links */}
           <nav className="flex flex-col gap-2">
             <Link

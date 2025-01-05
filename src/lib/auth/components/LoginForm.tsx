@@ -112,7 +112,7 @@ const LoginForm: React.FC = () => {
         if (axios.isAxiosError(error)) {
           // Handle Axios-specific error
           const errorMessages = error.response?.data?.["error-messages"] || [
-            "An error occurred. Please try again.",
+            "Wrong your email or password !!! Please try again.",
           ];
           errorMessages.forEach((message) => {
             enqueueSnackbar(`Error: ${message}`, {

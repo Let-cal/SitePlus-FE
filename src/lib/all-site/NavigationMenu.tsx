@@ -17,7 +17,7 @@ import logo from "/images/logo-site-plus/logo.png";
 export function NavigationMenuDemo() {
   return (
     <NavigationMenu>
-      <NavigationMenuList className="grid  gap-4 sm:grid-cols-1 md:grid-cols-5 md:gap-4 lg:flex lg:space-x-4 lg:pr-6">
+      <NavigationMenuList className="grid  gap-4 sm:grid-cols-1 md:grid-cols-5 md:gap-4 lg:flex lg:space-x-4 lg:pr-[9.5rem]">
         <NavigationMenuItem>
           <Link to="/">
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
