@@ -18,6 +18,13 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown } from "lucide-react";
 import { SquarePen } from "lucide-react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -83,7 +90,7 @@ const assignedTasks: Task[] = [
 type FilterStatus = "all" | "done" | "in-progress";
 
 const filterLabels = {
-  all: "All",
+  all: "All Status",
   done: "Done",
   "in-progress": "In Progress",
 };
@@ -256,24 +263,21 @@ export default function AssignTask() {
         </div>
 
         {activeTab === "assigned" && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
-                {filterLabels[filterStatus]}
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+          <Select
+            value={filterStatus}
+            onValueChange={(value: FilterStatus) => setFilterStatus(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
               {Object.entries(filterLabels).map(([key, label]) => (
-                <DropdownMenuItem
-                  key={key}
-                  onClick={() => setFilterStatus(key as FilterStatus)}
-                >
+                <SelectItem key={key} value={key}>
                   {label}
-                </DropdownMenuItem>
+                </SelectItem>
               ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </SelectContent>
+          </Select>
         )}
       </div>
 

@@ -15,8 +15,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown } from "lucide-react";
 import { SquarePen } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Pagination,
   PaginationContent,
@@ -83,7 +89,7 @@ const assignedTasks: Task[] = [
 type FilterStatus = "all" | "done" | "in-progress";
 
 const filterLabels = {
-  all: "All",
+  all: "All Status",
   done: "Done",
   "in-progress": "In Progress",
 };
@@ -93,13 +99,13 @@ const StatusBadge = ({ status }: { status: Task['status'] }) => {
   
   if (status === 'done') {
     return (
-      <Badge className={`${baseClasses} bg-green-400 text-green-800 hover:bg-green-100`}>
+      <Badge className={`${baseClasses} bg-green-400 hover:bg-green-600`}>
         Done
       </Badge>
     );
   }
   return (
-    <Badge className={`${baseClasses} bg-yellow-100 text-yellow-800 hover:bg-yellow-100`}>
+    <Badge className={`${baseClasses} bg-yellow-400 hover:bg-yellow-600`}>
       In Progress
     </Badge>
   );
@@ -256,24 +262,21 @@ export default function AssignTask() {
         </div>
 
         {activeTab === "assigned" && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
-                {filterLabels[filterStatus]}
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+          <Select
+            value={filterStatus}
+            onValueChange={(value: FilterStatus) => setFilterStatus(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
               {Object.entries(filterLabels).map(([key, label]) => (
-                <DropdownMenuItem
-                  key={key}
-                  onClick={() => setFilterStatus(key as FilterStatus)}
-                >
+                <SelectItem key={key} value={key}>
                   {label}
-                </DropdownMenuItem>
+                </SelectItem>
               ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </SelectContent>
+          </Select>
         )}
       </div>
 

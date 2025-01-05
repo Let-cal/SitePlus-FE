@@ -42,7 +42,7 @@ export default function AreaManagerTask() {
         <Sidebar
           onLogout={handleLogout}
           logoHref={LogoSitePlus}
-          title="Manager"
+          title="Area Manager"
           mainNavItems={areaManagerItems}
         />
       </div>
@@ -50,7 +50,7 @@ export default function AreaManagerTask() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          defaultLocation="Quận 7 - TPHCM"
+          defaultLocation="Quận 9 - TPHCM"
           onSearch={() => {
             // Xử lý tìm kiếm
           }}

@@ -17,6 +17,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
@@ -52,7 +59,7 @@ const processedData: Request[] = [
 type FilterStatus = "all" | "accepted" | "rejected";
 
 const filterLabels = {
-  all: "All",
+  all: "All Status",
   accepted: "Accepted",
   rejected: "Rejected",
 };
@@ -73,7 +80,6 @@ export default function RequestTableWithTabs() {
     return data;
   };
 
-  // Reset to page 1 when filter changes
   React.useEffect(() => {
     setCurrentPage(1);
   }, [filterStatus, activeTab]);
@@ -148,26 +154,21 @@ export default function RequestTableWithTabs() {
         </div>
 
         {activeTab === "processed" && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
-                {/* <Filter className="mr-2 h-4 w-4" /> */}
-                {filterLabels[filterStatus]}
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setFilterStatus("all")}>
-                All
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterStatus("accepted")}>
-                Accepted
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterStatus("rejected")}>
-                Rejected
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Select
+            value={filterStatus}
+            onValueChange={(value: FilterStatus) => setFilterStatus(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(filterLabels).map(([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </div>
 

@@ -4,9 +4,8 @@ import * as React from "react";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
-import Cards from "../components/home-am/Cards";
 import AreaMap from "../components/home-am/Map";
-import StaffManagement from "../components/home-am/StaffManagement";
+import SurveyFromStaff from "../components/survey-am/SurveyFromStaff";
 
 
 export default function AreaManagerSurvey() {
@@ -51,7 +50,7 @@ export default function AreaManagerSurvey() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          defaultLocation="Quận 7 - TPHCM"
+          defaultLocation="Quận 9 - TPHCM"
           onSearch={() => {
             // Xử lý tìm kiếm
           }}
@@ -64,9 +63,8 @@ export default function AreaManagerSurvey() {
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
             <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">RECEIVE SURVEY</h2>
-            <Cards />
             <AreaMap/>
-            <StaffManagement />
+            <SurveyFromStaff/>
           </div>
         </div>
       </div>

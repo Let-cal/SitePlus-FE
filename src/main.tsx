@@ -26,6 +26,7 @@ import ManagerTask from "./lib/manager/pages/ManagerTask";
 import ManagerSurvey from "./lib/manager/pages/ManagerSurvey";
 import AreaManagerTask from "./lib/area-manager/pages/AreaManagerTask";
 import AreaManagerSurvey from "./lib/area-manager/pages/AreaManagerSurvey";
+import AreaManagerSend from "./lib/area-manager/pages/AreaManagerSend";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <SnackbarProvider
@@ -106,6 +107,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/area-manager-page" element={<ProtectedRoute element={<AreaManagerPage />} roles={["Area-Manager"]} />} />
               <Route path="/area-manager-task" element={<ProtectedRoute element={<AreaManagerTask />} roles={["Area-Manager"]} />} />
               <Route path="/area-manager-survey" element={<ProtectedRoute element={<AreaManagerSurvey />} roles={["Area-Manager"]} />} />
+              <Route path="/area-manager-send" element={<ProtectedRoute element={<AreaManagerSend />} roles={["Area-Manager"]} />} />
 
             </Routes>
           </BrowserRouter>

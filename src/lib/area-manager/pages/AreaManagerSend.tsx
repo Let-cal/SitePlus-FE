@@ -4,18 +4,16 @@ import * as React from "react";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
-import Cards from "../components/home-am/Cards";
 import AreaMap from "../components/home-am/Map";
-import StaffManagement from "../components/home-am/StaffManagement";
+import SendToManager from "../components/send-am/SendToManager";
 
 
-export default function AreaManagerPage() {
+export default function AreaManagerSend() {
   const areaManagerItems = [
     {
       icon: <Home size={20} />,
       label: "HOME",
       href: "/area-manager-page",
-      isActive: true,
     },
     {
       icon: <Briefcase size={20} />,
@@ -31,6 +29,7 @@ export default function AreaManagerPage() {
       icon: <Send size={20} />,
       label: "SEND TO MANAGER",
       href: "/area-manager-send",
+      isActive: true,
     },
   ];
 
@@ -63,10 +62,9 @@ export default function AreaManagerPage() {
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">HOME</h2>
-            <Cards />
+            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">SEND TO MANAGER</h2>
             <AreaMap/>
-            <StaffManagement />
+            <SendToManager/>
           </div>
         </div>
       </div>

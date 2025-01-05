@@ -35,24 +35,24 @@ import {
 interface Survey {
   id: string;
   type: string;
-  area: string;
+  client: string;
   staff: string;
   status?: "accepted" | "rejected";
 }
 
 const sampleData: Survey[] = [
-  { id: "AB123", type: "Tìm mặt bằng", area: "Trần Văn C", staff: "Nguyễn Văn A" },
-  { id: "CD123", type: "Đánh giá", area: "Lê Minh H", staff: "Nguyễn Thị B" },
-  { id: "AB535", type: "Tìm mặt bằng", area: "Nguyễn Quốc K", staff: "Trần Thanh C" },
-  { id: "AB610", type: "Tìm mặt bằng", area: "Lý Minh D", staff: "Lê Minh D" },
-  { id: "CD892", type: "Đánh giá", area: "Đỗ Hoàng P", staff: "Hồ Ngọc E" },
+  { id: "AB123", type: "Tìm mặt bằng", client: "Công ty ABC", staff: "Nguyễn Văn A" },
+  { id: "CD123", type: "Đánh giá", client: "Công ty XYZ", staff: "Nguyễn Thị B" },
+  { id: "AB535", type: "Tìm mặt bằng", client: "Công ty DEF", staff: "Trần Thanh C" },
+  { id: "AB610", type: "Tìm mặt bằng", client: "Công ty GHI", staff: "Lê Minh D" },
+  { id: "CD892", type: "Đánh giá", client: "Công ty JKL", staff: "Hồ Ngọc E" },
 ];
 
 const processedData: Survey[] = [
-  { id: "AB129", type: "Tìm mặt bằng", area: "Trần Văn C", staff: "Phạm Văn F", status: "rejected" },
-  { id: "CD125", type: "Đánh giá", area: "Đỗ Minh B", staff: "Trần Thị G", status: "accepted" },
-  { id: "AB126", type: "Tìm mặt bằng", area: "Hoàng Ngọc D", staff: "Lê Văn H", status: "accepted" },
-  { id: "CD127", type: "Đánh giá", area: "Nguyễn Khanh T", staff: "Nguyễn Thị I", status: "rejected" },
+  { id: "AB129", type: "Tìm mặt bằng", client: "Công ty MNO", staff: "Phạm Văn F", status: "rejected" },
+  { id: "CD125", type: "Đánh giá", client: "Công ty PQR", staff: "Trần Thị G", status: "accepted" },
+  { id: "AB126", type: "Tìm mặt bằng", client: "Công ty STU", staff: "Lê Văn H", status: "accepted" },
+  { id: "CD127", type: "Đánh giá", client: "Công ty VWX", staff: "Nguyễn Thị I", status: "rejected" },
 ];
 
 type FilterStatus = "all" | "accepted" | "rejected";
@@ -63,7 +63,7 @@ const filterLabels = {
   rejected: "Rejected",
 };
 
-export default function ReceiveSurvey() {
+export default function SurveyFromStaff() {
   const [activeTab, setActiveTab] = React.useState<"new" | "processed">("new");
   const [filterStatus, setFilterStatus] = React.useState<FilterStatus>("all");
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -120,10 +120,10 @@ export default function ReceiveSurvey() {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onClick={() => handleAction(survey.id, "accepted")}>
-            Chấp nhận
+            Acccepted
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleAction(survey.id, "rejected")}>
-            Từ chối
+            Rejected
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -175,7 +175,7 @@ export default function ReceiveSurvey() {
           <TableRow>
             <TableHead className="w-[15%]">Request ID</TableHead>
             <TableHead className="w-[15%]">Type</TableHead>
-            <TableHead className="w-[23%]">Area Manager</TableHead>
+            <TableHead className="w-[23%]">Client</TableHead>
             <TableHead className="w-[23%]">Staff</TableHead>
             <TableHead className="w-[14%]">View detail</TableHead>
             <TableHead className="w-[10%]">{activeTab === "new" ? "Action" : "Status"}</TableHead>
@@ -186,7 +186,7 @@ export default function ReceiveSurvey() {
             <TableRow key={survey.id}>
               <TableCell>{survey.id}</TableCell>
               <TableCell>{survey.type}</TableCell>
-              <TableCell>{survey.area}</TableCell>
+              <TableCell>{survey.client}</TableCell>
               <TableCell>{survey.staff}</TableCell>
               <TableCell>
                 <Button variant="link" className="text-blue-500 p-0">
