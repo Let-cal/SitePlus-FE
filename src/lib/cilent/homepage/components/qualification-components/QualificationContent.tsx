@@ -43,7 +43,15 @@ const qualificationData = {
     backgroundColor: "#FF7426",
   },
 };
-
-export default function QualificationContent() {
-  return <QualificationProbs {...qualificationData} />;
+interface QualificationContentProps {
+  className?: string;
+}
+export default function QualificationContent({
+  className,
+}: QualificationContentProps) {
+  return (
+    <div id="qualification-content" className={className}>
+      <QualificationProbs {...qualificationData} />
+    </div>
+  );
 }

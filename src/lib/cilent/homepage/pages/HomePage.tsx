@@ -25,19 +25,24 @@ export default function HomePage() {
 
         <ServiceContent />
         <Divider />
-        <h1 className="flex justify-center scroll-m-20 text-3xl font-extrabold tracking-tight lg:text-5xl text-theme-orange-500">
+        <h1
+          id="project-carousel"
+          className="flex justify-center scroll-m-20 text-3xl font-extrabold tracking-tight lg:text-5xl text-theme-orange-500"
+        >
           Các Dự Án Site Plus tham gia
         </h1>
         <CarouselList />
         <Divider />
+
         <QualificationContent />
       </div>
       <div className="px-[124px]">
         {" "}
         <Divider />
       </div>
+      <div id="testimonial-carousel"></div>
       <TestimonialCarousel />
-      <div className="px-[124px]">
+      <div id="case-study" className="px-[124px]">
         {" "}
         <Divider />
       </div>

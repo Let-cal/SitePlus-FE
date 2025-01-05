@@ -2,14 +2,17 @@ import { Button } from "@/components/ui/button";
 import * as React from "react";
 
 import BackgroundMain from "/images/client/homepage/imageMainContent.png";
-export default function MainContent() {
+interface MainContentProps {
+  className?: string;
+}
+export default function MainContent({ className }: MainContentProps) {
   return (
-    <div>
+    <div id="main-content" className={className}>
       <div className="flex flex-col py-[164px] gap-4 ">
         {" "}
         <div className="grid lg:grid-cols-2 justify-between  gap-[89px]">
           {/* text */}
-          <div className="flex flex-col gap-[47px] md:w-full sm:w-full xs:w-full xs:p-6">
+          <div className="flex flex-col space-y-9 md:w-full sm:w-full xs:w-full xs:p-6">
             <h3 className="scroll-m-20 text-2xl font-bold tracking-tight">
               SITE PLUS
             </h3>
@@ -25,6 +28,15 @@ export default function MainContent() {
               Đơn vị tiên phong trong lĩnh vực tư vấn phát triển điểm bán tại
               Việt Nam.
             </h3>
+            <div className="flex ">
+              {/* {" buttons"} */}
+              <Button
+                type="submit"
+                className="lg:w-[40%]  items-center bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                LIÊN HỆ NGAY
+              </Button>
+            </div>
           </div>
           {/* image */}
           <div className="relative lg:h-[400px] lg:block hidden md:block overflow-hidden rounded-lg ">
@@ -34,15 +46,6 @@ export default function MainContent() {
               className="object-cover w-full h-full"
             />
           </div>
-        </div>
-        <div className="flex justify-center">
-          {/* {" buttons"} */}
-          <Button
-            type="submit"
-            className="lg:w-[20%]  items-center bg-orange-500 hover:bg-orange-600 text-white"
-          >
-            LIÊN HỆ NGAY
-          </Button>
         </div>
       </div>
     </div>

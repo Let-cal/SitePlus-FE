@@ -12,6 +12,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import HomePageNav from "./HomePageNav";
 import logo from "/images/logo-site-plus/logo.png";
 export function NavigationMenuDemo() {
   return (
@@ -20,7 +21,7 @@ export function NavigationMenuDemo() {
         <NavigationMenuItem>
           <Link to="/">
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Trang chủ
+              <HomePageNav />
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>

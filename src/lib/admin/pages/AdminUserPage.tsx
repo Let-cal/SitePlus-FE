@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import Header from "@/lib/all-site/HeaderOtherRole";
-import Heading from "@/lib/all-site/Heading";
 import Sidebar from "@/lib/all-site/SideBar";
 import { Home, User } from "lucide-react";
 import * as React from "react";
@@ -17,12 +16,12 @@ export default function AdminUserPage() {
   const adminItems = [
     {
       icon: <Home size={20} />,
-      label: "Home",
+      label: "HOME",
       href: "/admin-page",
     },
     {
       icon: <User size={20} />,
-      label: "Users",
+      label: "USERS",
       href: "/admin-users",
       isActive: true,
     },
@@ -40,18 +39,12 @@ export default function AdminUserPage() {
       <div className="flex-grow flex flex-col">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          onSearch={() => {}}
+          title="User Management" // Truyền title vào đây
           onNotificationClick={() => {}}
         />
 
         <div className="flex-grow p-6 space-y-6">
           <div className="flex flex-row justify-between">
-            <Heading
-              text="User Management"
-              color={false}
-              size="sm"
-              center={false}
-            />
             <Button
               className="lg:w-[15%] items-center"
               onClick={() => setIsDialogOpen(true)}

@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/carousel";
 import * as React from "react";
 import Heading from "../../../all-site/Heading";
+
 const testimonials = [
   {
     image:
@@ -55,15 +56,15 @@ export function TestimonialCarousel() {
                       </div>
                     </div>
 
-                    <blockquote className="text-lg md:text-xl text-[#020403] text-center mb-6 max-w-2xl mx-auto leading-relaxed">
+                    <blockquote className="text-lg md:text-xl text-[#020403] text-center mb-6 max-w-2xl mx-auto leading-relaxed select-none">
                       {testimonial.content}
                     </blockquote>
 
                     <div className="text-center">
-                      <h3 className="text-xl md:text-2xl font-medium text-[#020403] mb-2">
+                      <h3 className="text-xl md:text-2xl font-medium text-[#020403] mb-2 select-none">
                         {testimonial.name}
                       </h3>
-                      <p className="text-base md:text-lg text-[#020403] opacity-80">
+                      <p className="text-base md:text-lg text-[#020403] opacity-80 select-none">
                         {testimonial.position}
                       </p>
                     </div>

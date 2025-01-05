@@ -1,12 +1,11 @@
 import Sidebar from "@/lib/all-site/SideBar";
-import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck, Send } from "lucide-react";
+import { Briefcase, FileText, Home, Send } from "lucide-react";
 import * as React from "react";
-import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
 import AreaMap from "../components/home-am/Map";
 import SurveyFromStaff from "../components/survey-am/SurveyFromStaff";
-
+import LogoSitePlus from "/icons/logo-SitePlus.svg";
 
 export default function AreaManagerSurvey() {
   const areaManagerItems = [
@@ -28,7 +27,7 @@ export default function AreaManagerSurvey() {
     },
     {
       icon: <Send size={20} />,
-      label: "SEND TO MANAGER",
+      label: "SEND REPORTS",
       href: "/area-manager-send",
     },
   ];
@@ -37,7 +36,6 @@ export default function AreaManagerSurvey() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-
       <div className="flex-none">
         <Sidebar
           onLogout={handleLogout}
@@ -50,21 +48,16 @@ export default function AreaManagerSurvey() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          defaultLocation="Quận 9 - TPHCM"
-          onSearch={() => {
-            // Xử lý tìm kiếm
-          }}
-          onNotificationClick={() => {
-            // Xử lý khi click vào notification
-          }}
+          defaultLocation="Quận 7 - TPHCM"
+          title="Receive Surveys" // Truyền title vào đây
+          onNotificationClick={() => {}}
         />
 
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">RECEIVE SURVEY</h2>
-            <AreaMap/>
-            <SurveyFromStaff/>
+            <AreaMap />
+            <SurveyFromStaff />
           </div>
         </div>
       </div>

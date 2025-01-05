@@ -1,5 +1,4 @@
 import Header from "@/lib/all-site/HeaderOtherRole";
-import Heading from "@/lib/all-site/Heading";
 import Sidebar from "@/lib/all-site/SideBar";
 import { Home, User } from "lucide-react";
 import * as React from "react";
@@ -14,13 +13,13 @@ export default function AdminPage() {
   const adminItems = [
     {
       icon: <Home size={20} />,
-      label: "Home",
+      label: "HOME",
       href: "/admin-page",
       isActive: true,
     },
     {
       icon: <User size={20} />,
-      label: "Users",
+      label: "USERS",
       href: "/admin-users",
     },
   ];
@@ -75,16 +74,10 @@ export default function AdminPage() {
       <div className="flex-grow flex flex-col">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          onSearch={() => {
-            // Xử lý tìm kiếm
-          }}
-          onNotificationClick={() => {
-            // Xử lý khi click vào notification
-          }}
+          title="Dashboard" // Truyền title vào đây
+          onNotificationClick={() => {}}
         />
         <div className="flex-grow p-6 space-y-6">
-          <Heading text="Dashboard" color={false} size="sm" center={false} />
-
           <StatCardGrid cards={cards} />
           <UsageChart />
           <RequestTable />

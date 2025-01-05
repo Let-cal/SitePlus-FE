@@ -13,7 +13,7 @@ const SurveyLayout = ({ children }) => {
       <div className="fixed right-[-100px] top-52 w-[400px] h-[400px] rounded-full bg-theme-orange-500/55 pointer-events-none z-0" />
 
       {/* Switch button - Position relative to viewport with lower z-index than header */}
-      <div className="fixed top-24 right-24 z-40">
+      <div className="fixed top-36 right-24 z-40">
         <Link
           to={isRatingPage ? "/survey-requests-page" : "/rating-requests-page"}
           className="inline-flex items-center justify-center"

@@ -11,8 +11,10 @@ import BoxContent from "./BoxContent";
 import IconService2 from "/icons/Base feature icon (1).svg";
 import IconService3 from "/icons/Base feature icon (2).svg";
 import IconService1 from "/icons/Base feature icon.svg";
-
-export default function ServiceContent() {
+interface ServiceContentProps {
+  className?: string;
+}
+export default function ServiceContent({ className }: ServiceContentProps) {
   const services = [
     {
       iconUrl: IconService1,
@@ -44,43 +46,45 @@ export default function ServiceContent() {
   ];
 
   return (
-    <div className="flex flex-col gap-[26px] pb-[20px] justify-center items-center px-4">
-      <h3 className="scroll-m-20 text-2xl font-bold tracking-tight">
-        TÌM HIỂU NGAY
-      </h3>
-      <Heading text="Dịch Vụ Của Site Plus" />
+    <div id="service-content" className={className}>
+      <div className="flex flex-col gap-[26px] pb-[20px] justify-center items-center px-4">
+        <h3 className="scroll-m-20 text-2xl font-bold tracking-tight">
+          TÌM HIỂU NGAY
+        </h3>
+        <Heading text="Dịch Vụ Của Site Plus" />
 
-      {/* Desktop view */}
-      <div className="hidden lg:flex lg:flex-row lg:space-x-4 lg:h-[420.667px]">
-        {services.map((service, index) => (
-          <BoxContent
-            key={index}
-            iconUrl={service.iconUrl}
-            title={service.title}
-            description={service.description}
-            bulletPoints={service.bulletPoints}
-          />
-        ))}
-      </div>
+        {/* Desktop view */}
+        <div className="hidden lg:flex lg:flex-row lg:space-x-4 lg:h-[420.667px]">
+          {services.map((service, index) => (
+            <BoxContent
+              key={index}
+              iconUrl={service.iconUrl}
+              title={service.title}
+              description={service.description}
+              bulletPoints={service.bulletPoints}
+            />
+          ))}
+        </div>
 
-      {/* Mobile/Tablet view with Carousel */}
-      <div className="lg:hidden w-full max-w-[370.667px] relative px-8">
-        <Carousel className="w-full">
-          <CarouselContent>
-            {services.map((service, index) => (
-              <CarouselItem key={index}>
-                <BoxContent
-                  iconUrl={service.iconUrl}
-                  title={service.title}
-                  description={service.description}
-                  bulletPoints={service.bulletPoints}
-                />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="absolute left-[-32px] flex" />
-          <CarouselNext className="absolute right-[-32px] flex" />
-        </Carousel>
+        {/* Mobile/Tablet view with Carousel */}
+        <div className="lg:hidden w-full max-w-[370.667px] relative px-8">
+          <Carousel className="w-full">
+            <CarouselContent>
+              {services.map((service, index) => (
+                <CarouselItem key={index}>
+                  <BoxContent
+                    iconUrl={service.iconUrl}
+                    title={service.title}
+                    description={service.description}
+                    bulletPoints={service.bulletPoints}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="absolute left-[-32px] flex" />
+            <CarouselNext className="absolute right-[-32px] flex" />
+          </Carousel>
+        </div>
       </div>
     </div>
   );

@@ -1,17 +1,17 @@
-import { Bell, MapPin, Search } from "lucide-react";
+import { Bell, MapPin } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
+import Heading from "./Heading";
 
 const Header = ({
   defaultLocation = "Quận 9 - TPHCM",
-
-  onSearch,
+  title,
   onNotificationClick,
   className = "",
 }) => {
   const [userName, setUserName] = useState("");
   const [userRole, setUserRole] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+
   const [notificationCount] = useState(6);
 
   useEffect(() => {
@@ -22,11 +22,6 @@ const Header = ({
     if (storedName) setUserName(storedName);
     if (storedRole) setUserRole(storedRole);
   }, []);
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    if (onSearch) onSearch(e.target.value);
-  };
 
   // Render phần location dựa theo role
   const renderLocation = () => {
@@ -54,22 +49,16 @@ const Header = ({
 
   return (
     <div
-      className={`flex w-full  p-2.5 justify-between items-center mx-auto ${className}`}
+      className={`flex w-full p-2.5 justify-between items-center mx-auto pb-[18px] border-b border-border-light dark:border-border-dark${className}`}
     >
-      {/* Search Input */}
-      <div className="relative w-[388px]">
-        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-muted-foreground" />
-        </div>
-        <input
-          type="text"
-          className="w-full h-[38px] pl-10 pr-4 bg-theme-secondary-light dark:bg-theme-secondary-dark 
-                     text-theme-text-light dark:text-theme-text-dark
-                     rounded-[19px] border-[0.6px] border-theme-border-light dark:border-theme-border-dark 
-                     focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Tìm kiếm..."
-          value={searchTerm}
-          onChange={handleSearchChange}
+      {/* Heading */}
+      <div className="w-[388px]">
+        <Heading
+          text={title}
+          color={false}
+          size="sm"
+          center={false}
+          hasMargin={false} // Thêm prop này để không có margin bottom
         />
       </div>
 

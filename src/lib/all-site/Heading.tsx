@@ -1,10 +1,11 @@
 import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface HeadingProps {
-  text: string; // Nội dung sẽ hiển thị trong heading
-  hasMargin?: boolean; // Điều chỉnh việc thêm class mb-12
-  size?: "sm" | "md" | "lg"; // Kích cỡ chữ: sm, md, lg
-  color?: boolean; //
+  text: string;
+  hasMargin?: boolean;
+  size?: "sm" | "md" | "lg";
+  color?: boolean;
   center?: boolean;
 }
 
@@ -15,26 +16,32 @@ const Heading: React.FC<HeadingProps> = ({
   color = true,
   center = true,
 }) => {
-  // Xác định class kích cỡ chữ dựa vào size
   const sizeClass =
     size === "sm"
       ? "text-xl md:text-2xl lg:text-3xl"
       : size === "lg"
       ? "text-4xl md:text-5xl lg:text-6xl"
-      : "text-3xl md:text-4xl lg:text-5xl"; // Mặc định là "md"
+      : "text-3xl md:text-4xl lg:text-5xl";
 
   return (
-    <h2
-      className={`${
-        center ? "text-center" : ""
-      } font-extrabold tracking-tight text-theme-orange-500  dark:text-theme-primary-light ${
-        hasMargin ? "mb-12" : ""
-      } ${sizeClass} ${
-        color ? "text-theme-orange-500" : " text-theme-text-light"
-      }`}
-    >
-      {text}
-    </h2>
+    <AnimatePresence mode="wait">
+      <motion.h2
+        key={text} // Key thay đổi sẽ trigger animation
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.3 }}
+        className={`${
+          center ? "text-center" : ""
+        } font-extrabold tracking-tight text-theme-orange-500 dark:text-theme-primary-light ${
+          hasMargin ? "mb-12" : ""
+        } ${sizeClass} ${
+          color ? "text-theme-orange-500" : "text-theme-text-light"
+        }`}
+      >
+        {text}
+      </motion.h2>
+    </AnimatePresence>
   );
 };
 
