@@ -100,7 +100,7 @@ export default function RequestTableWithTabs() {
                 : "bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-700 w-24 justify-center px-2 py-1.5"
             }
           >
-            {request.status === "accepted" ? "Chấp nhận" : "Từ chối"}
+            {request.status === "accepted" ? "Accepted" : "Rejected"}
           </Badge>
         </div>
       );
@@ -191,7 +191,7 @@ export default function RequestTableWithTabs() {
               <TableCell>{request.customer}</TableCell>
               <TableCell>
                 <Button variant="link" className="text-blue-500 p-0">
-                  Xem chi tiết
+                  View detail
                 </Button>
               </TableCell>
               <TableCell>

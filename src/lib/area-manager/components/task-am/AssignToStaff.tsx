@@ -31,7 +31,7 @@ interface Task {
   type: string;
   date: string;
   customer: string;
-  areaManager?: string;
+  staff?: string;
   status?: 'done' | 'in-progress';
 }
 
@@ -51,7 +51,7 @@ const assignedTasks: Task[] = [
     type: "Tìm mặt bằng", 
     date: "01/02/2025", 
     customer: "Nguyễn Văn A",
-    areaManager: "Trần Quản Lý",
+    staff: "Trần Nhân Viên",
     status: 'done'
   },
   { 
@@ -59,7 +59,7 @@ const assignedTasks: Task[] = [
     type: "Đánh giá", 
     date: "31/12/2024", 
     customer: "Nguyễn Thị B",
-    areaManager: "Lê Quản Lý",
+    staff: "Lê Nhân Viên",
     status: 'in-progress'
   },
   { 
@@ -67,7 +67,7 @@ const assignedTasks: Task[] = [
     type: "Tìm mặt bằng", 
     date: "25/12/2024", 
     customer: "Trần Thanh C",
-    areaManager: "Phạm Quản Lý",
+    staff: "Phạm Nhân Viên",
     status: 'in-progress'
   },
   { 
@@ -75,7 +75,7 @@ const assignedTasks: Task[] = [
     type: "Tìm mặt bằng", 
     date: "25/12/2024", 
     customer: "Trần Thanh C",
-    areaManager: "Phạm Quản Lý",
+    staff: "Phan Nhân Viên",
     status: 'done'
   },
 ];
@@ -93,7 +93,7 @@ const StatusBadge = ({ status }: { status: Task['status'] }) => {
   
   if (status === 'done') {
     return (
-      <Badge className={`${baseClasses} bg-green-100 text-green-800 hover:bg-green-100`}>
+      <Badge className={`${baseClasses} bg-green-400 text-green-800 hover:bg-green-100`}>
         Done
       </Badge>
     );
@@ -132,8 +132,8 @@ export default function AssignTask() {
     currentPage * itemsPerPage
   );
 
-  const handleAssign = (taskId: string, manager: string) => {
-    console.log(`Assigning task ${taskId} to ${manager}`);
+  const handleAssign = (taskId: string, staff: string) => {
+    console.log(`Assigning task ${taskId} to ${staff}`);
   };
 
   const ActionButton = ({ task }: { task: Task }) => {
@@ -147,14 +147,14 @@ export default function AssignTask() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleAssign(task.id, "Trần Quản Lý")}>
-              Trần Quản Lý
+            <DropdownMenuItem onClick={() => handleAssign(task.id, "Trần Nhân Viên")}>
+              Trần Nhân Viên
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleAssign(task.id, "Lê Quản Lý")}>
-              Lê Quản Lý
+            <DropdownMenuItem onClick={() => handleAssign(task.id, "Lê Nhân Viên")}>
+              Lê Nhân Viên
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleAssign(task.id, "Phạm Quản Lý")}>
-              Phạm Quản Lý
+            <DropdownMenuItem onClick={() => handleAssign(task.id, "Phạm Nhân Viên")}>
+              Phạm Nhân Viên
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -207,7 +207,7 @@ export default function AssignTask() {
             <TableHead className="w-[15%]">Request ID</TableHead>
             <TableHead className="w-[15%]">Type</TableHead>
             <TableHead className="w-[14%]">Deadline</TableHead>
-            <TableHead className="w-[23%]">Area Manager</TableHead>
+            <TableHead className="w-[23%]">Staff</TableHead>
             <TableHead className="w-[23%]">Work Progress</TableHead>
             <TableHead className="w-[10%]">View detail</TableHead>
           </TableRow>
@@ -218,7 +218,7 @@ export default function AssignTask() {
               <TableCell>{task.id}</TableCell>
               <TableCell>{task.type}</TableCell>
               <TableCell>{task.date}</TableCell>
-              <TableCell>{task.areaManager}</TableCell>
+              <TableCell>{task.staff}</TableCell>
               <TableCell>
                 <StatusBadge status={task.status} />
               </TableCell>

@@ -51,9 +51,9 @@ const processedData: Survey[] = [
 type FilterStatus = "all" | "accepted" | "rejected";
 
 const filterLabels = {
-  all: "Tất cả",
-  accepted: "Chấp nhận",
-  rejected: "Từ chối"
+  all: "All",
+  accepted: "Accepted",
+  rejected: "Rejected",
 };
 
 export default function ReceiveSurvey() {
@@ -98,7 +98,7 @@ export default function ReceiveSurvey() {
               : "bg-rose-500 hover:bg-rose-600 w-24 justify-center px-2 py-1.5"
           }
         >
-          {survey.status === "accepted" ? "Chấp nhận" : "Từ chối"}
+          {survey.status === "accepted" ? "Accepted" : "Rejected"}
         </Badge>
       );
     }
@@ -107,7 +107,7 @@ export default function ReceiveSurvey() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="default" className="w-[90px] px-2 h-7 text-sm">
-            Xử lý
+            Handle
             <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -134,13 +134,13 @@ export default function ReceiveSurvey() {
               setFilterStatus("all");
             }}
           >
-            Khảo sát mới
+            New survey
           </Button>
           <Button
             variant={activeTab === "processed" ? "default" : "outline"}
             onClick={() => setActiveTab("processed")}
           >
-            Đã xử lý
+            Processed
           </Button>
         </div>
 
@@ -170,12 +170,12 @@ export default function ReceiveSurvey() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[15%]">Mã yêu cầu</TableHead>
-            <TableHead className="w-[15%]">Loại</TableHead>
-            <TableHead className="w-[23%]">Quản lý khu vực</TableHead>
-            <TableHead className="w-[23%]">Nhân viên phụ trách</TableHead>
-            <TableHead className="w-[14%]">Xem chi tiết</TableHead>
-            <TableHead className="w-[10%]">{activeTab === "new" ? "Hành động" : "Trạng thái"}</TableHead>
+            <TableHead className="w-[15%]">Request ID</TableHead>
+            <TableHead className="w-[15%]">Type</TableHead>
+            <TableHead className="w-[23%]">Area Manager</TableHead>
+            <TableHead className="w-[23%]">Staff</TableHead>
+            <TableHead className="w-[14%]">View detail</TableHead>
+            <TableHead className="w-[10%]">{activeTab === "new" ? "Action" : "Status"}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -187,7 +187,7 @@ export default function ReceiveSurvey() {
               <TableCell>{survey.staff}</TableCell>
               <TableCell>
                 <Button variant="link" className="text-blue-500 p-0">
-                  Xem chi tiết
+                  View detail
                 </Button>
               </TableCell>
               <TableCell>

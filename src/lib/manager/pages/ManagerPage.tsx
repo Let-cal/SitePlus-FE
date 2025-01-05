@@ -1,5 +1,5 @@
 import Sidebar from "@/lib/all-site/SideBar";
-import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck } from "lucide-react";
+import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck, Mail } from "lucide-react";
 import * as React from "react";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
@@ -7,7 +7,6 @@ import Header from "../../all-site/HeaderOtherRole";
 import StatsCards from "../components/home-manager/StatsCard";
 import DashboardCharts from "../components/home-manager/DashboardCharts";
 import UserManagement from "../components/home-manager/UserManagement";
-
 
 
 export default function ManagerPage() {
@@ -19,7 +18,7 @@ export default function ManagerPage() {
       isActive: true,
     },
     {
-      icon: <FileText size={20} />,
+      icon: <Mail size={20} />,
       label: "REQUEST",
       href: "/manager-request",
     },

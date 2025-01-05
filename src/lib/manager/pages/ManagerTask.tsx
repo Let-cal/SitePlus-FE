@@ -1,5 +1,5 @@
 import Sidebar from "@/lib/all-site/SideBar";
-import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck } from "lucide-react";
+import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck, Mail } from "lucide-react";
 import * as React from "react";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
@@ -12,23 +12,23 @@ export default function ManagerTask() {
   const managerItems = [
     {
       icon: <Home size={20} />,
-      label: "TRANG CHỦ",
+      label: "HOME",
       href: "/manager-page",
     },
     {
-      icon: <FileText size={20} />,
-      label: "YÊU CẦU",
+      icon: <Mail size={20} />,
+      label: "REQUEST",
       href: "/manager-request",
     },
     {
       icon: <Briefcase size={20} />,
-      label: "GIAO VIỆC",
+      label: "ASSIGN TASK",
       href: "/manager-task",
       isActive: true,
     },
     {
       icon: <FileText size={20} />,
-      label: "NHẬN KHẢO SÁT",
+      label: "SURVEY",
       href: "/manager-survey",
     },
   ];

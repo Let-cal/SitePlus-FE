@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, ClipboardCheck, Briefcase } from 'lucide-react';
+import { MessageSquare, ClipboardCheck, Briefcase, TrendingUp } from 'lucide-react';
 
 interface StatsCardProps {
   title: string;
@@ -20,7 +20,12 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, increase, icon, ico
     </CardHeader>
     <CardContent>
       <div className="text-2xl font-bold">{value}</div>
-      <p className="text-xs text-muted-foreground">{increase} from last month</p>
+      <div className="flex items-center gap-1 mt-1">
+                <TrendingUp className="h-4 w-4 text-green-500" />
+                <p className="text-xs text-muted-foreground">
+                    {increase} from last month
+                </p>
+            </div>
     </CardContent>
   </Card>
 );
