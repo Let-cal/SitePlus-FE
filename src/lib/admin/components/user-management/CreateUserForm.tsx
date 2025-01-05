@@ -16,7 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { adminService } from "@/services/admin/admin.service";
-import { X } from "lucide-react";
+import axios from "axios";
+import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useEffect, useState } from "react";
 interface Province {
@@ -35,6 +36,7 @@ interface Role {
   accounts: null;
 }
 const CreateUserDialog = ({ open, onOpenChange }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const [step, setStep] = useState(1);
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -46,18 +48,18 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
     email: "",
     password: "",
     name: "",
-    status: true,
-    isGoogleUser: false,
   });
   // Fetch roles on component mount
   useEffect(() => {
     const fetchRoles = async () => {
       try {
         const data = await adminService.getAllRoles();
-        // Filter out Admin role and sort by name
+        // Chỉ lấy các role là "Manager", "Area-Manager", "Staff"
         const filteredRoles = data
-          .filter((role) => role.name !== "Admin")
-          .sort((a, b) => a.name.localeCompare(b.name));
+          .filter((role) =>
+            ["Manager", "Area-Manager", "Staff"].includes(role.name)
+          )
+          .sort((a, b) => a.name.localeCompare(b.name)); // Sắp xếp theo tên
         setRoles(filteredRoles);
       } catch (error) {
         console.error("Error fetching roles:", error);
@@ -107,7 +109,6 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
     setFormData((prev) => ({
       ...prev,
       roleId,
-      isGoogleUser: getRoleName(formData.roleId) === "Customer",
     }));
   };
   const showDistrictSelect = ["Area-Manager", "Staff"].includes(
@@ -118,9 +119,7 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
   );
 
   const nextStep = () => {
-    if (getRoleName(formData.roleId) === "Customer") {
-      setStep(2); // Customer chỉ có 2 bước
-    } else if (step < 3) {
+    if (step < 3) {
       setStep(step + 1);
     }
   };
@@ -128,7 +127,6 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
   };
-
   const handleOpenChange = (open) => {
     if (!open) {
       setStep(1);
@@ -139,17 +137,69 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
         email: "",
         password: "",
         name: "",
-        status: true,
-        isGoogleUser: false,
       });
     }
     onOpenChange(open);
   };
+  const handleSubmit = async () => {
+    try {
+      // Prepare area based on role
+      let area: string | null = null;
+      const roleName = getRoleName(formData.roleId);
+
+      if (["Area-Manager", "Staff"].includes(roleName)) {
+        area = `${formData.city},${formData.district}`;
+      } else if (roleName === "Manager") {
+        area = formData.city;
+      }
+
+      const userData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        roleId: parseInt(formData.roleId),
+        area: area,
+      };
+
+      await adminService.createUser(userData);
+      // Close the dialog and optionally show success message
+      enqueueSnackbar("Create user successfully", {
+        variant: "success",
+        preventDuplicate: true,
+        anchorOrigin: {
+          horizontal: "left",
+          vertical: "bottom",
+        },
+      });
+      handleOpenChange(false);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Handle Axios-specific error
+        const errorMessages = error.response?.data?.["error-messages"] || [
+          "An error occurred. Please try again.",
+        ];
+        errorMessages.forEach((message) => {
+          enqueueSnackbar(`Error: ${message}`, {
+            variant: "error",
+            anchorOrigin: { horizontal: "left", vertical: "bottom" },
+            preventDuplicate: true,
+          });
+        });
+      } else {
+        enqueueSnackbar("An error occurred during login", {
+          variant: "error",
+          preventDuplicate: true,
+          anchorOrigin: {
+            horizontal: "left",
+            vertical: "bottom",
+          },
+        });
+      }
+      console.error("Login failed:", error);
+    }
+  };
 
   const getStepTitle = () => {
-    if (getRoleName(formData.roleId) === "Customer") {
-      return step === 1 ? "Select Role" : "User Information";
-    }
     switch (step) {
       case 1:
         return "Select Role";
@@ -163,12 +213,22 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
   };
 
   const getTotalSteps = () => {
-    return getRoleName(formData.roleId) === "Customer" ? 2 : 3;
+    return 3;
   };
-  const isCustomer = getRoleName(formData.roleId) === "Customer";
+
   const renderUserInfoForm = () => (
     <div className="space-y-6">
       <div className="space-y-4">
+        <div>
+          <Label>Name</Label>
+          <Input
+            value={formData.name}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, name: e.target.value }))
+            }
+            placeholder="Enter name"
+          />
+        </div>
         <div>
           <Label>Email</Label>
           <Input
@@ -196,34 +256,9 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
           />
         </div>
 
-        <div>
-          <Label>Name</Label>
-          <Input
-            value={formData.name}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, name: e.target.value }))
-            }
-            placeholder="Enter name"
-          />
-        </div>
-
         <div className="flex items-center space-x-2">
           <Checkbox checked={true} disabled className="bg-gray-200" />
           <Label>Status (Active)</Label>
-        </div>
-
-        <div className="flex items-center space-x-2 relative">
-          <Checkbox
-            checked={isCustomer}
-            disabled
-            className={isCustomer ? "bg-green-500" : "bg-red-500"}
-          />
-          {!isCustomer && (
-            <div className="absolute left-[-8px] top-[1px] text-white">
-              <X size={15} />
-            </div>
-          )}
-          <Label>Is Google User</Label>
         </div>
       </div>
 
@@ -234,7 +269,7 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
         <Button
           className="w-full"
           disabled={!formData.email || !formData.password || !formData.name}
-          onClick={() => handleOpenChange(false)}
+          onClick={handleSubmit}
         >
           Create User
         </Button>
@@ -254,7 +289,7 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
         {step === 1 && (
           <div className="space-y-8">
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 {roles.map((role) => (
                   <div key={role.id} className="flex items-center space-x-2">
                     <Checkbox
@@ -279,7 +314,7 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
           </div>
         )}
 
-        {step === 2 && getRoleName(formData.roleId) !== "Customer" && (
+        {step === 2 && (
           <div className="space-y-6">
             {showCitySelect && (
               <div className="space-y-2">
@@ -345,9 +380,7 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
           </div>
         )}
 
-        {((step === 2 && getRoleName(formData.roleId) === "Customer") ||
-          step === 3) &&
-          renderUserInfoForm()}
+        {step === 3 && renderUserInfoForm()}
       </DialogContent>
     </Dialog>
   );

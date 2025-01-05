@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import Heading from "@/lib/all-site/Heading";
 import { authService } from "@/services/auth.service";
+import axios from "axios";
 import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useState } from "react";
@@ -108,14 +109,17 @@ const LoginForm: React.FC = () => {
           }
         }
       } catch (error) {
-        if (error instanceof Error) {
-          enqueueSnackbar(error.message, {
-            variant: "error",
-            preventDuplicate: true,
-            anchorOrigin: {
-              horizontal: "left",
-              vertical: "bottom",
-            },
+        if (axios.isAxiosError(error)) {
+          // Handle Axios-specific error
+          const errorMessages = error.response?.data?.["error-messages"] || [
+            "An error occurred. Please try again.",
+          ];
+          errorMessages.forEach((message) => {
+            enqueueSnackbar(`Error: ${message}`, {
+              variant: "error",
+              anchorOrigin: { horizontal: "left", vertical: "bottom" },
+              preventDuplicate: true,
+            });
           });
         } else {
           enqueueSnackbar("An error occurred during login", {

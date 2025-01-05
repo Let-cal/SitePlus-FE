@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -22,311 +23,296 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, MoreVertical, Pencil, Plus, Trash } from "lucide-react";
+import Pagination from "@/lib/all-site/pagination";
+import { adminService } from "@/services/admin/admin.service";
+import { Eye, MoreVertical, Pencil, Plus, Search, Trash } from "lucide-react";
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-// Mock data
-const mockData = {
-  clients: [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      role: "Client",
-      status: "active",
-      totalRequests: 15,
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane@example.com",
-      role: "Client",
-      status: "inactive",
-      totalRequests: 8,
-    },
-    {
-      id: 3,
-      name: "Alice Johnson",
-      email: "alice@example.com",
-      role: "Client",
-      status: "active",
-      totalRequests: 22,
-    },
-    {
-      id: 4,
-      name: "Bob Martin",
-      email: "bob@example.com",
-      role: "Client",
-      status: "inactive",
-      totalRequests: 5,
-    },
-    {
-      id: 5,
-      name: "Charlie White",
-      email: "charlie@example.com",
-      role: "Client",
-      status: "active",
-      totalRequests: 18,
-    },
-  ],
-  managers: [
-    {
-      id: 1,
-      name: "Mike Johnson",
-      email: "mike@example.com",
-      role: "Manager",
-      status: "active",
-    },
-    {
-      id: 2,
-      name: "Sarah Williams",
-      email: "sarah@example.com",
-      role: "Manager",
-      status: "active",
-    },
-    {
-      id: 3,
-      name: "Kevin Brown",
-      email: "kevin@example.com",
-      role: "Manager",
-      status: "inactive",
-    },
-    {
-      id: 4,
-      name: "Emily Taylor",
-      email: "emily@example.com",
-      role: "Manager",
-      status: "active",
-    },
-  ],
-  areaManagers: [
-    {
-      id: 1,
-      name: "David Wilson",
-      email: "david@example.com",
-      role: "Area-Manager",
-      status: "active",
-      managedArea: "North Region",
-    },
-    {
-      id: 2,
-      name: "Lisa Brown",
-      email: "lisa@example.com",
-      role: "Area-Manager",
-      status: "active",
-      managedArea: "South Region",
-    },
-    {
-      id: 3,
-      name: "Mark Evans",
-      email: "mark@example.com",
-      role: "Area-Manager",
-      status: "inactive",
-      managedArea: "East Region",
-    },
-    {
-      id: 4,
-      name: "Sophia Clark",
-      email: "sophia@example.com",
-      role: "Area-Manager",
-      status: "active",
-      managedArea: "West Region",
-    },
-  ],
-  staff: [
-    {
-      id: 1,
-      name: "Tom Harris",
-      email: "tom@example.com",
-      role: "Staff",
-      status: "active",
-      tasksCompleted: 45,
-    },
-    {
-      id: 2,
-      name: "Emma Davis",
-      email: "emma@example.com",
-      role: "Staff",
-      status: "inactive",
-      tasksCompleted: 32,
-    },
-    {
-      id: 3,
-      name: "Jack Robinson",
-      email: "jack@example.com",
-      role: "Staff",
-      status: "active",
-      tasksCompleted: 27,
-    },
-    {
-      id: 4,
-      name: "Olivia Moore",
-      email: "olivia@example.com",
-      role: "Staff",
-      status: "active",
-      tasksCompleted: 52,
-    },
-    {
-      id: 5,
-      name: "Lucas Martinez",
-      email: "lucas@example.com",
-      role: "Staff",
-      status: "inactive",
-      tasksCompleted: 16,
-    },
-  ],
-};
+interface Role {
+  id: number;
+  name: string;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  roleName: string;
+  area?: string;
+  status: boolean;
+}
 
 const UserTable = () => {
-  const [userType, setUserType] = useState("clients");
-  const [statusFilter, setStatusFilter] = useState("all"); // Add status filter state
+  const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [processedUsers, setProcessedUsers] = useState<User[]>([]);
+  const [isDataReady, setIsDataReady] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const pageSize = 10;
 
-  const getStatusBadge = (status) => {
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const data = await adminService.getAllRoles();
+        const filteredRoles = data
+          .filter((role) =>
+            ["Manager", "Area-Manager", "Staff", "Customer"].includes(role.name)
+          )
+          .sort((a, b) => a.name.localeCompare(b.name));
+        setRoles(filteredRoles);
+        // Set Manager role as default
+        const managerRole = filteredRoles.find(
+          (role) => role.name === "Customer"
+        );
+        if (managerRole) {
+          setSelectedRole(managerRole.id.toString());
+        }
+      } catch (error) {
+        console.error("Error fetching roles:", error);
+      }
+    };
+    fetchRoles();
+  }, []);
+
+  // Fetch users when filters or pagination changes
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!selectedRole) return;
+
+      try {
+        const response = await adminService.getAllUsers({
+          roleId: parseInt(selectedRole),
+          status: statusFilter === "all" ? null : statusFilter === "active",
+          page: currentPage,
+          pageSize,
+          search: searchQuery,
+        });
+
+        setUsers(response.data.listData);
+        setTotalPages(response.data.totalPage);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchUsers, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [selectedRole, statusFilter, currentPage, searchQuery]);
+
+  useEffect(() => {
+    const processUsers = () => {
+      setIsDataReady(false);
+      const processed = users.map((user) => ({
+        ...user,
+        areaSplit: user.area ? user.area.split(",").map((s) => s.trim()) : [],
+      }));
+      setProcessedUsers(processed);
+      setIsDataReady(true);
+    };
+    processUsers();
+  }, [users]);
+
+  const getAreaColumns = () => {
+    switch (selectedRole) {
+      case "2":
+        return <TableHead className="text-center">City</TableHead>;
+      case "3":
+      case "4":
+        return (
+          <>
+            <TableHead className="text-center">City</TableHead>
+            <TableHead className="text-center">District</TableHead>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getAreaCells = (user: User & { areaSplit?: string[] }) => {
+    if (!user.areaSplit?.length) return null;
+
+    switch (selectedRole) {
+      case "2":
+        return (
+          <TableCell className="text-center">{user.areaSplit[0]}</TableCell>
+        );
+      case "3":
+      case "4":
+        return (
+          <>
+            <TableCell className="text-center">{user.areaSplit[0]}</TableCell>
+            <TableCell className="text-center">{user.areaSplit[1]}</TableCell>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getStatusBadge = (status: boolean) => {
     const statusStyles = {
-      active: "bg-green-500 hover:bg-green-600",
-      inactive: "bg-gray-500 hover:bg-gray-600",
+      true: "bg-green-500 hover:bg-green-600",
+      false: "bg-gray-500 hover:bg-gray-600",
     };
 
     return (
-      <Badge className={`${statusStyles[status]} text-white`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <Badge className={`${statusStyles[String(status)]} text-white`}>
+        {status ? "Active" : "Inactive"}
       </Badge>
     );
   };
 
-  // Get the appropriate data based on user type and filter by status
-  const currentData = mockData[userType].filter((user) =>
-    statusFilter === "all" ? true : user.status === statusFilter
-  );
+  // // Keep the mock data for extra columns
+  // const getExtraColumns = () => {
+  //   switch (selectedRole) {
+  //     case "2": // Assuming 2 is manager role ID
+  //       return (
+  //         <TableHead className="text-center">
+  //           Number Of Area Managers Managing
+  //         </TableHead>
+  //       );
+  //     case "3": // Assuming 3 is area manager role ID
+  //       return <TableHead className="text-center">Managed Area</TableHead>;
+  //     case "4": // Assuming 4 is staff role ID
+  //       return <TableHead className="text-center">Tasks Completed</TableHead>;
+  //     case "5": // Assuming 5 is client role ID
+  //       return <TableHead className="text-center">Total Requests</TableHead>;
 
-  // Get available statuses for the current user type
-  const getAvailableStatuses = () => {
-    const statuses = new Set(mockData[userType].map((user) => user.status));
-    return Array.from(statuses);
-  };
+  //     default:
+  //       return null;
+  //   }
+  // };
 
-  // Define table columns based on user type
-  const getExtraColumns = () => {
-    switch (userType) {
-      case "clients":
-        return <TableHead className="text-center">Total Requests</TableHead>;
-      case "areaManagers":
-        return <TableHead className="text-center">Managed Area</TableHead>;
-      case "staff":
-        return <TableHead className="text-center">Tasks Completed</TableHead>;
-      default:
-        return null;
-    }
-  };
+  // // Keep mock data for extra cells
+  // const getExtraCell = () => {
+  //   switch (selectedRole) {
+  //     case "2":
+  //       return <TableCell className="text-center">15</TableCell>;
+  //     case "3":
+  //       return <TableCell className="text-center">North Region</TableCell>;
+  //     case "4":
+  //       return <TableCell className="text-center">45</TableCell>;
+  //     case "5":
+  //       return <TableCell className="text-center">25</TableCell>;
+  //     default:
+  //       return null;
+  //   }
+  // };
 
-  // Render extra cell content based on user type
-  const getExtraCell = (user) => {
-    switch (userType) {
-      case "clients":
-        return (
-          <TableCell className="text-center">{user.totalRequests}</TableCell>
-        );
-      case "areaManagers":
-        return (
-          <TableCell className="text-center">{user.managedArea}</TableCell>
-        );
-      case "staff":
-        return (
-          <TableCell className="text-center">{user.tasksCompleted}</TableCell>
-        );
-      default:
-        return null;
-    }
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Table Users</h2>
+        <h2 className="text-2xl font-bold">Users Management</h2>
         <div className="flex gap-4">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search anything..."
+              className="pl-8 w-[200px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              {getAvailableStatuses().map((status) => (
-                <SelectItem key={String(status)} value={String(status)}>
-                  {String(status).charAt(0).toUpperCase() +
-                    String(status).slice(1)}
-                </SelectItem>
-              ))}
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
 
-          <Select value={userType} onValueChange={setUserType}>
+          <Select value={selectedRole} onValueChange={setSelectedRole}>
             <SelectTrigger className="w-[170px]">
-              <SelectValue placeholder="Select user type" />
+              <SelectValue placeholder="Select role" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="clients">Clients</SelectItem>
-              <SelectItem value="managers">Managers</SelectItem>
-              <SelectItem value="areaManagers">Area Managers</SelectItem>
-              <SelectItem value="staff">Staff</SelectItem>
+              {roles.map((role) => (
+                <SelectItem key={role.id} value={role.id.toString()}>
+                  {role.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <Table>
-        <TableCaption>
-          List of {userType.charAt(0).toUpperCase() + userType.slice(1)}
-        </TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            {getExtraColumns()}
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currentData.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell className="font-medium">{user.name}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>{user.role}</TableCell>
-              {getExtraCell(user)}
-              <TableCell>{getStatusBadge(user.status)}</TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Update
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      <Trash className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+      {isDataReady ? (
+        <Table>
+          <TableCaption>List of Users</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              {/* {getExtraColumns()} */}
+              {getAreaColumns()}
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {processedUsers.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell className="font-medium">{user.name}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.roleName}</TableCell>
+                {/* {getExtraCell()} */}
+                {getAreaCells(user)}
+                <TableCell>{getStatusBadge(user.status)}</TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Update
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600">
+                        <Trash className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      ) : (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+        </div>
+      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 };
