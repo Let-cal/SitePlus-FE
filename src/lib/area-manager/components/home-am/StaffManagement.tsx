@@ -16,18 +16,18 @@ import {
 
 const initialDistricts = [
   { id: 1, name: 'Lê Trần Cát Lâm', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 2, name: 'Lê Nguyễn Gia Bảo', district: 'Quận 12', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
-  { id: 3, name: 'Đinh Văn Phong', district: 'Quận 3', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
-  { id: 4, name: 'Nguyễn Kỳ Anh Minh', district: 'Quận 4', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 5, name: 'Phùi Chếch Minh', district: 'Quận Phú Nhuận', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 6, name: 'Trần Văn An', district: 'Quận Gò Vấp', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 7, name: 'Nguyễn Thị Bình', district: 'Quận 7', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
-  { id: 8, name: 'Phạm Hoàng Long', district: 'Quận Bình Thạnh', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 9, name: 'Võ Thị Mai', district: 'Quận 9', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 10, name: 'Hoàng Minh Tuấn', district: 'Quận Bình Tân', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' }
+  { id: 2, name: 'Lê Nguyễn Gia Bảo', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
+  { id: 3, name: 'Đinh Văn Phong', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
+  { id: 4, name: 'Nguyễn Kỳ Anh Minh', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
+  { id: 5, name: 'Phùi Chếch Minh', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
+  { id: 6, name: 'Trần Văn An', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
+  { id: 7, name: 'Nguyễn Thị Bình', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
+  { id: 8, name: 'Phạm Hoàng Long', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
+  { id: 9, name: 'Võ Thị Mai', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
+  { id: 10, name: 'Hoàng Minh Tuấn', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' }
 ];
 
-const UserManagement = () => {
+const StaffManagement = () => {
   const [districts, setDistricts] = React.useState(initialDistricts);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [selectedDistrict, setSelectedDistrict] = React.useState(null);
@@ -61,7 +61,7 @@ const UserManagement = () => {
     <>
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">Area Manager</CardTitle>
+          <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">Staff Management</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -149,4 +149,4 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement;
+export default StaffManagement;

@@ -1,5 +1,5 @@
 import Sidebar from "@/lib/all-site/SideBar";
-import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck } from "lucide-react";
+import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck, Mail } from "lucide-react";
 import * as React from "react";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
@@ -11,22 +11,22 @@ export default function ManagerSurvey() {
   const managerItems = [
     {
       icon: <Home size={20} />,
-      label: "TRANG CHỦ",
+      label: "HOME",
       href: "/manager-page",
     },
     {
-      icon: <FileText size={20} />,
-      label: "YÊU CẦU",
+      icon: <Mail size={20} />,
+      label: "REQUEST",
       href: "/manager-request",
     },
     {
       icon: <Briefcase size={20} />,
-      label: "GIAO VIỆC",
+      label: "ASSIGN TASK",
       href: "/manager-task",
     },
     {
       icon: <FileText size={20} />,
-      label: "NHẬN KHẢO SÁT",
+      label: "SURVEY",
       href: "/manager-survey",
       isActive: true,
     },
@@ -61,7 +61,7 @@ export default function ManagerSurvey() {
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto"> 
           <div className="space-y-12 max-w-full"> 
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">NHẬN KHẢO SÁT</h2>
+            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">RECEIVE SURVEY</h2>
             <ReceiveSurvey />
           </div>
         </div>

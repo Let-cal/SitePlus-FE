@@ -4,23 +4,22 @@ import * as React from "react";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
-import Cards from "../components/home-am/Cards";
 import AreaMap from "../components/home-am/Map";
-import StaffManagement from "../components/home-am/StaffManagement";
+import AssignToStaff from "../components/task-am/AssignToStaff";
 
 
-export default function AreaManagerPage() {
+export default function AreaManagerTask() {
   const areaManagerItems = [
     {
       icon: <Home size={20} />,
       label: "HOME",
       href: "/area-manager-page",
-      isActive: true,
     },
     {
       icon: <Briefcase size={20} />,
       label: "ASSIGN TASK",
       href: "/area-manager-task",
+      isActive: true,
     },
     {
       icon: <FileText size={20} />,
@@ -63,10 +62,9 @@ export default function AreaManagerPage() {
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">HOME</h2>
-            <Cards />
+            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">ASSIGN TASK</h2>
             <AreaMap/>
-            <StaffManagement />
+            <AssignToStaff/>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 
 const Header = ({
-  defaultLocation = "Quận 7 - TPHCM",
+  defaultLocation = "Quận 9 - TPHCM",
 
   onSearch,
   onNotificationClick,

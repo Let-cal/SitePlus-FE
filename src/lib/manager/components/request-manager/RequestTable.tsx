@@ -15,7 +15,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown} from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Pagination,
   PaginationContent,
@@ -52,9 +59,9 @@ const processedData: Request[] = [
 type FilterStatus = "all" | "accepted" | "rejected";
 
 const filterLabels = {
-  all: "Tất cả",
-  accepted: "Chấp nhận",
-  rejected: "Từ chối"
+  all: "All Status",
+  accepted: "Accepted",
+  rejected: "Rejected",
 };
 
 export default function RequestTableWithTabs() {
@@ -65,7 +72,7 @@ export default function RequestTableWithTabs() {
 
   const getFilteredData = () => {
     if (activeTab === "new") return sampleData;
-    
+
     let data = processedData;
     if (filterStatus !== "all") {
       data = processedData.filter(item => item.status === filterStatus);
@@ -73,7 +80,6 @@ export default function RequestTableWithTabs() {
     return data;
   };
 
-  // Reset to page 1 when filter changes
   React.useEffect(() => {
     setCurrentPage(1);
   }, [filterStatus, activeTab]);
@@ -100,7 +106,7 @@ export default function RequestTableWithTabs() {
                 : "bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-700 w-24 justify-center px-2 py-1.5"
             }
           >
-            {request.status === "accepted" ? "Chấp nhận" : "Từ chối"}
+            {request.status === "accepted" ? "Accepted" : "Rejected"}
           </Badge>
         </div>
       );
@@ -110,16 +116,16 @@ export default function RequestTableWithTabs() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="default" className="w-[90px] px-2 h-7 text-sm">
-            Xử lý
+            Handle
             <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onClick={() => handleAction(request.id, "accepted")}>
-            Chấp nhận
+            Accept
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleAction(request.id, "rejected")}>
-            Từ chối
+            Reject
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -137,49 +143,44 @@ export default function RequestTableWithTabs() {
               setFilterStatus("all");
             }}
           >
-            Yêu cầu mới
+            New requests
           </Button>
           <Button
             variant={activeTab === "processed" ? "default" : "outline"}
             onClick={() => setActiveTab("processed")}
           >
-            Đã xử lý
+            Handled
           </Button>
         </div>
 
         {activeTab === "processed" && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
-                {/* <Filter className="mr-2 h-4 w-4" /> */}
-                {filterLabels[filterStatus]}
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setFilterStatus("all")}>
-                Tất cả
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterStatus("accepted")}>
-                Chấp nhận
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterStatus("rejected")}>
-                Từ chối
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Select
+            value={filterStatus}
+            onValueChange={(value: FilterStatus) => setFilterStatus(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(filterLabels).map(([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[20%]">Mã yêu cầu</TableHead>
-            <TableHead className="w-[20%]">Loại</TableHead>
-            <TableHead className="w-[15%]">Hạn yêu cầu</TableHead>
-            <TableHead className="w-[20%]">Khách hàng</TableHead>
-            <TableHead className="w-[15%]">Xem chi tiết</TableHead>
-            <TableHead className="w-[10%]">{activeTab === "new" ? "Hành động" : "Trạng thái"}</TableHead>
+            <TableHead className="w-[20%]">Request ID</TableHead>
+            <TableHead className="w-[20%]">Type</TableHead>
+            <TableHead className="w-[15%]">Deadline</TableHead>
+            <TableHead className="w-[20%]">Client</TableHead>
+            <TableHead className="w-[15%]">View detail</TableHead>
+            <TableHead className="w-[10%]">{activeTab === "new" ? "Action" : "Status"}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -191,7 +192,7 @@ export default function RequestTableWithTabs() {
               <TableCell>{request.customer}</TableCell>
               <TableCell>
                 <Button variant="link" className="text-blue-500 p-0">
-                  Xem chi tiết
+                  View detail
                 </Button>
               </TableCell>
               <TableCell>

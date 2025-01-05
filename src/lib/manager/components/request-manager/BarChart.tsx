@@ -94,8 +94,8 @@ const BarChart: React.FC = () => {
         },
       },
     },
-    cutout: "75%", // Tăng kích thước lỗ trong
-    radius: "90%", // Tăng kích thước tổng thể
+    cutout: "75%", 
+    radius: "90%", 
   };
 
   return (
