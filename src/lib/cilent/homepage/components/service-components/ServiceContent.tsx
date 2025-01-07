@@ -54,7 +54,7 @@ export default function ServiceContent({ className }: ServiceContentProps) {
         <Heading text="Dịch Vụ Của Site Plus" />
 
         {/* Desktop view */}
-        <div className="hidden lg:flex lg:flex-row lg:space-x-4 lg:h-[420.667px]">
+        <div className="hidden lg:flex lg:flex-row lg:space-x-4 lg:h-[425.667px] lg:w-full lg:justify-center">
           {services.map((service, index) => (
             <BoxContent
               key={index}
@@ -67,11 +67,14 @@ export default function ServiceContent({ className }: ServiceContentProps) {
         </div>
 
         {/* Mobile/Tablet view with Carousel */}
-        <div className="lg:hidden w-full max-w-[370.667px] relative px-8">
+        <div className="lg:hidden w-full relative px-8">
           <Carousel className="w-full">
             <CarouselContent>
               {services.map((service, index) => (
-                <CarouselItem key={index}>
+                <CarouselItem
+                  key={index}
+                  className="md:basis-1/3 lg:basis-1/4 sm:basis-1/2 xs:basis-[100%]"
+                >
                   <BoxContent
                     iconUrl={service.iconUrl}
                     title={service.title}

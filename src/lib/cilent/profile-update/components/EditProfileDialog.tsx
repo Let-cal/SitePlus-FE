@@ -72,7 +72,9 @@ export function EditProfileDialog({
       setIsLoading(false);
     }
   };
-
+  // console.log(userId);
+  // console.log(name);
+  // console.log(email);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {asTrigger ? (
