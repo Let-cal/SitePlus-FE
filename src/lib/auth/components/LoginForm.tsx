@@ -22,7 +22,14 @@ interface FormErrors {
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-  const { setIsAuthenticated, setUserRole } = useAuth();
+  const { 
+    setIsAuthenticated, 
+    setUserRole, 
+    setUserName,
+    setUserEmail,
+    setUserId 
+  } = useAuth();
+  
   const { enqueueSnackbar } = useSnackbar();
 
   const [formData, setFormData] = useState<FormData>({
@@ -69,6 +76,12 @@ const LoginForm: React.FC = () => {
           localStorage.setItem("email", formData.email);
           localStorage.setItem("hint", response.hint.toString());
           localStorage.setItem("name", response.name);
+           // Update auth context states directly
+           setIsAuthenticated(true);
+           setUserRole(response.role);
+           setUserName(response.name);
+           setUserEmail(formData.email);
+           setUserId(response.hint);
           console.log(localStorage.getItem("token"));
           // Store password if remember me is checked
           if (checked) {

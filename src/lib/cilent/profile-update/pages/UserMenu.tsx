@@ -1,3 +1,5 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,16 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import {
-  Settings,
-  LogOut,
-  Mail,
-  User,
-  Shield,
-  PenSquare,
-} from "lucide-react";
+import { LogOut, Mail, PenSquare, Settings, Shield, User } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../../../services/AuthContext";
@@ -27,14 +20,14 @@ export default function UserMenu() {
   const [key, setKey] = React.useState(0);
 
   const handleProfileUpdate = () => {
-    setKey(prev => prev + 1);
+    setKey((prev) => prev + 1);
   };
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
@@ -42,9 +35,9 @@ export default function UserMenu() {
   return (
     <DropdownMenu key={key}>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className="relative hover:bg-slate-100 transition-colors"
         >
           <Avatar className="h-9 w-9">
@@ -68,19 +61,18 @@ export default function UserMenu() {
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
                   <User className="h-4 w-4 text-orange-500" />
-                  <p className="text-sm font-semibold">
-                    {userName || "User"}
-                  </p>
+                  <p className="text-sm font-semibold">{userName || "User"}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Mail className="h-4 w-4 text-gray-500" />
-                  <p className="text-xs text-muted-foreground">
-                    {userEmail}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{userEmail}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Shield className="h-4 w-4 text-green-500" />
-                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 hover:bg-green-100">
+                  <Badge
+                    variant="secondary"
+                    className="text-xs bg-green-100 text-green-700 hover:bg-green-100"
+                  >
                     {userRole}
                   </Badge>
                 </div>
@@ -90,7 +82,7 @@ export default function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <div className="p-2">
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onSelect={(e) => e.preventDefault()}
             className="p-0"
           >
@@ -101,15 +93,15 @@ export default function UserMenu() {
               onProfileUpdate={handleProfileUpdate}
               asTrigger={true}
             >
-              <div className="flex items-center px-2 py-2 hover:bg-slate-100 rounded-md w-full transition-colors">
+              <div className="flex items-center px-2 py-2 gap-2 hover:bg-slate-100 rounded-md w-full transition-colors">
                 <PenSquare className="mr-2 h-4 w-4 text-blue-500" />
                 <span>Edit Profile</span>
               </div>
             </EditProfileDialog>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link 
-              to="/settings" 
+            <Link
+              to="/settings"
               className="flex items-center cursor-pointer hover:bg-slate-100 rounded-md transition-colors"
             >
               <Settings className="mr-2 h-4 w-4 text-gray-500" />

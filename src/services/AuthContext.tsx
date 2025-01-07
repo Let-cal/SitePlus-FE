@@ -17,6 +17,9 @@ interface AuthContextType {
   userName: string | null;
   userEmail: string | null;
   userId: number | null;
+  setUserName: (name: string | null) => void;
+  setUserEmail: (email: string | null) => void;
+  setUserId: (id: number | null) => void;
   handleLogout: () => void;
   loading: boolean;
 }
@@ -138,8 +141,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         userRole,
         setUserRole,
         userName,
+        setUserName,
         userEmail,
+        setUserEmail,
         userId,
+        setUserId,
         handleLogout,
         loading,
       }}
