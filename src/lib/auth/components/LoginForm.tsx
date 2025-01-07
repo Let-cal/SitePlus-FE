@@ -68,6 +68,7 @@ const LoginForm: React.FC = () => {
           localStorage.setItem("role", response.role);
           localStorage.setItem("email", formData.email);
           localStorage.setItem("hint", response.hint.toString());
+          localStorage.setItem("name", response.name);
           console.log(localStorage.getItem("token"));
           // Store password if remember me is checked
           if (checked) {

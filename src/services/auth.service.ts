@@ -17,6 +17,7 @@ interface LoginResponse {
   token: string;
   role: string;
   hint: number;
+  name: string;
 }
 
 interface LoginRequest {
@@ -39,7 +40,9 @@ interface ResetPasswordRequest {
   password: string;
   confirmPassword: string;
 }
+
 class AuthService {
+  
   async login(data: LoginRequest): Promise<LoginResponse> {
     try {
       const response: AxiosResponse<LoginResponse> = await axios.post(
@@ -144,6 +147,7 @@ class AuthService {
     }
     return new Error("Network error occurred");
   }
+ 
 }
 
 export const authService = new AuthService();

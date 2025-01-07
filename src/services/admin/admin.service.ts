@@ -113,6 +113,7 @@ interface CompletedTask {
   staffName: string;
   completedTasksCount: number;
 }
+
 class AdminService {
   private getAuthHeader() {
     const token = localStorage.getItem("token");
@@ -190,16 +191,19 @@ class AdminService {
   ): Promise<PaginatedResponse<User[]>> {
     try {
       const response: AxiosResponse<PaginatedResponse<User[]>> =
-        await axios.get(`${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_USERS}`, {
-          headers: this.getAuthHeader(),
-          params: {
-            roleId: request.roleId,
-            status: request.status,
-            page: request.page,
-            pageSize: request.pageSize,
-            search: request.search,
-          },
-        });
+        await axios.get(
+          `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_USERS}`,
+          {
+            headers: this.getAuthHeader(),
+            params: {
+              roleId: request.roleId,
+              status: request.status,
+              page: request.page,
+              pageSize: request.pageSize,
+              search: request.search,
+            },
+          }
+        );
       return response.data;
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -219,6 +223,7 @@ class AdminService {
       throw error;
     }
   }
+
   async getRatingRequests(
     page: number,
     pageSize: number
