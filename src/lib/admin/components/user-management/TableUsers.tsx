@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -25,10 +26,10 @@ import {
 } from "@/components/ui/table";
 import Pagination from "@/lib/all-site/pagination";
 import { adminService } from "@/services/admin/admin.service";
-import { Eye, MoreVertical, Pencil, Plus, Search, Trash } from "lucide-react";
+import { Eye, MoreVertical, Plus, Search, Trash } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-
+import UpdateUserDialog from "./UpdateUserDialog";
 interface Role {
   id: number;
   name: string;
@@ -42,22 +43,28 @@ interface User {
   area?: string;
   status: boolean;
 }
-
+interface CompletedTask {
+  staffId: number;
+  staffName: string;
+  completedTasksCount: number;
+}
 const UserTable = () => {
+  const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [processedUsers, setProcessedUsers] = useState<User[]>([]);
-  const [isDataReady, setIsDataReady] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const pageSize = 10;
 
   useEffect(() => {
     const fetchRoles = async () => {
       try {
+        setIsLoading(true);
         const data = await adminService.getAllRoles();
         const filteredRoles = data
           .filter((role) =>
@@ -74,6 +81,8 @@ const UserTable = () => {
         }
       } catch (error) {
         console.error("Error fetching roles:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchRoles();
@@ -81,52 +90,70 @@ const UserTable = () => {
 
   // Fetch users when filters or pagination changes
   useEffect(() => {
-    const fetchUsers = async () => {
-      if (!selectedRole) return;
-
-      try {
-        const response = await adminService.getAllUsers({
-          roleId: parseInt(selectedRole),
-          status: statusFilter === "all" ? null : statusFilter === "active",
-          page: currentPage,
-          pageSize,
-          search: searchQuery,
-        });
-
-        setUsers(response.data.listData);
-        setTotalPages(response.data.totalPage);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
+    fetchUsers();
     const debounceTimer = setTimeout(fetchUsers, 500);
     return () => clearTimeout(debounceTimer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRole, statusFilter, currentPage, searchQuery]);
+
+  const fetchUsers = async () => {
+    if (!selectedRole) return;
+    setIsLoading(true);
+    try {
+      const response = await adminService.getAllUsers({
+        roleId: parseInt(selectedRole),
+        status: statusFilter === "all" ? null : statusFilter === "active",
+        page: currentPage,
+        pageSize,
+        search: searchQuery,
+      });
+
+      setUsers(response.data.listData);
+      setTotalPages(response.data.totalPage);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const processUsers = () => {
-      setIsDataReady(false);
       const processed = users.map((user) => ({
         ...user,
         areaSplit: user.area ? user.area.split(",").map((s) => s.trim()) : [],
       }));
       setProcessedUsers(processed);
-      setIsDataReady(true);
     };
     processUsers();
   }, [users]);
-
+  useEffect(() => {
+    const fetchData = async () => {
+      if (selectedRole === "4") {
+        // 4 is Staff role
+        const tasksData = await adminService.getCompletedTasks();
+        setCompletedTasks(tasksData);
+      }
+    };
+    fetchData();
+  }, [selectedRole]);
   const getAreaColumns = () => {
     switch (selectedRole) {
       case "2":
         return <TableHead className="text-center">City</TableHead>;
       case "3":
+        return (
+          <>
+            <TableHead className="text-center">City</TableHead>
+            <TableHead className="text-center">District</TableHead>
+          </>
+        );
       case "4":
         return (
           <>
             <TableHead className="text-center">City</TableHead>
             <TableHead className="text-center">District</TableHead>
+            <TableHead>Tasks Completed</TableHead>
           </>
         );
       default:
@@ -143,18 +170,30 @@ const UserTable = () => {
           <TableCell className="text-center">{user.areaSplit[0]}</TableCell>
         );
       case "3":
-      case "4":
         return (
           <>
             <TableCell className="text-center">{user.areaSplit[0]}</TableCell>
             <TableCell className="text-center">{user.areaSplit[1]}</TableCell>
           </>
         );
+      case "4":
+        return (
+          <>
+            <TableCell className="text-center">{user.areaSplit[0]}</TableCell>
+            <TableCell className="text-center">{user.areaSplit[1]}</TableCell>
+            <TableCell>
+              {user.roleName === "Staff"
+                ? completedTasks.find((t) => t.staffId === user.id)
+                    ?.completedTasksCount ?? "N/A"
+                : "N/A"}
+            </TableCell>
+          </>
+        );
       default:
         return null;
     }
   };
-
+  console.log(selectedRole);
   const getStatusBadge = (status: boolean) => {
     const statusStyles = {
       true: "bg-green-500 hover:bg-green-600",
@@ -167,43 +206,6 @@ const UserTable = () => {
       </Badge>
     );
   };
-
-  // // Keep the mock data for extra columns
-  // const getExtraColumns = () => {
-  //   switch (selectedRole) {
-  //     case "2": // Assuming 2 is manager role ID
-  //       return (
-  //         <TableHead className="text-center">
-  //           Number Of Area Managers Managing
-  //         </TableHead>
-  //       );
-  //     case "3": // Assuming 3 is area manager role ID
-  //       return <TableHead className="text-center">Managed Area</TableHead>;
-  //     case "4": // Assuming 4 is staff role ID
-  //       return <TableHead className="text-center">Tasks Completed</TableHead>;
-  //     case "5": // Assuming 5 is client role ID
-  //       return <TableHead className="text-center">Total Requests</TableHead>;
-
-  //     default:
-  //       return null;
-  //   }
-  // };
-
-  // // Keep mock data for extra cells
-  // const getExtraCell = () => {
-  //   switch (selectedRole) {
-  //     case "2":
-  //       return <TableCell className="text-center">15</TableCell>;
-  //     case "3":
-  //       return <TableCell className="text-center">North Region</TableCell>;
-  //     case "4":
-  //       return <TableCell className="text-center">45</TableCell>;
-  //     case "5":
-  //       return <TableCell className="text-center">25</TableCell>;
-  //     default:
-  //       return null;
-  //   }
-  // };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -249,72 +251,85 @@ const UserTable = () => {
         </div>
       </div>
 
-      {isDataReady ? (
-        <Table>
-          <TableCaption>List of Users</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              {/* {getExtraColumns()} */}
-              {getAreaColumns()}
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {processedUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.roleName}</TableCell>
-                {/* {getExtraCell()} */}
-                {getAreaCells(user)}
-                <TableCell>{getStatusBadge(user.status)}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Update
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
-                        <Trash className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
+      {isLoading ? (
+        Array.from({ length: pageSize }).map((_, index) => (
+          <TableRow key={index}>
+            {Array.from({ length: 7 }).map((_, cellIndex) => (
+              <TableCell key={cellIndex}>
+                <Skeleton className="h-4 w-full" />
+              </TableCell>
             ))}
-          </TableBody>
-        </Table>
+          </TableRow>
+        ))
       ) : (
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-        </div>
+        <>
+          <Table>
+            <TableCaption>List of Users</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                {/* {getExtraColumns()} */}
+                {getAreaColumns()}
+
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {processedUsers.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.roleName}</TableCell>
+                  {/* {getExtraCell()} */}
+                  {getAreaCells(user)}
+
+                  <TableCell>{getStatusBadge(user.status)}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <UpdateUserDialog
+                            user={user}
+                            onUpdate={fetchUsers}
+                            asTrigger={true} // Thêm prop tùy chỉnh để xác định trigger
+                          />
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem className="text-red-600">
+                          <Trash className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
     </div>
   );
 };
-
 export default UserTable;
