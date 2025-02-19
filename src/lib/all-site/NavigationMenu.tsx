@@ -92,14 +92,6 @@ export function NavigationMenuDemo() {
         </NavigationMenuItem>
 
         <NavigationMenuItem>
-          <Link to="/khoa-sat-cua-ban">
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Khảo Sát Của Bạn
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-
-        <NavigationMenuItem>
           <Link to="/contact-page">
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               Liên Hệ

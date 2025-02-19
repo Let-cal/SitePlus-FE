@@ -1,4 +1,3 @@
-import ForgotPassPage from "@/lib/auth/pages/ForgotPassPage";
 import LoginPage from "@/lib/auth/pages/LoginPage";
 import RegisterPage from "@/lib/auth/pages/RegisterPage";
 import { SnackbarProvider } from "notistack";
@@ -14,8 +13,6 @@ import AreaManagerPage from "./lib/area-manager/pages/AreaManagerPage";
 import AreaManagerSend from "./lib/area-manager/pages/AreaManagerSend";
 import AreaManagerSurvey from "./lib/area-manager/pages/AreaManagerSurvey";
 import AreaManagerTask from "./lib/area-manager/pages/AreaManagerTask";
-import OTP_Page from "./lib/auth/pages/OTP_Page";
-import ResetPassPage from "./lib/auth/pages/ResetPassPage";
 import ContactPage from "./lib/cilent/contact-page/pages/ContactPage";
 import HomePage from "./lib/cilent/homepage/pages/HomePage";
 import InfoPage from "./lib/cilent/infopage/pages/InfoPage";
@@ -106,9 +103,6 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/sign-up" element={<RegisterPage />} />
               <Route path="/sign-in" element={<LoginPage />} />
               <Route path="/contact-page" element={<ContactPage />} />
-              <Route path="/forgot-password" element={<ForgotPassPage />} />
-              <Route path="/OTP-page" element={<OTP_Page />} />
-              <Route path="/reset-page" element={<ResetPassPage />} />
               <Route path="/info-page" element={<InfoPage />} />
               <Route
                 path="/manager-page"

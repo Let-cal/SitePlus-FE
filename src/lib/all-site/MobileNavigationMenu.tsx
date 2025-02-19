@@ -88,12 +88,6 @@ export function MobileNavigationMenu() {
               Giới Thiệu
             </Link>
             <Link
-              to="/khoa-sat-cua-ban"
-              className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
-            >
-              Khảo Sát Của Bạn
-            </Link>
-            <Link
               to="/contact-page"
               className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
             >
