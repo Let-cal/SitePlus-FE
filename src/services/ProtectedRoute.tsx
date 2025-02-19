@@ -51,9 +51,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           case "Admin":
             navigate("/admin-page");
             break;
-          case "Customer":
-            navigate("/customer-page");
-            break;
           case "Manager":
             navigate("/manager-page");
             break;

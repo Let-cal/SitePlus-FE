@@ -51,11 +51,7 @@ createRoot(document.getElementById("root")!).render(
               <Route
                 path="/customer-page"
                 element={
-                  <ProtectedRoute
-                    element={<HomePage />}
-                    roles={["Customer"]}
-                    allowGuest={true}
-                  />
+                  <ProtectedRoute element={<HomePage />} allowGuest={true} />
                 }
               />
               <Route
@@ -75,31 +71,14 @@ createRoot(document.getElementById("root")!).render(
               />
               <Route
                 path="/rating-requests-page"
-                element={
-                  <ProtectedRoute
-                    element={<RatingRequestsPage />}
-                    roles={["Customer"]}
-                  />
-                }
+                element={<RatingRequestsPage />}
               />
               <Route
                 path="/survey-requests-page"
-                element={
-                  <ProtectedRoute
-                    element={<SurveyRequestsPage />}
-                    roles={["Customer"]}
-                  />
-                }
+                element={<SurveyRequestsPage />}
               />
-              <Route
-                path="/khoa-sat-cua-ban"
-                element={
-                  <ProtectedRoute
-                    element={<RequestReportPage />}
-                    roles={["Customer"]}
-                  />
-                }
-              />
+              <Route path="/khoa-sat-cua-ban" element={<RequestReportPage />} />
+
               <Route path="/sign-up" element={<RegisterPage />} />
               <Route path="/sign-in" element={<LoginPage />} />
               <Route path="/contact-page" element={<ContactPage />} />
