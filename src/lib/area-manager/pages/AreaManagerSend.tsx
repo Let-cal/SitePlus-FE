@@ -49,7 +49,7 @@ export default function AreaManagerSend() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          title="Send Reports To Manager" // Truyền title vào đây
+          title="SEND REPORT" // Truyền title vào đây
           onNotificationClick={() => {}}
         />
 

@@ -50,7 +50,7 @@ export default function AreaManagerPage() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          title="HomePage" // Truyền title vào đây
+          title="HOME" // Truyền title vào đây
           onNotificationClick={() => {}}
         />
 

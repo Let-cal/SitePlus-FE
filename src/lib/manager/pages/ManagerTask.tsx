@@ -36,9 +36,9 @@ export default function ManagerTask() {
   const { handleLogout } = useAuth();
 
   return (
-    <div className="flex h-screen overflow-hidden"> 
+    <div className="flex h-screen overflow-hidden">
       {/* Sidebar container */}
-      <div className="flex-none"> 
+      <div className="flex-none">
         <Sidebar
           onLogout={handleLogout}
           logoHref={LogoSitePlus}
@@ -48,22 +48,18 @@ export default function ManagerTask() {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0"> 
+      <div className="flex-1 flex flex-col min-w-0">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          onSearch={() => {
-            // Xử lý tìm kiếm
-          }}
-          onNotificationClick={() => {
-            // Xử lý khi click vào notification
-          }}
+          title="ASSIGN TASK" // Truyền title vào đây
+          onNotificationClick={() => { }}
         />
 
         {/* Content area */}
-        <div className="flex-1 p-6 overflow-y-auto"> 
-          <div className="space-y-12 max-w-full"> 
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">ASSIGN TASK</h2>
-            <AssignTask/>
+        <div className="flex-1 p-6 overflow-y-auto">
+          <div className="space-y-12 max-w-full">
+            {/* <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">ASSIGN TASK</h2> */}
+            <AssignTask />
           </div>
         </div>
       </div>

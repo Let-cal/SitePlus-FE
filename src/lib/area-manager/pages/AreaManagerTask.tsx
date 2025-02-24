@@ -49,7 +49,7 @@ export default function AreaManagerTask() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          title="Assign Tasks" // Truyền title vào đây
+          title="ASSIGN TASK" // Truyền title vào đây
           onNotificationClick={() => {}}
         />
 

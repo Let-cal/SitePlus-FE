@@ -38,11 +38,11 @@ const LoginForm: React.FC = () => {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
-    }
+    // if (!formData.email.trim()) {
+    //   newErrors.email = "Email is required";
+    // } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    //   newErrors.email = "Please enter a valid email";
+    // }
 
     if (!formData.password) {
       newErrors.password = "Password is required";
@@ -215,7 +215,7 @@ const LoginForm: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="dark:text-theme-primary-dark">
           <Input
-            type="email"
+            type="text"
             placeholder="Email Address"
             disabled={isLoading}
             className={errors.email ? "border-red-500" : ""}

@@ -1,4 +1,6 @@
 import Sidebar from "@/lib/all-site/SideBar";
+import { AuthProvider } from "@/services/AuthContext";
+import { ThemeProvider } from "@/lib/all-site/ThemeProvider";
 import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck, Mail } from "lucide-react";
 import * as React from "react";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
@@ -13,13 +15,13 @@ export default function ManagerPage() {
   const managerItems = [
     {
       icon: <Home size={20} />,
-      label: "HOME",
+      label: "TRANG CHỦ",
       href: "/manager-page",
       isActive: true,
     },
     {
       icon: <Mail size={20} />,
-      label: "REQUEST",
+      label: "YÊU CẦU",
       href: "/manager-request",
     },
     {
@@ -29,7 +31,7 @@ export default function ManagerPage() {
     },
     {
       icon: <FileText size={20} />,
-      label: "SURVEY",
+      label: "KHO MẶT BẰNG",
       href: "/manager-survey",
     },
   ];
@@ -37,11 +39,10 @@ export default function ManagerPage() {
   const { handleLogout } = useAuth();
 
   return (
-    <div className="flex h-screen overflow-hidden"> 
-      
-      <div className="flex-none"> 
+    <div className="flex h-screen overflow-hidden">
+      <div className="flex-none">
         <Sidebar
-          onLogout={handleLogout}
+          onLogout={() => { }} // Moved inside to access useAuth
           logoHref={LogoSitePlus}
           title="Manager"
           mainNavItems={managerItems}
@@ -52,18 +53,13 @@ export default function ManagerPage() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          onSearch={() => {
-            // Xử lý tìm kiếm
-          }}
-          onNotificationClick={() => {
-            // Xử lý khi click vào notification
-          }}
+          title="TRANG CHỦ"
+          onNotificationClick={() => { }}
         />
 
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">HOME</h2>
             <StatsCards />
             <DashboardCharts />
             <UserManagement />

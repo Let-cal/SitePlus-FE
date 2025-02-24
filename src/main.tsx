@@ -110,7 +110,9 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/OTP-page" element={<OTP_Page />} />
               <Route path="/reset-page" element={<ResetPassPage />} />
               <Route path="/info-page" element={<InfoPage />} />
-              <Route
+              <Route path="/manager-page" element={<ManagerPage />} />
+
+              {/* <Route
                 path="/manager-page"
                 element={
                   <ProtectedRoute
@@ -145,7 +147,7 @@ createRoot(document.getElementById("root")!).render(
                     roles={["Manager"]}
                   />
                 }
-              />
+              /> */}
               <Route
                 path="/area-manager-page"
                 element={
@@ -189,3 +191,6 @@ createRoot(document.getElementById("root")!).render(
     </SnackbarProvider>
   </StrictMode>
 );
+
+
+
