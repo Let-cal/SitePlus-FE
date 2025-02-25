@@ -12,24 +12,24 @@ export default function ManagerRequest() {
   const managerItems = [
     {
       icon: <Home size={20} />,
-      label: "HOME",
+      label: "TRANG CHỦ",
       href: "/manager-page",
     },
     {
       icon: <Mail size={20} />,
-      label: "REQUEST",
+      label: "YÊU CẦU",
       href: "/manager-request",
       isActive: true,
     },
     {
       icon: <Briefcase size={20} />,
-      label: "ASSIGN TASK",
+      label: "CẦN KHẢO SÁT",
       href: "/manager-task",
     },
     {
       icon: <FileText size={20} />,
-      label: "SURVEY",
-      href: "/manager-survey",
+      label: "KHO MẶT BẰNG",
+      href: "/manager-site",
     },
   ];
 
@@ -51,7 +51,7 @@ export default function ManagerRequest() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          title="REQUEST" // Truyền title vào đây
+          title="YÊU CẦU" // Truyền title vào đây
           onNotificationClick={() => { }}
         />
 

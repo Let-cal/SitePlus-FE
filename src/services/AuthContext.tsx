@@ -16,6 +16,10 @@ interface AuthContextType {
   setUserRole: (role: string | null) => void;
   userName: string | null;
   userEmail: string | null;
+  userId: number | null;
+  setUserName: (name: string | null) => void;
+  setUserEmail: (email: string | null) => void;
+  setUserId: (id: number | null) => void;
   handleLogout: () => void;
   loading: boolean;
 }
@@ -39,6 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const { enqueueSnackbar } = useSnackbar();
 
@@ -48,10 +53,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem("userName");
     localStorage.removeItem("email");
     localStorage.removeItem("password");
+    localStorage.removeItem("hint");
     setIsAuthenticated(false);
     setUserRole(null);
     setUserName(null);
     setUserEmail(null);
+    setUserId(null);
     enqueueSnackbar("Logged out successfully", {
       variant: "info",
       preventDuplicate: true,
@@ -65,8 +72,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
-    const name = localStorage.getItem("userName");
+    const name = localStorage.getItem("name");
     const email = localStorage.getItem("email");
+    const id = localStorage.getItem("hint");
 
     if (token) {
       setIsAuthenticated(true);
@@ -80,6 +88,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (email) {
       setUserEmail(email);
     }
+    if (id && !isNaN(Number(id))) {
+      setUserId(Number(id));
+    } else {
+      setUserId(null);
+    }
+    
     setLoading(false);
   }, []);
 
@@ -127,7 +141,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         userRole,
         setUserRole,
         userName,
+        setUserName,
         userEmail,
+        setUserEmail,
+        userId,
+        setUserId,
         handleLogout,
         loading,
       }}

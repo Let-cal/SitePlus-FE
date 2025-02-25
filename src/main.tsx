@@ -1,4 +1,3 @@
-import ForgotPassPage from "@/lib/auth/pages/ForgotPassPage";
 import LoginPage from "@/lib/auth/pages/LoginPage";
 import RegisterPage from "@/lib/auth/pages/RegisterPage";
 import { SnackbarProvider } from "notistack";
@@ -14,18 +13,16 @@ import AreaManagerPage from "./lib/area-manager/pages/AreaManagerPage";
 import AreaManagerSend from "./lib/area-manager/pages/AreaManagerSend";
 import AreaManagerSurvey from "./lib/area-manager/pages/AreaManagerSurvey";
 import AreaManagerTask from "./lib/area-manager/pages/AreaManagerTask";
-import OTP_Page from "./lib/auth/pages/OTP_Page";
-import ResetPassPage from "./lib/auth/pages/ResetPassPage";
-import ContactPage from "./lib/cilent/contact-page/pages/ContactPage";
-import HomePage from "./lib/cilent/homepage/pages/HomePage";
-import InfoPage from "./lib/cilent/infopage/pages/InfoPage";
-import RatingRequestsPage from "./lib/cilent/send-requests-page/pages/RatingRequestsPage";
-import SurveyRequestsPage from "./lib/cilent/send-requests-page/pages/SurveyRequestsPage";
-import RequestReportPage from "./lib/cilent/view-requests-reports-page/pages/RequestReportPage";
 import ManagerPage from "./lib/manager/pages/ManagerPage";
 import ManagerRequest from "./lib/manager/pages/ManagerRequest";
-import ManagerSurvey from "./lib/manager/pages/ManagerSurvey";
+import ManagerSite from "./lib/manager/pages/ManagerSite";
 import ManagerTask from "./lib/manager/pages/ManagerTask";
+import ContactPage from "./lib/User/contact-page/pages/ContactPage";
+import HomePage from "./lib/User/homepage/pages/HomePage";
+import InfoPage from "./lib/User/infopage/pages/InfoPage";
+import RatingRequestsPage from "./lib/User/send-requests-page/pages/RatingRequestsPage";
+import SurveyRequestsPage from "./lib/User/send-requests-page/pages/SurveyRequestsPage";
+import RequestReportPage from "./lib/User/view-requests-reports-page/pages/RequestReportPage";
 import { AuthProvider } from "./services/AuthContext";
 import ProtectedRoute from "./services/ProtectedRoute";
 createRoot(document.getElementById("root")!).render(
@@ -54,11 +51,7 @@ createRoot(document.getElementById("root")!).render(
               <Route
                 path="/customer-page"
                 element={
-                  <ProtectedRoute
-                    element={<HomePage />}
-                    roles={["Customer"]}
-                    allowGuest={true}
-                  />
+                  <ProtectedRoute element={<HomePage />} allowGuest={true} />
                 }
               />
               <Route
@@ -78,41 +71,20 @@ createRoot(document.getElementById("root")!).render(
               />
               <Route
                 path="/rating-requests-page"
-                element={
-                  <ProtectedRoute
-                    element={<RatingRequestsPage />}
-                    roles={["Customer"]}
-                  />
-                }
+                element={<RatingRequestsPage />}
               />
               <Route
                 path="/survey-requests-page"
-                element={
-                  <ProtectedRoute
-                    element={<SurveyRequestsPage />}
-                    roles={["Customer"]}
-                  />
-                }
+                element={<SurveyRequestsPage />}
               />
-              <Route
-                path="/khoa-sat-cua-ban"
-                element={
-                  <ProtectedRoute
-                    element={<RequestReportPage />}
-                    roles={["Customer"]}
-                  />
-                }
-              />
+              <Route path="/khoa-sat-cua-ban" element={<RequestReportPage />} />
+
               <Route path="/sign-up" element={<RegisterPage />} />
               <Route path="/sign-in" element={<LoginPage />} />
               <Route path="/contact-page" element={<ContactPage />} />
-              <Route path="/forgot-password" element={<ForgotPassPage />} />
-              <Route path="/OTP-page" element={<OTP_Page />} />
-              <Route path="/reset-page" element={<ResetPassPage />} />
               <Route path="/info-page" element={<InfoPage />} />
-              <Route path="/manager-page" element={<ManagerPage />} />
 
-              {/* <Route
+              <Route
                 path="/manager-page"
                 element={
                   <ProtectedRoute
@@ -140,14 +112,14 @@ createRoot(document.getElementById("root")!).render(
                 }
               />
               <Route
-                path="/manager-survey"
+                path="/manager-site"
                 element={
                   <ProtectedRoute
-                    element={<ManagerSurvey />}
+                    element={<ManagerSite />}
                     roles={["Manager"]}
                   />
                 }
-              /> */}
+              />
               <Route
                 path="/area-manager-page"
                 element={

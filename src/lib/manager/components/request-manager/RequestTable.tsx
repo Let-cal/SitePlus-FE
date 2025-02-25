@@ -26,7 +26,6 @@ import {
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -35,33 +34,33 @@ import {
 
 interface Request {
   id: string;
-  type: string;
-  date: string;
-  customer: string;
+  brand: string;
+  email: string;
+  location: string; // Vị trí khảo sát trong TP.HCM
   status?: "accepted" | "rejected";
 }
 
 const sampleData: Request[] = [
-  { id: "AB123", type: "Tìm mặt bằng", date: "01/02/2025", customer: "Nguyễn Văn A" },
-  { id: "CD123", type: "Đánh giá", date: "31/12/2024", customer: "Nguyễn Thị B" },
-  { id: "AB535", type: "Tìm mặt bằng", date: "25/12/2024", customer: "Trần Thanh C" },
-  { id: "AB610", type: "Tìm mặt bằng", date: "10/01/2025", customer: "Lê Minh D" },
-  { id: "CD892", type: "Đánh giá", date: "09/02/2025", customer: "Hồ Ngọc E" },
+  { id: "AB123", brand: "Highlands Coffee", email: "contact@highlands.vn", location: "Quận 1, TP.HCM" },
+  { id: "CD123", brand: "The Coffee House", email: "info@tch.vn", location: "Quận 7, TP.HCM" },
+  { id: "AB535", brand: "Starbucks", email: "vn@starbucks.com", location: "Quận 3, TP.HCM" },
+  { id: "AB610", brand: "Phúc Long", email: "support@phuclong.vn", location: "Quận 10, TP.HCM" },
+  { id: "CD892", brand: "Trung Nguyên", email: "contact@trungnguyen.vn", location: "Bình Thạnh, TP.HCM" },
 ];
 
 const processedData: Request[] = [
-  { id: "AB129", type: "Tìm mặt bằng", date: "01/01/2025", customer: "Phạm Văn F", status: "rejected" },
-  { id: "CD125", type: "Đánh giá", date: "28/12/2024", customer: "Trần Thị G", status: "accepted" },
-  { id: "AB126", type: "Tìm mặt bằng", date: "15/01/2025", customer: "Lê Văn H", status: "accepted" },
-  { id: "CD127", type: "Đánh giá", date: "05/01/2025", customer: "Nguyễn Thị I", status: "rejected" },
+  { id: "AB129", brand: "Highlands Coffee", email: "contact@highlands.vn", location: "Quận 1, TP.HCM", status: "rejected" },
+  { id: "CD125", brand: "The Coffee House", email: "info@tch.vn", location: "Quận 7, TP.HCM", status: "accepted" },
+  { id: "AB126", brand: "Starbucks", email: "vn@starbucks.com", location: "Quận 3, TP.HCM", status: "accepted" },
+  { id: "CD127", brand: "Phúc Long", email: "support@phuclong.vn", location: "Quận 10, TP.HCM", status: "rejected" },
 ];
 
 type FilterStatus = "all" | "accepted" | "rejected";
 
 const filterLabels = {
-  all: "All Status",
-  accepted: "Accepted",
-  rejected: "Rejected",
+  all: "Tất cả",
+  accepted: "Chấp nhận",
+  rejected: "Từ chối",
 };
 
 export default function RequestTableWithTabs() {
@@ -102,11 +101,11 @@ export default function RequestTableWithTabs() {
           <Badge
             className={
               request.status === "accepted"
-                ? "bg-emerald-500 dark:bg-emerald-600 hover:bg-emerald-600 dark:hover:bg-emerald-700 w-24 justify-center px-2 py-1.5"
-                : "bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-700 w-24 justify-center px-2 py-1.5"
+                ? "bg-emerald-500 dark:bg-emerald-600 hover:bg-emerald-600 dark:hover:bg-emerald-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap" // Tăng chiều rộng lên w-24, thêm whitespace-nowrap để không xuống dòng
+                : "bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap" // Tăng chiều rộng lên w-24, thêm whitespace-nowrap để không xuống dòng
             }
           >
-            {request.status === "accepted" ? "Accepted" : "Rejected"}
+            {request.status === "accepted" ? "Chấp nhận" : "Từ chối"}
           </Badge>
         </div>
       );
@@ -116,16 +115,16 @@ export default function RequestTableWithTabs() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="default" className="w-[90px] px-2 h-7 text-sm">
-            Handle
+            Xử lý
             <ChevronDown className="ml-1 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onClick={() => handleAction(request.id, "accepted")}>
-            Accept
+            Chấp nhận
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleAction(request.id, "rejected")}>
-            Reject
+            Từ chối
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -143,13 +142,13 @@ export default function RequestTableWithTabs() {
               setFilterStatus("all");
             }}
           >
-            New requests
+            YÊU CẦU MỚI
           </Button>
           <Button
             variant={activeTab === "processed" ? "default" : "outline"}
             onClick={() => setActiveTab("processed")}
           >
-            Handled
+            ĐÃ XỬ LÝ
           </Button>
         </div>
 
@@ -175,24 +174,24 @@ export default function RequestTableWithTabs() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[20%]">Request ID</TableHead>
-            <TableHead className="w-[20%]">Type</TableHead>
-            <TableHead className="w-[15%]">Deadline</TableHead>
-            <TableHead className="w-[20%]">Client</TableHead>
-            <TableHead className="w-[15%]">View detail</TableHead>
-            <TableHead className="w-[10%]">{activeTab === "new" ? "Action" : "Status"}</TableHead>
+            <TableHead className="w-[12%]">Mã yêu cầu</TableHead>
+            <TableHead className="w-[20%]">Thương hiệu</TableHead>
+            <TableHead className="w-[20%]">Email</TableHead>
+            <TableHead className="w-[20%]">Vị trí khảo sát</TableHead>
+            <TableHead className="w-[12%]">Xem chi tiết</TableHead>
+            <TableHead className="w-[8%]">{activeTab === "new" ? "Hành động" : "Trạng thái"}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {currentItems.map((request) => (
             <TableRow key={request.id}>
               <TableCell>{request.id}</TableCell>
-              <TableCell>{request.type}</TableCell>
-              <TableCell>{request.date}</TableCell>
-              <TableCell>{request.customer}</TableCell>
+              <TableCell>{request.brand}</TableCell>
+              <TableCell>{request.email}</TableCell>
+              <TableCell>{request.location}</TableCell>
               <TableCell>
                 <Button variant="link" className="text-blue-500 p-0">
-                  View detail
+                  Xem chi tiết
                 </Button>
               </TableCell>
               <TableCell>

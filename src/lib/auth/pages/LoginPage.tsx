@@ -12,7 +12,7 @@ export default function LoginPage() {
       <main className="flex-grow container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Hình ảnh */}
-          <div className="relative lg:h-full hidden md:block overflow-hidden rounded-lg shadow-lg">
+          <div className="relative lg:h-full hidden md:block overflow-hidden rounded-lg shadow-lg ">
             <img
               src={BackgroundLogin}
               alt="SitePlus Logo"
@@ -28,7 +28,6 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );

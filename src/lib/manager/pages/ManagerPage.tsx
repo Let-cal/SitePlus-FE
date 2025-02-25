@@ -1,6 +1,4 @@
 import Sidebar from "@/lib/all-site/SideBar";
-import { AuthProvider } from "@/services/AuthContext";
-import { ThemeProvider } from "@/lib/all-site/ThemeProvider";
 import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck, Mail } from "lucide-react";
 import * as React from "react";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
@@ -26,23 +24,24 @@ export default function ManagerPage() {
     },
     {
       icon: <Briefcase size={20} />,
-      label: "ASSIGN TASK",
+      label: "CẦN KHẢO SÁT",
       href: "/manager-task",
     },
     {
       icon: <FileText size={20} />,
       label: "KHO MẶT BẰNG",
-      href: "/manager-survey",
+      href: "/manager-site",
     },
   ];
 
   const { handleLogout } = useAuth();
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <div className="flex-none">
+    <div className="flex h-screen overflow-hidden"> 
+      
+      <div className="flex-none"> 
         <Sidebar
-          onLogout={() => { }} // Moved inside to access useAuth
+          onLogout={handleLogout}
           logoHref={LogoSitePlus}
           title="Manager"
           mainNavItems={managerItems}
@@ -54,7 +53,9 @@ export default function ManagerPage() {
         <Header
           defaultLocation="Quận 7 - TPHCM"
           title="TRANG CHỦ"
-          onNotificationClick={() => { }}
+          onNotificationClick={() => {
+            // Xử lý khi click vào notification
+          }}
         />
 
         {/* Content area */}

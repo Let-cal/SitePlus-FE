@@ -61,18 +61,18 @@ const UserManagement = () => {
     <>
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">Area Manager</CardTitle>
+          <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">QUẢN LÝ KHU VỰC</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[23%]">Name</TableHead>
-                <TableHead className="w-[17%]">Area</TableHead>
-                <TableHead className="w-[15%]">City</TableHead>
-                <TableHead className="w-[12%]">Phone</TableHead>
+                <TableHead className="w-[23%]">Tên</TableHead>
+                <TableHead className="w-[17%]">Khu vực</TableHead>
+                {/* <TableHead className="w-[15%]">Thành phố</TableHead> */}
+                <TableHead className="w-[12%]">Số điện thoại</TableHead>
                 <TableHead className="w-[20%]">Email</TableHead>
-                <TableHead className="w-[10%]">Status</TableHead>
+                <TableHead className="w-[10%]">Trạng thái</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -80,7 +80,7 @@ const UserManagement = () => {
                 <TableRow key={district.id}>
                   <TableCell>{district.name}</TableCell>
                   <TableCell>{district.district}</TableCell>
-                  <TableCell>{district.location}</TableCell>
+                  {/* <TableCell>{district.location}</TableCell> */}
                   <TableCell>{district.phone}</TableCell>
                   <TableCell>{district.email}</TableCell>
                   <TableCell>

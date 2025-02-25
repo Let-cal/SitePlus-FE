@@ -25,44 +25,45 @@ import {
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button"; // Đảm bảo import Button
 
-interface Request {
+interface Site {
   id: string;
-  brand: string;
-  email: string;
-  location: string; // Vị trí khảo sát trong TP.HCM
-  status: "in-progress" | "done"; // Giữ nguyên trạng thái
+  address: string; // Địa chỉ (tên đường và quận ở TP.HCM)
+  area: string; // Diện tích, ví dụ: "50m²"
+  inBuilding: "Có" | "Không"; // Trong tòa nhà
+  status: "Đã thuê" | "Còn trống" | "Sắp trống";
 }
 
-const processedData: Request[] = [
-  { id: "AB129", brand: "Highlands Coffee", email: "contact@highlands.vn", location: "Quận 1, TP.HCM", status: "in-progress" },
-  { id: "CD125", brand: "The Coffee House", email: "info@tch.vn", location: "Quận 7, TP.HCM", status: "done" },
-  { id: "AB126", brand: "Starbucks", email: "vn@starbucks.com", location: "Quận 3, TP.HCM", status: "done" },
-  { id: "CD127", brand: "Phúc Long", email: "support@phuclong.vn", location: "Quận 10, TP.HCM", status: "in-progress" },
-  { id: "EF128", brand: "Trung Nguyên", email: "contact@trungnguyen.vn", location: "Bình Thạnh, TP.HCM", status: "done" },
-  { id: "GH130", brand: "Cộng Cà Phê", email: "info@congcafe.vn", location: "Quận 5, TP.HCM", status: "in-progress" },
-  { id: "IJ131", brand: "The Coffee Shop", email: "contact@coffeeshop.vn", location: "Quận 9, TP.HCM", status: "done" },
-  { id: "KL132", brand: "Nescafé", email: "vn@nescafe.com", location: "Quận Gò Vấp, TP.HCM", status: "in-progress" },
-  { id: "MN133", brand: "Lavazza", email: "support@lavazza.vn", location: "Quận Bình Tân, TP.HCM", status: "done" },
-  { id: "OP134", brand: "Illy", email: "contact@illy.vn", location: "Quận Thủ Đức, TP.HCM", status: "in-progress" },
+const sampleSites: Site[] = [
+  { id: "MB001", address: "123 Lê Lợi, Quận 1", area: "80m²", inBuilding: "Có", status: "Đã thuê" },
+  { id: "MB002", address: "45 Nguyễn Huệ, Quận 7", area: "60m²", inBuilding: "Không", status: "Còn trống" },
+  { id: "MB003", address: "78 Pasteur, Quận 3", area: "100m²", inBuilding: "Có", status: "Sắp trống" },
+  { id: "MB004", address: "90 Bùi Thị Xuân, Quận 10", area: "70m²", inBuilding: "Không", status: "Đã thuê" },
+  { id: "MB005", address: "22 Lê Văn Sỹ, Quận Phú Nhuận", area: "50m²", inBuilding: "Có", status: "Còn trống" },
+  { id: "MB006", address: "15 Điện Biên Phủ, Quận Bình Thạnh", area: "90m²", inBuilding: "Có", status: "Sắp trống" },
+  { id: "MB007", address: "33 Phạm Văn Đồng, Quận Gò Vấp", area: "65m²", inBuilding: "Không", status: "Đã thuê" },
+  { id: "MB008", address: "67 Võ Văn Kiệt, Quận 5", area: "85m²", inBuilding: "Có", status: "Còn trống" },
+  { id: "MB009", address: "88 Tô Hiến Thành, Quận 10", area: "75m²", inBuilding: "Không", status: "Sắp trống" },
+  { id: "MB010", address: "12 Nguyễn Trãi, Quận 5", area: "95m²", inBuilding: "Có", status: "Đã thuê" },
 ];
 
-type FilterStatus = "all" | "in-progress" | "done";
+type FilterStatus = "all" | "Đã thuê" | "Còn trống" | "Sắp trống";
 
 const filterLabels = {
   all: "Tất cả",
-  "in-progress": "Đang tiến hành",
-  done: "Hoàn thành",
+  "Đã thuê": "Đã thuê",
+  "Còn trống": "Còn trống",
+  "Sắp trống": "Sắp trống",
 };
 
-export default function ProcessedRequests() {
+export default function SiteManagement() {
   const [filterStatus, setFilterStatus] = React.useState<FilterStatus>("all");
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 5;
 
   const getFilteredData = () => {
-    let data = processedData;
+    let data = sampleSites;
     if (filterStatus !== "all") {
-      data = processedData.filter(item => item.status === filterStatus);
+      data = sampleSites.filter(item => item.status === filterStatus);
     }
     return data;
   };
@@ -81,7 +82,7 @@ export default function ProcessedRequests() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <div className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">Yêu cầu cần khảo sát</div>
+        <div className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl text-gray-800"></div>
         <Select
           value={filterStatus}
           onValueChange={(value: FilterStatus) => setFilterStatus(value)}
@@ -102,21 +103,21 @@ export default function ProcessedRequests() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[12%]">Mã yêu cầu</TableHead>
-            <TableHead className="w-[20%]">Thương hiệu</TableHead>
-            <TableHead className="w-[20%]">Email</TableHead>
-            <TableHead className="w-[20%]">Vị trí khảo sát</TableHead>
+            <TableHead className="w-[12%]">Mã mặt bằng</TableHead>
+            <TableHead className="w-[20%]">Địa chỉ</TableHead>
+            <TableHead className="w-[15%]">Diện tích</TableHead>
+            <TableHead className="w-[15%]">Trong tòa nhà</TableHead>
             <TableHead className="w-[12%]">Xem chi tiết</TableHead>
-            <TableHead className="w-[8%]">Trạng thái</TableHead>
+            <TableHead className="w-[10%]">Trạng thái</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {currentItems.map((request) => (
-            <TableRow key={request.id}>
-              <TableCell>{request.id}</TableCell>
-              <TableCell>{request.brand}</TableCell>
-              <TableCell>{request.email}</TableCell>
-              <TableCell>{request.location}</TableCell>
+          {currentItems.map((site) => (
+            <TableRow key={site.id}>
+              <TableCell>{site.id}</TableCell>
+              <TableCell>{site.address}</TableCell>
+              <TableCell>{site.area}</TableCell>
+              <TableCell>{site.inBuilding}</TableCell>
               <TableCell>
                 <Button variant="link" className="text-blue-500 p-0 underline hover:text-blue-700">
                   Xem chi tiết
@@ -125,12 +126,14 @@ export default function ProcessedRequests() {
               <TableCell>
                 <Badge
                   className={
-                    request.status === "done"
-                      ? "bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 w-28 h-6 justify-center px-2 text-xs text-white rounded-md whitespace-nowrap"
-                      : "bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-700 w-28 h-6 justify-center px-2 text-xs text-white rounded-md whitespace-nowrap"
+                    site.status === "Đã thuê"
+                      ? "bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
+                      : site.status === "Còn trống"
+                      ? "bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
+                      : "bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
                   }
                 >
-                  {request.status === "done" ? "Hoàn thành" : "Đang tiến hành"}
+                  {site.status}
                 </Badge>
               </TableCell>
             </TableRow>

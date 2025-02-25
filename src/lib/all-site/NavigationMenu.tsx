@@ -17,7 +17,7 @@ import logo from "/images/logo-site-plus/logo.png";
 export function NavigationMenuDemo() {
   return (
     <NavigationMenu>
-      <NavigationMenuList className="grid  gap-4 sm:grid-cols-1 md:grid-cols-5 md:gap-4 lg:flex lg:space-x-4 lg:pr-[9.5rem]">
+      <NavigationMenuList className="grid  gap-4 sm:grid-cols-1 md:grid-cols-5 md:gap-4 lg:flex lg:space-x-4 ">
         <NavigationMenuItem>
           <Link to="/">
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -87,14 +87,6 @@ export function NavigationMenuDemo() {
           <Link to="/info-page">
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               Giới Thiệu
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-
-        <NavigationMenuItem>
-          <Link to="/khoa-sat-cua-ban">
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Khảo Sát Của Bạn
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>

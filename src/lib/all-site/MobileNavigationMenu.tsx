@@ -17,7 +17,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../services/AuthContext";
 import { AuthLinks } from "../auth/components/AuthLink";
-import UserMenu from "./UserMenu";
+import UserMenu from "../User/profile-update/pages/UserMenu";
 import logo from "/images/logo-site-plus/logo.png";
 export function MobileNavigationMenu() {
   const { isAuthenticated } = useAuth();
@@ -86,12 +86,6 @@ export function MobileNavigationMenu() {
               className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
             >
               Giới Thiệu
-            </Link>
-            <Link
-              to="/khoa-sat-cua-ban"
-              className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
-            >
-              Khảo Sát Của Bạn
             </Link>
             <Link
               to="/contact-page"

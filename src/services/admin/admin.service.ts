@@ -108,6 +108,11 @@ interface RequestResponse<T> {
   error: string | null;
   errorMessages: string[] | null;
 }
+interface CompletedTask {
+  staffId: number;
+  staffName: string;
+  completedTasksCount: number;
+}
 
 class AdminService {
   private getAuthHeader() {
@@ -122,7 +127,7 @@ class AdminService {
   async getAllRoles(): Promise<Role[]> {
     try {
       const response: AxiosResponse<ApiResponse<Role[]>> = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET_ROLES}`,
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ROLES}`,
         {
           headers: this.getAuthHeader(),
         }
@@ -137,7 +142,7 @@ class AdminService {
   async getAllProvinces(): Promise<Province[]> {
     try {
       const response: AxiosResponse<ApiResponse<Province[]>> = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET_PROVINCES}`,
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_PROVINCES}`,
         {
           headers: this.getAuthHeader(),
         }
@@ -152,7 +157,7 @@ class AdminService {
   async getDistrictsByProvince(provinceCode: string): Promise<District[]> {
     try {
       const response: AxiosResponse<ApiResponse<District[]>> = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET_DISTRICTS}`,
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_DISTRICTS}`,
         {
           headers: this.getAuthHeader(),
           params: {
@@ -169,7 +174,7 @@ class AdminService {
   async createUser(userData: CreateUserRequest): Promise<AdminApiResponse> {
     try {
       const response: AxiosResponse<AdminApiResponse> = await axios.post(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.CREATE_STAFF}`,
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.CREATE_STAFF}`,
         userData,
         {
           headers: this.getAuthHeader(),
@@ -181,34 +186,54 @@ class AdminService {
       throw error;
     }
   }
-  async getAllUsers(request: GetUsersRequest): Promise<PaginatedResponse<User[]>> {
+  async getAllUsers(
+    request: GetUsersRequest
+  ): Promise<PaginatedResponse<User[]>> {
     try {
-      const response: AxiosResponse<PaginatedResponse<User[]>> = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET_ALL_USERS}`,
-        {
-          headers: this.getAuthHeader(),
-          params: {
-            roleId: request.roleId,
-            status: request.status,
-            page: request.page,
-            pageSize: request.pageSize,
-            search: request.search,
-          },
-        }
-      );
+      const response: AxiosResponse<PaginatedResponse<User[]>> =
+        await axios.get(
+          `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_USERS}`,
+          {
+            headers: this.getAuthHeader(),
+            params: {
+              roleId: request.roleId,
+              status: request.status,
+              page: request.page,
+              pageSize: request.pageSize,
+              search: request.search,
+            },
+          }
+        );
       return response.data;
     } catch (error) {
       console.error("Error fetching users:", error);
       throw error;
     }
   }
-  async getRatingRequests(page: number, pageSize: number): Promise<RequestResponse<RatingRequest>> {
+  async updateUser(data: { id: number; area?: string; status: boolean }) {
+    try {
+      const response = await axios.put(
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.POST.UPDATE_USRES}`,
+        data,
+        { headers: this.getAuthHeader() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+  }
+
+  async getRatingRequests(
+    page: number,
+    pageSize: number
+  ): Promise<RequestResponse<RatingRequest>> {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET_ALL_RATING_REQUESTS}`,
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_RATING_REQUESTS}`,
         {
           headers: this.getAuthHeader(),
-          params: { page, pageSize }
+          params: { page, pageSize },
         }
       );
       return response.data;
@@ -218,13 +243,16 @@ class AdminService {
     }
   }
 
-  async getSurveyRequests(page: number, pageSize: number): Promise<RequestResponse<SurveyRequest>> {
+  async getSurveyRequests(
+    page: number,
+    pageSize: number
+  ): Promise<RequestResponse<SurveyRequest>> {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET_ALL_SURVEY_REQUESTS}`,
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_SURVEY_REQUESTS}`,
         {
           headers: this.getAuthHeader(),
-          params: { page, pageSize }
+          params: { page, pageSize },
         }
       );
       return response.data;
@@ -233,7 +261,9 @@ class AdminService {
       throw error;
     }
   }
-  async getRatingRequestDetails(id: number): Promise<RequestResponse<RatingRequest>> {
+  async getRatingRequestDetails(
+    id: number
+  ): Promise<RequestResponse<RatingRequest>> {
     try {
       const response = await axios.get(
         `${API_BASE_URL}/api/RatingRequest/ratingRequest/${id}`,
@@ -248,7 +278,9 @@ class AdminService {
     }
   }
 
-  async getSurveyRequestDetails(id: number): Promise<RequestResponse<SurveyRequest>> {
+  async getSurveyRequestDetails(
+    id: number
+  ): Promise<RequestResponse<SurveyRequest>> {
     try {
       const response = await axios.get(
         `${API_BASE_URL}/api/SurveyRequest/surveyRequest/${id}`,
@@ -261,6 +293,53 @@ class AdminService {
       console.error("Error fetching survey request details:", error);
       throw error;
     }
+  }
+
+  async getTotalUsers() {
+    const response = await axios.get(
+      `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_USERS_COUNT}`,
+      {
+        headers: this.getAuthHeader(),
+      }
+    );
+    return response.data.data;
+  }
+
+  async getTotalCustomers() {
+    const response = await axios.get(
+      `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_USERS_BY_ROLES_COUNT}`,
+      {
+        headers: this.getAuthHeader(),
+      }
+    );
+    return response.data.data.Customer;
+  }
+
+  async getTotalRatings() {
+    const response = await axios.get(
+      `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_RATING_REQUESTS_COUNT}`,
+      {
+        headers: this.getAuthHeader(),
+      }
+    );
+    return response.data.data;
+  }
+
+  async getTotalSurveys() {
+    const response = await axios.get(
+      `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_SURVEY_REQUESTS_COUNT}`,
+      {
+        headers: this.getAuthHeader(),
+      }
+    );
+    return response.data.data;
+  }
+  async getCompletedTasks(): Promise<CompletedTask[]> {
+    const response = await axios.get(
+      `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_TASKS_COMPLETED_COUNT}`,
+      { headers: this.getAuthHeader() }
+    );
+    return response.data;
   }
 }
 

@@ -17,10 +17,11 @@ interface LoginResponse {
   token: string;
   role: string;
   hint: number;
+  name: string;
 }
 
 interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -30,15 +31,7 @@ interface RegisterRequest {
   password: string;
   confirmPassword: string;
 }
-interface VerifyOTPRequest {
-  email: string;
-  codeOTP: string;
-}
-interface ResetPasswordRequest {
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+
 class AuthService {
   async login(data: LoginRequest): Promise<LoginResponse> {
     try {
@@ -83,59 +76,6 @@ class AuthService {
     }
   }
 
-  async forgotPassword(email: string): Promise<ApiResponse> {
-    try {
-      const response: AxiosResponse<ApiResponse> = await axios.post(
-        `${API_BASE_URL}${API_ENDPOINTS.AUTH.FORGOT_PASSWORD}`,
-        null,
-        {
-          params: { email },
-          headers: {
-            "Content-Type": "application/json",
-            accept: "*/*",
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  async verifyOTP(data: VerifyOTPRequest): Promise<ApiResponse> {
-    try {
-      const response: AxiosResponse<ApiResponse> = await axios.post(
-        `${API_BASE_URL}${API_ENDPOINTS.AUTH.VERIFY_OTP}`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            accept: "*/*",
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-  async resetPassword(data: ResetPasswordRequest): Promise<ApiResponse> {
-    try {
-      const response: AxiosResponse<ApiResponse> = await axios.post(
-        `${API_BASE_URL}${API_ENDPOINTS.AUTH.RESET_PASS}`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            accept: "*/*",
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
   private handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<ApiResponse>;

@@ -4,32 +4,30 @@ import * as React from "react";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
-import BarChart from "../components/request-manager/BarChart";
-import RequestTable from "../components/request-manager/RequestTable";
 import AssignTask from "../components/task-manager/AssignTask";
 
 export default function ManagerTask() {
   const managerItems = [
     {
       icon: <Home size={20} />,
-      label: "HOME",
+      label: "TRANG CHỦ",
       href: "/manager-page",
     },
     {
       icon: <Mail size={20} />,
-      label: "REQUEST",
+      label: "YÊU CẦU",
       href: "/manager-request",
     },
     {
       icon: <Briefcase size={20} />,
-      label: "ASSIGN TASK",
+      label: "CẦN KHẢO SÁT",
       href: "/manager-task",
       isActive: true,
     },
     {
       icon: <FileText size={20} />,
-      label: "SURVEY",
-      href: "/manager-survey",
+      label: "KHO MẶT BẰNG",
+      href: "/manager-site",
     },
   ];
 
@@ -51,14 +49,13 @@ export default function ManagerTask() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          title="ASSIGN TASK" // Truyền title vào đây
+          title="CẦN KHẢO SÁT" // Truyền title vào đây
           onNotificationClick={() => { }}
         />
 
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
-            {/* <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">ASSIGN TASK</h2> */}
             <AssignTask />
           </div>
         </div>

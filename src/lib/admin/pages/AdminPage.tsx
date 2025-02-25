@@ -1,13 +1,14 @@
 import Header from "@/lib/all-site/HeaderOtherRole";
 import Sidebar from "@/lib/all-site/SideBar";
+import { adminService } from "@/services/admin/admin.service";
 import { Home, User } from "lucide-react";
 import * as React from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../../services/AuthContext";
 import UsageChart from "../components/home-page/ChartTotal";
 import StatCardGrid from "../components/home-page/StatCardGrid";
 import RequestTable from "../components/home-page/TableRequests";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
-
 export default function AdminPage() {
   const { handleLogout } = useAuth();
   const adminItems = [
@@ -23,10 +24,37 @@ export default function AdminPage() {
       href: "/admin-users",
     },
   ];
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalCustomers: 0,
+    totalRatings: 0,
+    totalSurveys: 0,
+  });
+
+  useEffect(() => {
+    async function fetchData() {
+      const [users, customers, ratings, surveys] = await Promise.all([
+        adminService.getTotalUsers(),
+        adminService.getTotalCustomers(),
+        adminService.getTotalRatings(),
+        adminService.getTotalSurveys(),
+      ]);
+
+      setStats({
+        totalUsers: users,
+        totalCustomers: customers,
+        totalRatings: ratings,
+        totalSurveys: surveys,
+      });
+    }
+
+    fetchData();
+  }, []);
+
   const cards = [
     {
       title: "Total Users",
-      value: "40,689",
+      value: stats.totalUsers,
       changeValue: "8.5%",
       changeText: "Up from yesterday",
       trend: "up",
@@ -34,7 +62,7 @@ export default function AdminPage() {
     },
     {
       title: "Total Customers",
-      value: "2040",
+      value: stats.totalCustomers,
       changeValue: "8.5%",
       changeText: "Up from yesterday",
       trend: "up",
@@ -42,7 +70,7 @@ export default function AdminPage() {
     },
     {
       title: "Total Rating-Requests",
-      value: "560",
+      value: stats.totalRatings,
       changeValue: "8.5%",
       changeText: "Down from yesterday",
       trend: "down",
@@ -50,7 +78,7 @@ export default function AdminPage() {
     },
     {
       title: "Total Survey-Requests",
-      value: "10293",
+      value: stats.totalSurveys,
       changeValue: "8.5%",
       changeText: "Down from yesterday",
       trend: "down",
