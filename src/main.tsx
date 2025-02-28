@@ -15,7 +15,7 @@ import AreaManagerSurvey from "./lib/area-manager/pages/AreaManagerSurvey";
 import AreaManagerTask from "./lib/area-manager/pages/AreaManagerTask";
 import ManagerPage from "./lib/manager/pages/ManagerPage";
 import ManagerRequest from "./lib/manager/pages/ManagerRequest";
-import ManagerSurvey from "./lib/manager/pages/ManagerSurvey";
+import ManagerSite from "./lib/manager/pages/ManagerSite";
 import ManagerTask from "./lib/manager/pages/ManagerTask";
 import ContactPage from "./lib/User/contact-page/pages/ContactPage";
 import HomePage from "./lib/User/homepage/pages/HomePage";
@@ -83,6 +83,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/sign-in" element={<LoginPage />} />
               <Route path="/contact-page" element={<ContactPage />} />
               <Route path="/info-page" element={<InfoPage />} />
+
               <Route
                 path="/manager-page"
                 element={
@@ -111,10 +112,10 @@ createRoot(document.getElementById("root")!).render(
                 }
               />
               <Route
-                path="/manager-survey"
+                path="/manager-site"
                 element={
                   <ProtectedRoute
-                    element={<ManagerSurvey />}
+                    element={<ManagerSite />}
                     roles={["Manager"]}
                   />
                 }
@@ -162,3 +163,6 @@ createRoot(document.getElementById("root")!).render(
     </SnackbarProvider>
   </StrictMode>
 );
+
+
+

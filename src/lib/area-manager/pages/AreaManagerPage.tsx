@@ -12,25 +12,25 @@ export default function AreaManagerPage() {
   const areaManagerItems = [
     {
       icon: <Home size={20} />,
-      label: "HOME",
+      label: "TRANG CHỦ",
       href: "/area-manager-page",
       isActive: true,
     },
     {
       icon: <Briefcase size={20} />,
-      label: "ASSIGN TASK",
+      label: "GIAO VIỆC",
       href: "/area-manager-task",
     },
-    {
-      icon: <FileText size={20} />,
-      label: "SURVEY",
-      href: "/area-manager-survey",
-    },
-    {
-      icon: <Send size={20} />,
-      label: "SEND REPORTS",
-      href: "/area-manager-send",
-    },
+    // {
+    //   icon: <FileText size={20} />,
+    //   label: "SURVEY",
+    //   href: "/area-manager-survey",
+    // },
+    // {
+    //   icon: <Send size={20} />,
+    //   label: "SEND REPORTS",
+    //   href: "/area-manager-send",
+    // },
   ];
 
   const { handleLogout } = useAuth();
@@ -50,7 +50,7 @@ export default function AreaManagerPage() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          title="HomePage" // Truyền title vào đây
+          title="TRANG CHỦ" 
           onNotificationClick={() => {}}
         />
 
