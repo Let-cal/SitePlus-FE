@@ -190,7 +190,7 @@ export default function RequestTableWithTabs() {
               <TableCell>{request.email}</TableCell>
               <TableCell>{request.location}</TableCell>
               <TableCell>
-                <Button variant="link" className="text-blue-500 p-0">
+                <Button variant="link" className="text-blue-500 p-0 underline hover:text-blue-700">
                   Xem chi tiết
                 </Button>
               </TableCell>

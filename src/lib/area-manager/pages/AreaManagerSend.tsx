@@ -11,12 +11,12 @@ export default function AreaManagerSend() {
   const areaManagerItems = [
     {
       icon: <Home size={20} />,
-      label: "HOME",
+      label: "TRANG CHỦ",
       href: "/area-manager-page",
     },
     {
       icon: <Briefcase size={20} />,
-      label: "ASSIGN TASK",
+      label: "GIAO VIỆC",
       href: "/area-manager-task",
     },
     {
