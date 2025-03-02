@@ -15,16 +15,16 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const initialDistricts = [
-  { id: 1, name: 'Lê Trần Cát Lâm', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 2, name: 'Lê Nguyễn Gia Bảo', district: 'Quận 12', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
-  { id: 3, name: 'Đinh Văn Phong', district: 'Quận 3', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
-  { id: 4, name: 'Nguyễn Kỳ Anh Minh', district: 'Quận 4', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 5, name: 'Phùi Chếch Minh', district: 'Quận Phú Nhuận', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 6, name: 'Trần Văn An', district: 'Quận Gò Vấp', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 7, name: 'Nguyễn Thị Bình', district: 'Quận 7', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
-  { id: 8, name: 'Phạm Hoàng Long', district: 'Quận Bình Thạnh', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 9, name: 'Võ Thị Mai', district: 'Quận 9', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 10, name: 'Hoàng Minh Tuấn', district: 'Quận Bình Tân', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' }
+  { id: 1, name: 'Lê Trần Cát Lâm', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Đang làm' },
+  { id: 2, name: 'Lê Nguyễn Gia Bảo', district: 'Quận 12', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Tạm dừng' },
+  { id: 3, name: 'Đinh Văn Phong', district: 'Quận 3', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Tạm dừng' },
+  { id: 4, name: 'Nguyễn Kỳ Anh Minh', district: 'Quận 4', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Đang làm' },
+  { id: 5, name: 'Phùi Chếch Minh', district: 'Quận Phú Nhuận', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Đang làm' },
+  { id: 6, name: 'Trần Văn An', district: 'Quận Gò Vấp', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Đang làm' },
+  { id: 7, name: 'Nguyễn Thị Bình', district: 'Quận 7', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Tạm dừng' },
+  { id: 8, name: 'Phạm Hoàng Long', district: 'Quận Bình Thạnh', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Đang làm' },
+  { id: 9, name: 'Võ Thị Mai', district: 'Quận 9', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Đang làm' },
+  { id: 10, name: 'Hoàng Minh Tuấn', district: 'Quận Bình Tân', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Tạm dừng' }
 ];
 
 const UserManagement = () => {
@@ -45,7 +45,7 @@ const UserManagement = () => {
         if (d.id === selectedDistrict.id) {
           return {
             ...d,
-            status: d.status === 'Active' ? 'Inactive' : 'Active'
+            status: d.status === 'Đang làm' ? 'Tạm dừng' : 'Đang làm'
           };
         }
         return d;
@@ -61,18 +61,18 @@ const UserManagement = () => {
     <>
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">Area Manager</CardTitle>
+          <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">QUẢN LÝ KHU VỰC</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[23%]">Name</TableHead>
-                <TableHead className="w-[17%]">Area</TableHead>
-                <TableHead className="w-[15%]">City</TableHead>
-                <TableHead className="w-[12%]">Phone</TableHead>
+                <TableHead className="w-[23%]">Tên</TableHead>
+                <TableHead className="w-[17%]">Khu vực</TableHead>
+                {/* <TableHead className="w-[15%]">Thành phố</TableHead> */}
+                <TableHead className="w-[12%]">Số điện thoại</TableHead>
                 <TableHead className="w-[20%]">Email</TableHead>
-                <TableHead className="w-[10%]">Status</TableHead>
+                <TableHead className="w-[10%]">Trạng thái</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -80,13 +80,13 @@ const UserManagement = () => {
                 <TableRow key={district.id}>
                   <TableCell>{district.name}</TableCell>
                   <TableCell>{district.district}</TableCell>
-                  <TableCell>{district.location}</TableCell>
+                  {/* <TableCell>{district.location}</TableCell> */}
                   <TableCell>{district.phone}</TableCell>
                   <TableCell>{district.email}</TableCell>
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className={`w-20 justify-center cursor-pointer ${district.status === 'Active' ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'
+                      className={`w-20 justify-center cursor-pointer ${district.status === 'Đang làm' ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'
                         } text-white`}
                       onClick={() => handleStatusClick(district)}
                     >
@@ -134,14 +134,14 @@ const UserManagement = () => {
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm status change</AlertDialogTitle>
+            <AlertDialogTitle>Xác nhận thay đổi trạng thái</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to change the status of {selectedDistrict?.name} from {selectedDistrict?.status} to {selectedDistrict?.status === 'Active' ? 'Inactive' : 'Active'}?
+              Bạn có chắc muốn thay đổi trạng thái của {selectedDistrict?.name} từ {selectedDistrict?.status} thành {selectedDistrict?.status === 'Đang làm' ? 'Tạm dừng' : 'Đang làm'}?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleStatusChange}>Confirm</AlertDialogAction>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleStatusChange}>Xác nhận</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -21,7 +21,6 @@ export interface User {
   areaName?: string;
   districtName?: string;
   cityName?: string;
-  status: number;
   statusName: string;
   createdAt: string;
 }

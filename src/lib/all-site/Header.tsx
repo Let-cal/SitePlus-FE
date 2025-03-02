@@ -2,16 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../services/AuthContext";
 import { AuthLinks } from "../auth/components/AuthLink";
-import UserMenu from "../User/profile-update/pages/UserMenu";
 import { MobileNavigationMenu } from "./MobileNavigationMenu";
 import { NavigationMenuDemo } from "./NavigationMenu";
 import logo from "/images/logo-site-plus/logo.png";
 
 export function Header() {
   const [isScrolled, setIsScrolled] = React.useState(false);
-  const { isAuthenticated } = useAuth();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -50,7 +47,7 @@ export function Header() {
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5 text-gray-600" />
             </Button>
-            {isAuthenticated ? <UserMenu /> : <AuthLinks />}
+            <AuthLinks />
           </div>
           {/* Mobile Navigation */}
           <div className="flex lg:hidden">

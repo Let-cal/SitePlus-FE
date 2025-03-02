@@ -201,15 +201,17 @@ const UserTable = () => {
     }
   };
 
-  const getStatusBadge = (status: number) => {
+  const getStatusBadge = (statusName: string) => {
     const statusStyles = {
-      1: "bg-green-500 hover:bg-green-600", // Đang hoạt động
-      0: "bg-gray-500 hover:bg-gray-600", // Không hoạt động
+      Available: "bg-green-500 hover:bg-green-600", // Đang hoạt động
+      Unavailable: "bg-gray-500 hover:bg-gray-600", // Không hoạt động
     };
 
     return (
-      <Badge className={`${statusStyles[status] || "bg-gray-500"} text-white`}>
-        {status === 1 ? "Đang hoạt động" : "Không hoạt động"}
+      <Badge
+        className={`${statusStyles[statusName] || "bg-gray-500"} text-white`}
+      >
+        {statusName === "Available" ? "Đang hoạt động" : "Không hoạt động"}
       </Badge>
     );
   };
@@ -319,7 +321,7 @@ const UserTable = () => {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.roleName}</TableCell>
                     {getExtraCell(user)}
-                    <TableCell>{getStatusBadge(user.status)}</TableCell>
+                    <TableCell>{getStatusBadge(user.statusName)}</TableCell>
                     <TableCell>{formatDate(user.createdAt)}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

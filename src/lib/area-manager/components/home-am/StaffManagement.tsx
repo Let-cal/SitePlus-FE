@@ -13,84 +13,112 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import areaManagerService from "../../../../services/area-manager/area-manager.service";
 
-const initialDistricts = [
-  { id: 1, name: 'Lê Trần Cát Lâm', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 2, name: 'Lê Nguyễn Gia Bảo', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
-  { id: 3, name: 'Đinh Văn Phong', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
-  { id: 4, name: 'Nguyễn Kỳ Anh Minh', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 5, name: 'Phùi Chếch Minh', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 6, name: 'Trần Văn An', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 7, name: 'Nguyễn Thị Bình', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' },
-  { id: 8, name: 'Phạm Hoàng Long', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 9, name: 'Võ Thị Mai', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Active' },
-  { id: 10, name: 'Hoàng Minh Tuấn', district: 'Quận 1', phone: '0982350783', email: 'kan250403@gmail.com', location: 'Hồ Chí Minh', status: 'Inactive' }
-];
+// Định nghĩa interface cho dữ liệu nhân viên dựa trên API
+interface Staff {
+  id: number;
+  staffId: number; // Lấy từ id của API
+  name: string;
+  district: string; // Lấy từ districtName
+  email: string;
+  status: string; // Lấy từ statusName (giá trị chuỗi từ API)
+}
+
+// Hàm lấy trạng thái đối lập dựa trên statusName hiện tại
+const getOppositeStatus = (currentStatus: string): string => {
+  // Giả định statusName chỉ có 2 giá trị: một giá trị là "Hoạt động" hoặc "Đang hoạt động" (hoặc tương tự),
+  // và một giá trị là "Vô hiệu" hoặc "Tạm ngưng" (hoặc tương tự)
+  const activeStatuses = ["Hoạt động", "Đang hoạt động", "Đang làm"]; // Danh sách các trạng thái "hoạt động"
+  return activeStatuses.includes(currentStatus) ? "Vô hiệu" : "Hoạt động"; // Chuyển đổi linh hoạt
+};
 
 const StaffManagement = () => {
-  const [districts, setDistricts] = React.useState(initialDistricts);
+  const [staffs, setStaffs] = React.useState<Staff[]>([]);
   const [currentPage, setCurrentPage] = React.useState(1);
-  const [selectedDistrict, setSelectedDistrict] = React.useState(null);
+  const [selectedStaff, setSelectedStaff] = React.useState<Staff | null>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const itemsPerPage = 5;
 
-  const handleStatusClick = (district) => {
-    setSelectedDistrict(district);
+  // Gọi API để lấy danh sách nhân viên khi component mount
+  React.useEffect(() => {
+    const fetchStaffData = async () => {
+      const users = await areaManagerService.fetchUsers(1, itemsPerPage);
+      const mappedStaffs: Staff[] = users.map(user => ({
+        id: user.id,
+        staffId: user.id, // id từ API làm mã nhân viên
+        name: user.name,
+        district: user.districtName,
+        email: user.email,
+        status: user.statusName, // Sử dụng statusName trực tiếp từ API
+      }));
+      setStaffs(mappedStaffs);
+    };
+
+    fetchStaffData();
+  }, []);
+
+  const handleStatusClick = (staff: Staff) => {
+    setSelectedStaff(staff);
     setDialogOpen(true);
   };
 
   const handleStatusChange = () => {
-    setDistricts(prevDistricts =>
-      prevDistricts.map(d => {
-        if (d.id === selectedDistrict.id) {
-          return {
-            ...d,
-            status: d.status === 'Active' ? 'Inactive' : 'Active'
-          };
-        }
-        return d;
-      })
-    );
+    if (selectedStaff) {
+      setStaffs(prevStaffs =>
+        prevStaffs.map(s => {
+          if (s.id === selectedStaff.id) {
+            const newStatus = getOppositeStatus(selectedStaff.status); // Lấy trạng thái đối lập
+            return {
+              ...s,
+              status: newStatus,
+            };
+          }
+          return s;
+        })
+      );
+    }
     setDialogOpen(false);
   };
 
-  const totalPages = Math.ceil(districts.length / itemsPerPage);
-  const currentItems = districts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(staffs.length / itemsPerPage);
+  const currentItems = staffs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <>
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">Staff Management</CardTitle>
+          <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">Quản lý nhân viên</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[23%]">Name</TableHead>
-                <TableHead className="w-[17%]">Area</TableHead>
-                <TableHead className="w-[15%]">City</TableHead>
-                <TableHead className="w-[12%]">Phone</TableHead>
-                <TableHead className="w-[20%]">Email</TableHead>
-                <TableHead className="w-[10%]">Status</TableHead>
+                <TableHead className="w-[15%]">Mã nhân viên</TableHead>
+                <TableHead className="w-[25%]">Tên</TableHead>
+                <TableHead className="w-[20%]">Khu vực (quận)</TableHead>
+                <TableHead className="w-[30%]">Email</TableHead>
+                <TableHead className="w-[10%]">Trạng thái</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentItems.map((district) => (
-                <TableRow key={district.id}>
-                  <TableCell>{district.name}</TableCell>
-                  <TableCell>{district.district}</TableCell>
-                  <TableCell>{district.location}</TableCell>
-                  <TableCell>{district.phone}</TableCell>
-                  <TableCell>{district.email}</TableCell>
+              {currentItems.map((staff) => (
+                <TableRow key={staff.id}>
+                  <TableCell>{staff.staffId}</TableCell>
+                  <TableCell>{staff.name}</TableCell>
+                  <TableCell>{staff.district}</TableCell>
+                  <TableCell>{staff.email}</TableCell>
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className={`w-20 justify-center cursor-pointer ${district.status === 'Active' ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'
-                        } text-white`}
-                      onClick={() => handleStatusClick(district)}
+                      className={`w-[100px] h-5 flex items-center justify-center cursor-pointer ${
+                        ["Hoạt động", "Đang hoạt động", "Đang làm"].includes(staff.status)
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-gray-500 hover:bg-gray-600"
+                      } text-white text-xs whitespace-nowrap`}
+                      onClick={() => handleStatusClick(staff)}
                     >
-                      {district.status}
+                      {staff.status}
                     </Badge>
                   </TableCell>
                 </TableRow>
@@ -104,7 +132,7 @@ const StaffManagement = () => {
                 <PaginationItem>
                   <PaginationPrevious
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                   />
                 </PaginationItem>
 
@@ -122,7 +150,7 @@ const StaffManagement = () => {
                 <PaginationItem>
                   <PaginationNext
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
                   />
                 </PaginationItem>
               </PaginationContent>
@@ -134,14 +162,15 @@ const StaffManagement = () => {
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm status change</AlertDialogTitle>
+            <AlertDialogTitle>Xác nhận thay đổi trạng thái</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to change the status of {selectedDistrict?.name} from {selectedDistrict?.status} to {selectedDistrict?.status === 'Active' ? 'Inactive' : 'Active'}?
+              Bạn có chắc chắn muốn thay đổi trạng thái của {selectedStaff?.name} từ {selectedStaff?.status} sang{" "}
+              {getOppositeStatus(selectedStaff?.status || "")}?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleStatusChange}>Confirm</AlertDialogAction>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleStatusChange}>Xác nhận</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

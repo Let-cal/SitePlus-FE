@@ -49,7 +49,7 @@ export default function AreaManagerSurvey() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          title="Receive Surveys" // Truyền title vào đây
+          title="RECEIVE SURVEY" // Truyền title vào đây
           onNotificationClick={() => {}}
         />
 

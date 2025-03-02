@@ -15,12 +15,9 @@ import {
 import { Bell, Menu } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../services/AuthContext";
 import { AuthLinks } from "../auth/components/AuthLink";
-import UserMenu from "../User/profile-update/pages/UserMenu";
 import logo from "/images/logo-site-plus/logo.png";
 export function MobileNavigationMenu() {
-  const { isAuthenticated } = useAuth();
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -45,7 +42,7 @@ export function MobileNavigationMenu() {
 
             {/* Auth Links */}
             <div className="flex flex-col gap-2">
-              {isAuthenticated ? <UserMenu /> : <AuthLinks />}
+             <AuthLinks />
             </div>
           </div>
           {/* Navigation Links */}

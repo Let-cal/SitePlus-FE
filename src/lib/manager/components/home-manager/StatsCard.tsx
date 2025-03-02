@@ -23,7 +23,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, increase, icon, ico
       <div className="flex items-center gap-1 mt-1">
                 <TrendingUp className="h-4 w-4 text-green-500" />
                 <p className="text-xs text-muted-foreground">
-                    {increase} from last month
+                    {increase} từ tháng trước
                 </p>
             </div>
     </CardContent>
@@ -33,21 +33,21 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, increase, icon, ico
 const StatsCards: React.FC = () => {
   const stats = [
     { 
-      title: "Total request", 
+      title: "Tổng số yêu cầu", 
       value: "700", 
       increase: "+20.1%",
       icon: <MessageSquare />,
       iconColor: "text-blue-500"  
     },
     { 
-      title: "Survey successful", 
+      title: "Tổng mặt bằng đã khảo sát", 
       value: "520", 
       increase: "+10.1%",
       icon: <ClipboardCheck />,
       iconColor: "text-green-500"  
     },
     { 
-      title: "Project success", 
+      title: "Dự án thành công", 
       value: "300", 
       increase: "+12.2%",
       icon: <Briefcase />,

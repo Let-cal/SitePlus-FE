@@ -13,24 +13,24 @@ export default function ManagerPage() {
   const managerItems = [
     {
       icon: <Home size={20} />,
-      label: "HOME",
+      label: "TRANG CHỦ",
       href: "/manager-page",
       isActive: true,
     },
     {
       icon: <Mail size={20} />,
-      label: "REQUEST",
+      label: "YÊU CẦU",
       href: "/manager-request",
     },
     {
       icon: <Briefcase size={20} />,
-      label: "ASSIGN TASK",
+      label: "CẦN KHẢO SÁT",
       href: "/manager-task",
     },
     {
       icon: <FileText size={20} />,
-      label: "SURVEY",
-      href: "/manager-survey",
+      label: "KHO MẶT BẰNG",
+      href: "/manager-site",
     },
   ];
 
@@ -52,9 +52,7 @@ export default function ManagerPage() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          onSearch={() => {
-            // Xử lý tìm kiếm
-          }}
+          title="TRANG CHỦ"
           onNotificationClick={() => {
             // Xử lý khi click vào notification
           }}
@@ -63,7 +61,6 @@ export default function ManagerPage() {
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
-            <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">HOME</h2>
             <StatsCards />
             <DashboardCharts />
             <UserManagement />

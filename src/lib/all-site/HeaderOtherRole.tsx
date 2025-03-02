@@ -1,17 +1,19 @@
+import { defineElement } from "@lordicon/element";
+import lottie from "lottie-web";
 import { MapPin } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
+import DynamicLordIcon from "./DynamicLordIcon";
 import Heading from "./Heading";
-
 const Header = ({
   defaultLocation = "Quận 9 - TPHCM",
   title,
   className = "",
 }) => {
   const [userRole, setUserRole] = useState("");
-
-  
-
+  useEffect(() => {
+    defineElement(lottie.loadAnimation);
+  }, []);
   useEffect(() => {
     // Lấy thông tin từ localStorage
     const storedRole = localStorage.getItem("role");
@@ -61,18 +63,13 @@ const Header = ({
       <div className="flex items-center gap-5">
         {renderLocation()}
 
-        {/* User Info and Notification */}
-        <div className="flex items-center gap-4">
-  
-
-          {/* User Info */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-theme-secondary-light dark:bg-theme-secondary-dark rounded-full" />
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold text-muted-foreground">
-                {userRole || "Area Manager"}
-              </span>
-            </div>
+        {/* User Info */}
+        <div className="flex items-center gap-3">
+          <DynamicLordIcon />
+          <div className="flex flex-col">
+            <span className="text-xs font-semibold text-muted-foreground">
+              {userRole || "Area Manager"}
+            </span>
           </div>
         </div>
       </div>
