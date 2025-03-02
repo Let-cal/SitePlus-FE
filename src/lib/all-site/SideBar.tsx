@@ -31,6 +31,9 @@ const Sidebar = ({
   defaultCollapsed = false,
   onLogout,
 }: SidebarProps) => {
+  // Kiểm tra màn hình nhỏ (xs hoặc sm)
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
   // Đọc trạng thái thu gọn từ localStorage hoặc defaultCollapsed
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const savedState = localStorage.getItem("sidebarCollapsed");
@@ -39,6 +42,28 @@ const Sidebar = ({
 
   const { isDarkMode, toggleTheme } = useTheme();
   const [scrollPosition, setScrollPosition] = useState(0);
+
+  // Theo dõi kích thước màn hình
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth < 640); // 640px là kích thước sm trong Tailwind
+    };
+
+    // Kiểm tra khi component mount và khi resize
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+
+    return () => {
+      window.removeEventListener("resize", checkScreenSize);
+    };
+  }, []);
+
+  // Cập nhật trạng thái collapse khi màn hình thay đổi kích thước
+  useEffect(() => {
+    if (isSmallScreen) {
+      setIsCollapsed(true);
+    }
+  }, [isSmallScreen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,21 +80,28 @@ const Sidebar = ({
 
   // Hàm toggleCollapse để thay đổi trạng thái và lưu vào localStorage
   const toggleCollapse = () => {
-    const newState = !isCollapsed;
-    setIsCollapsed(newState);
-    localStorage.setItem("sidebarCollapsed", JSON.stringify(newState));
+    // Chỉ cho phép toggle khi không phải màn hình nhỏ
+    if (!isSmallScreen) {
+      const newState = !isCollapsed;
+      setIsCollapsed(newState);
+      localStorage.setItem("sidebarCollapsed", JSON.stringify(newState));
+    }
   };
+
+  // Đảm bảo sidebar luôn hiển thị, ngay cả trên màn hình nhỏ
+  const sidebarWidth = isCollapsed ? "w-16" : "w-64";
 
   return (
     <div
       className={cn(
         "flex flex-col",
-        isCollapsed ? "w-20" : "w-64",
+        sidebarWidth,
         "transition-[width,transform] duration-300 ease-in-out",
         "border-r",
         "bg-primary-light dark:bg-primary-dark",
         "border-border-light dark:border-border-dark",
         "sticky top-0 h-screen overflow-y-auto overflow-x-hidden",
+        "min-w-[64px]", // Đảm bảo width tối thiểu
         className
       )}
       style={{
@@ -88,7 +120,7 @@ const Sidebar = ({
         <div
           className={cn(
             "flex items-center gap-2",
-            isCollapsed && "justify-center",
+            (isCollapsed || isSmallScreen) && "justify-center",
             "min-w-0",
             "transition-all duration-300 ease-in-out"
           )}
@@ -113,21 +145,28 @@ const Sidebar = ({
             </h1>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleCollapse}
-          className="hover:bg-secondary-light dark:hover:bg-secondary-dark flex-shrink-0 transition-transform duration-300 ease-in-out"
-        >
-          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-        </Button>
+        {/* Chỉ hiển thị nút toggle collapse khi không phải màn hình nhỏ */}
+        {!isSmallScreen && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleCollapse}
+            className="hover:bg-secondary-light dark:hover:bg-secondary-dark flex-shrink-0 transition-transform duration-300 ease-in-out"
+          >
+            {isCollapsed ? (
+              <ChevronRight size={20} />
+            ) : (
+              <ChevronLeft size={20} />
+            )}
+          </Button>
+        )}
       </div>
 
       {/* Navigation Items */}
       <div className="flex-1 py-4 transition-all duration-300 ease-in-out">
         <div className="px-3">
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-4 transition-opacity duration-300 ease-in-out">
-            {!isCollapsed && "Main"}
+            {!isCollapsed && !isSmallScreen && "Main"}
           </p>
         </div>
         <nav className="space-y-1 px-2">
@@ -137,14 +176,14 @@ const Sidebar = ({
                 variant={item.isActive ? "secondary" : "ghost"}
                 className={cn(
                   "w-full justify-start gap-3",
-                  isCollapsed && "justify-center",
+                  (isCollapsed || isSmallScreen) && "justify-center",
                   "text-text-light dark:text-text-dark",
                   "hover:bg-secondary-light dark:hover:bg-secondary-dark",
                   "transition-all duration-300 ease-in-out"
                 )}
               >
                 {item.icon}
-                {!isCollapsed && (
+                {!isCollapsed && !isSmallScreen && (
                   <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
                     {item.label}
                   </span>
@@ -161,7 +200,7 @@ const Sidebar = ({
           variant="ghost"
           className={cn(
             "w-full justify-start gap-3",
-            isCollapsed && "justify-center",
+            (isCollapsed || isSmallScreen) && "justify-center",
             "text-text-light dark:text-text-dark",
             "hover:bg-secondary-light dark:hover:bg-secondary-dark",
             "transition-all duration-300 ease-in-out"
@@ -169,7 +208,7 @@ const Sidebar = ({
           onClick={onLogout}
         >
           <LogOut size={20} />
-          {!isCollapsed && (
+          {!isCollapsed && !isSmallScreen && (
             <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
               Logout
             </span>
@@ -192,12 +231,12 @@ const Sidebar = ({
             onClick={toggleTheme}
             className={cn(
               "flex items-center gap-2",
-              isCollapsed && "w-full justify-center",
+              (isCollapsed || isSmallScreen) && "w-full justify-center",
               "transition-all duration-300 ease-in-out"
             )}
           >
             <Sun size={16} />
-            {!isCollapsed && (
+            {!isCollapsed && !isSmallScreen && (
               <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
                 Light
               </span>
@@ -209,12 +248,12 @@ const Sidebar = ({
             onClick={toggleTheme}
             className={cn(
               "flex items-center gap-2",
-              isCollapsed && "w-full justify-center",
+              (isCollapsed || isSmallScreen) && "w-full justify-center",
               "transition-all duration-300 ease-in-out"
             )}
           >
             <Moon size={16} />
-            {!isCollapsed && (
+            {!isCollapsed && !isSmallScreen && (
               <span className="whitespace-nowrap overflow-hidden text-ellipsis transition-all duration-300 ease-in-out">
                 Dark
               </span>

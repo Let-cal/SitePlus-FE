@@ -18,7 +18,7 @@ const StatCard = ({
   return (
     <div className="w-full xs:w-[180px] sm:w-[200px] md:w-[220px] lg:w-[262px] h-auto min-h-[161px] bg-theme-primary-light dark:bg-theme-primary-dark rounded-lg border border-theme-border-light dark:border-theme-border-dark shadow-lg transition-colors">
       <div className="p-4 relative">
-        <span className="block text-sm xs:text-base font-semibold text-theme-text-light/70 dark:text-theme-text-dark/70 tracking-tight">
+        <span className="block lg:text-2xl xs:text-base font-semibold text-theme-text-light/70 dark:text-theme-text-dark/70 tracking-tight">
           {title}
         </span>
         <div className="w-[60px] h-[60px] absolute top-4 right-4">
@@ -67,7 +67,7 @@ const StatCard = ({
 const StatCardGrid = ({ cards }) => {
   return (
     <div className=" w-full mx-auto">
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 justify-items-center">
         {cards.map((card, index) => (
           <StatCard key={index} {...card} />
         ))}

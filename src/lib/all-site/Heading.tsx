@@ -4,7 +4,7 @@ import * as React from "react";
 interface HeadingProps {
   text: string;
   hasMargin?: boolean;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   color?: boolean;
   center?: boolean;
   setColor?: string;
@@ -23,7 +23,9 @@ const Heading: React.FC<HeadingProps> = ({
       ? "text-xl md:text-2xl lg:text-3xl"
       : size === "lg"
       ? "text-4xl md:text-5xl lg:text-6xl"
-      : "text-3xl md:text-4xl lg:text-5xl";
+      : size === "md"
+      ? "text-3xl md:text-4xl lg:text-5xl"
+      : "text-[12px] md:text-xl lg:text-2xl";
 
   return (
     <AnimatePresence mode="wait">

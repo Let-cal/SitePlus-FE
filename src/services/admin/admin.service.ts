@@ -1,117 +1,103 @@
 import axios, { AxiosResponse } from "axios";
 import { API_BASE_URL } from "../api-config";
 import { API_ENDPOINTS } from "../api-endpoints";
-
-interface User {
+export interface UserRoleCountByMonth {
+  month: number;
+  manager: number;
+  areaManager: number;
+  staff: number;
+}
+interface TotalResponse {
+  total: number;
+  todayTotal: number;
+  percentageChange: number;
+  trend: "Up" | "Down" | "Neutral";
+}
+export interface User {
   id: number;
-  name: string;
   email: string;
+  name: string;
   roleName: string;
-  area?: string;
-  status: boolean;
+  areaName?: string;
+  districtName?: string;
+  cityName?: string;
+  status: number;
+  statusName: string;
+  createdAt: string;
+}
+export interface GetUsersParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  sort?: string;
+  roleId?: number;
+  status?: boolean | null;
+}
+export interface UsersResponse {
+  page: number;
+  totalPage: number;
+  totalRecords: number;
+  listData: User[];
 }
 
-interface GetUsersRequest {
-  roleId: number;
-  status: boolean | null;
-  page: number;
-  pageSize: number;
-  search?: string;
+export interface Role {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+type MonthlyData = {
+  month: number;
+  total: number;
+};
+
+export interface District {
+  id: number;
+  name: string;
+  cityId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Area {
+  id: number;
+  name: string;
+  districtId: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface PaginatedResponse<T> {
-  data: {
-    listData: T;
-    totalPage: number;
-  };
-  success: boolean;
-  message?: string;
-  error: string | null;
-  hint: string | null;
-  errorMessages: string[] | null;
+  page: number;
+  totalPage: number;
+  totalRecords: number;
+  listData: T[];
 }
 
-interface Province {
-  code: string;
-  name: string;
-}
-
-interface District {
-  code: string;
-  name: string;
-  province: string;
-}
-
-interface Role {
-  id: number;
-  name: string;
-  accounts: null;
-}
-interface CreateUserRequest {
-  name: string;
+export interface CreateUserRequest {
   email: string;
   password: string;
+  name: string;
   roleId: number;
-  area: string | null;
-}
-interface AdminApiResponse {
-  data: unknown | null;
-  success: boolean;
-  message?: string;
-  error: string | null;
-  hint: string | null;
-  errorMessages: string[] | null;
-}
-interface ApiResponse<T> {
-  status: string;
-  message?: string;
-  results: T;
-}
-interface RatingRequest {
-  id: number;
-  name: string;
-  title: string;
-  description: string;
-  taxCode: string;
-  specificAddress: string;
-  industry: string;
-  areaSize: number;
-  status: number;
-  scoreCheck: number;
-  reason: string;
-  addressId: number;
-  clientId: number;
-  taskId: number;
+  areaId: number;
 }
 
-interface SurveyRequest {
-  id: number;
+export interface CreateUserResponse {
+  email: string;
+  password: string;
   name: string;
-  title: string;
-  description: string;
-  taxCode: string;
-  expectedRentalPrice: number;
-  preferredArea: string;
-  industry: string;
-  expectedTime: string;
-  status: number;
-  scoreCheck: number;
-  reason: string;
-  clientId: number;
-  taskId: number;
+  roleId: number;
+  areaId: number;
 }
 
-interface RequestResponse<T> {
+interface AdminApiResponse<T> {
   data: T;
   success: boolean;
-  message: string | null;
-  error: string | null;
-  errorMessages: string[] | null;
-}
-interface CompletedTask {
-  staffId: number;
-  staffName: string;
-  completedTasksCount: number;
+  message?: string;
+  error?: string | null;
+  hint?: string | null;
+  errorMessages?: string[] | null;
 }
 
 class AdminService {
@@ -126,84 +112,96 @@ class AdminService {
 
   async getAllRoles(): Promise<Role[]> {
     try {
-      const response: AxiosResponse<ApiResponse<Role[]>> = await axios.get(
+      const response: AxiosResponse<AdminApiResponse<Role[]>> = await axios.get(
         `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ROLES}`,
         {
           headers: this.getAuthHeader(),
         }
       );
-      return response.data.results;
+      return response.data.data || [];
     } catch (error) {
       console.error("Error fetching roles:", error);
       throw error;
     }
   }
 
-  async getAllProvinces(): Promise<Province[]> {
+  async getAllDistricts(
+    page: number = 1,
+    pageSize: number = 100
+  ): Promise<District[]> {
     try {
-      const response: AxiosResponse<ApiResponse<Province[]>> = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_PROVINCES}`,
+      const response: AxiosResponse<
+        AdminApiResponse<PaginatedResponse<District>>
+      > = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_DISTRICTS}?page=${page}&pageSize=${pageSize}`,
         {
           headers: this.getAuthHeader(),
         }
       );
-      return response.data.results;
-    } catch (error) {
-      console.error("Error fetching provinces:", error);
-      throw error;
-    }
-  }
-
-  async getDistrictsByProvince(provinceCode: string): Promise<District[]> {
-    try {
-      const response: AxiosResponse<ApiResponse<District[]>> = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_DISTRICTS}`,
-        {
-          headers: this.getAuthHeader(),
-          params: {
-            province: provinceCode,
-          },
-        }
-      );
-      return response.data.results;
+      return response.data.data.listData || [];
     } catch (error) {
       console.error("Error fetching districts:", error);
       throw error;
     }
   }
-  async createUser(userData: CreateUserRequest): Promise<AdminApiResponse> {
+
+  async getAreasByDistrict(
+    districtId: number,
+    page: number = 1,
+    pageSize: number = 100
+  ): Promise<Area[]> {
     try {
-      const response: AxiosResponse<AdminApiResponse> = await axios.post(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.CREATE_STAFF}`,
-        userData,
-        {
+      const response: AxiosResponse<AdminApiResponse<PaginatedResponse<Area>>> =
+        await axios.get(
+          `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_AREA_BY_DISTRICTS}/${districtId}?page=${page}&pageSize=${pageSize}`,
+          {
+            headers: this.getAuthHeader(),
+          }
+        );
+      return response.data.data.listData || [];
+    } catch (error) {
+      console.error("Error fetching areas:", error);
+      throw error;
+    }
+  }
+
+  async createUser(
+    userData: CreateUserRequest
+  ): Promise<AdminApiResponse<CreateUserResponse>> {
+    try {
+      const response: AxiosResponse<AdminApiResponse<CreateUserResponse>> =
+        await axios.post(`${API_BASE_URL}/api/user/register`, userData, {
           headers: this.getAuthHeader(),
-        }
-      );
+        });
       return response.data;
     } catch (error) {
       console.error("Error creating user:", error);
       throw error;
     }
   }
+
   async getAllUsers(
-    request: GetUsersRequest
-  ): Promise<PaginatedResponse<User[]>> {
+    params: GetUsersParams
+  ): Promise<AdminApiResponse<UsersResponse>> {
     try {
-      const response: AxiosResponse<PaginatedResponse<User[]>> =
-        await axios.get(
-          `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_USERS}`,
-          {
-            headers: this.getAuthHeader(),
-            params: {
-              roleId: request.roleId,
-              status: request.status,
-              page: request.page,
-              pageSize: request.pageSize,
-              search: request.search,
-            },
-          }
-        );
+      // Convert boolean status to string format expected by API
+      let statusParam = undefined;
+      if (params.status !== null && params.status !== undefined) {
+        statusParam = params.status ? "Available" : "Disabled";
+      }
+
+      const response: AxiosResponse<AdminApiResponse<UsersResponse>> =
+        await axios.get(`${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_USERS}`, {
+          headers: this.getAuthHeader(),
+          params: {
+            page: params.page || 1,
+            pageSize: params.pageSize || 10,
+            search: params.search || "",
+            sort: params.sort || "",
+            roleId: params.roleId,
+            status: statusParam,
+          },
+        });
       return response.data;
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -223,123 +221,97 @@ class AdminService {
       throw error;
     }
   }
-
-  async getRatingRequests(
-    page: number,
-    pageSize: number
-  ): Promise<RequestResponse<RatingRequest>> {
+  async getTotalUsers(): Promise<TotalResponse> {
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_RATING_REQUESTS}`,
+      const response: AxiosResponse<TotalResponse> = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_TOTAL_USERS}`,
+        { headers: this.getAuthHeader() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching total users:", error);
+      return { total: 0, todayTotal: 0, percentageChange: 0, trend: "Neutral" };
+    }
+  }
+
+  async getTotalStaff(): Promise<TotalResponse> {
+    try {
+      const response: AxiosResponse<TotalResponse> = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_TOTAL_STAFF}`,
+        { headers: this.getAuthHeader() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching total staff:", error);
+      return { total: 0, todayTotal: 0, percentageChange: 0, trend: "Neutral" };
+    }
+  }
+
+  async getTotalSites(): Promise<TotalResponse> {
+    try {
+      const response: AxiosResponse<TotalResponse> = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_TOTAL_SITES}`,
+        { headers: this.getAuthHeader() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching total sites:", error);
+      return { total: 0, todayTotal: 0, percentageChange: 0, trend: "Neutral" };
+    }
+  }
+
+  async getTotalReports(): Promise<TotalResponse> {
+    try {
+      const response: AxiosResponse<TotalResponse> = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_TOTAL_REPORTS}`,
+        { headers: this.getAuthHeader() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching total reports:", error);
+      return { total: 0, todayTotal: 0, percentageChange: 0, trend: "Neutral" };
+    }
+  }
+  async getTotalUsersByMonth(year: number): Promise<MonthlyData[]> {
+    try {
+      const response: AxiosResponse<MonthlyData[]> = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_TOTAL_USERS_BY_MONTH}?year=${year}`,
+        { headers: this.getAuthHeader() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching total users by month:", error);
+      return [];
+    }
+  }
+
+  async getTotalRequestsByMonth(year: number): Promise<MonthlyData[]> {
+    try {
+      const response: AxiosResponse<MonthlyData[]> = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_TOTAL_REQUESTS_BY_MONTH}?year=${year}`,
+        { headers: this.getAuthHeader() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching total requests by month:", error);
+      return [];
+    }
+  }
+  async getUserCountByRolePerMonth(
+    year: string
+  ): Promise<UserRoleCountByMonth[]> {
+    try {
+      const response: AxiosResponse<UserRoleCountByMonth[]> = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_USER_COUNT_BY_ROLE_PER_MONTH}/${year}`,
         {
           headers: this.getAuthHeader(),
-          params: { page, pageSize },
         }
       );
       return response.data;
     } catch (error) {
-      console.error("Error fetching rating requests:", error);
+      console.error("Error fetching user count by role per month:", error);
       throw error;
     }
-  }
-
-  async getSurveyRequests(
-    page: number,
-    pageSize: number
-  ): Promise<RequestResponse<SurveyRequest>> {
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_SURVEY_REQUESTS}`,
-        {
-          headers: this.getAuthHeader(),
-          params: { page, pageSize },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching survey requests:", error);
-      throw error;
-    }
-  }
-  async getRatingRequestDetails(
-    id: number
-  ): Promise<RequestResponse<RatingRequest>> {
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}/api/RatingRequest/ratingRequest/${id}`,
-        {
-          headers: this.getAuthHeader(),
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching rating request details:", error);
-      throw error;
-    }
-  }
-
-  async getSurveyRequestDetails(
-    id: number
-  ): Promise<RequestResponse<SurveyRequest>> {
-    try {
-      const response = await axios.get(
-        `${API_BASE_URL}/api/SurveyRequest/surveyRequest/${id}`,
-        {
-          headers: this.getAuthHeader(),
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching survey request details:", error);
-      throw error;
-    }
-  }
-
-  async getTotalUsers() {
-    const response = await axios.get(
-      `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_USERS_COUNT}`,
-      {
-        headers: this.getAuthHeader(),
-      }
-    );
-    return response.data.data;
-  }
-
-  async getTotalCustomers() {
-    const response = await axios.get(
-      `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_USERS_BY_ROLES_COUNT}`,
-      {
-        headers: this.getAuthHeader(),
-      }
-    );
-    return response.data.data.Customer;
-  }
-
-  async getTotalRatings() {
-    const response = await axios.get(
-      `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_RATING_REQUESTS_COUNT}`,
-      {
-        headers: this.getAuthHeader(),
-      }
-    );
-    return response.data.data;
-  }
-
-  async getTotalSurveys() {
-    const response = await axios.get(
-      `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_SURVEY_REQUESTS_COUNT}`,
-      {
-        headers: this.getAuthHeader(),
-      }
-    );
-    return response.data.data;
-  }
-  async getCompletedTasks(): Promise<CompletedTask[]> {
-    const response = await axios.get(
-      `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_TASKS_COMPLETED_COUNT}`,
-      { headers: this.getAuthHeader() }
-    );
-    return response.data;
   }
 }
 

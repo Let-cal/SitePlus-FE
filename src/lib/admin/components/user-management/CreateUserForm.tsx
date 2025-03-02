@@ -15,108 +15,94 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { adminService } from "@/services/admin/admin.service";
+import {
+  adminService,
+  Area,
+  District,
+  Role,
+} from "@/services/admin/admin.service";
 import axios from "axios";
 import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useEffect, useState } from "react";
-interface Province {
-  code: string;
-  name: string;
+
+interface CreateUserDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-interface District {
-  code: string;
-  name: string;
-  province: string;
-}
-interface Role {
-  id: number;
-  name: string;
-  accounts: null;
-}
-const CreateUserDialog = ({ open, onOpenChange }) => {
+const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
+  open,
+  onOpenChange,
+}) => {
   const { enqueueSnackbar } = useSnackbar();
   const [step, setStep] = useState(1);
-  const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
+  const [areas, setAreas] = useState<Area[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [formData, setFormData] = useState({
     roleId: "",
-    city: "",
     district: "",
+    area: "",
     email: "",
     password: "",
     name: "",
   });
-  // Fetch roles on component mount
+
+  // Lấy danh sách vai trò khi component được mount
   useEffect(() => {
     const fetchRoles = async () => {
       try {
         const data = await adminService.getAllRoles();
-        // Chỉ lấy các role là "Manager", "Area-Manager", "Staff"
+        // Chỉ lấy các vai trò "Manager", "Area-Manager", "Staff"
         const filteredRoles = data
           .filter((role) =>
             ["Manager", "Area-Manager", "Staff"].includes(role.name)
           )
-          .sort((a, b) => a.name.localeCompare(b.name)); // Sắp xếp theo tên
+          .sort((a, b) => a.name.localeCompare(b.name));
         setRoles(filteredRoles);
       } catch (error) {
-        console.error("Error fetching roles:", error);
+        console.error("Lỗi khi lấy vai trò:", error);
       }
     };
     fetchRoles();
   }, []);
 
-  useEffect(() => {
-    const fetchProvinces = async () => {
-      try {
-        const data = await adminService.getAllProvinces();
-        setProvinces(data);
-      } catch (error) {
-        console.error("Error fetching provinces:", error);
-      }
-    };
-    fetchProvinces();
-  }, []);
-  // Fetch districts when a province is selected
+  // Lấy danh sách quận
   useEffect(() => {
     const fetchDistricts = async () => {
-      if (formData.city) {
-        try {
-          const selectedProvince = provinces.find(
-            (p) => p.name === formData.city
-          );
-          if (selectedProvince) {
-            const data = await adminService.getDistrictsByProvince(
-              selectedProvince.code
-            );
-            setDistricts(data);
-          }
-        } catch (error) {
-          console.error("Error fetching districts:", error);
-        }
+      try {
+        const data = await adminService.getAllDistricts();
+        setDistricts(data);
+      } catch (error) {
+        console.error("Lỗi khi lấy quận:", error);
       }
     };
     fetchDistricts();
-  }, [formData.city, provinces]);
-  // Helper function to get role name by id
-  const getRoleName = (roleId: string) => {
-    const role = roles.find((r) => r.id.toString() === roleId);
-    return role?.name || "";
-  };
-  const handleRoleChange = (roleId) => {
+  }, []);
+
+  // Lấy danh sách khu vực khi đã chọn quận
+  useEffect(() => {
+    const fetchAreas = async () => {
+      if (formData.district) {
+        try {
+          const districtId = parseInt(formData.district);
+          const data = await adminService.getAreasByDistrict(districtId);
+          setAreas(data);
+        } catch (error) {
+          console.error("Lỗi khi lấy khu vực:", error);
+        }
+      }
+    };
+    fetchAreas();
+  }, [formData.district]);
+
+  const handleRoleChange = (roleId: string) => {
     setFormData((prev) => ({
       ...prev,
       roleId,
     }));
   };
-  const showDistrictSelect = ["Area-Manager", "Staff"].includes(
-    getRoleName(formData.roleId)
-  );
-  const showCitySelect = ["Manager", "Area-Manager", "Staff"].includes(
-    getRoleName(formData.roleId)
-  );
 
   const nextStep = () => {
     if (step < 3) {
@@ -127,13 +113,14 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
   };
-  const handleOpenChange = (open) => {
+
+  const handleOpenChange = (open: boolean) => {
     if (!open) {
       setStep(1);
       setFormData({
         roleId: "",
-        city: "",
         district: "",
+        area: "",
         email: "",
         password: "",
         name: "",
@@ -141,29 +128,20 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
     }
     onOpenChange(open);
   };
+
   const handleSubmit = async () => {
     try {
-      // Prepare area based on role
-      let area: string | null = null;
-      const roleName = getRoleName(formData.roleId);
-
-      if (["Area-Manager", "Staff"].includes(roleName)) {
-        area = `${formData.city},${formData.district}`;
-      } else if (roleName === "Manager") {
-        area = formData.city;
-      }
-
       const userData = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
         roleId: parseInt(formData.roleId),
-        area: area,
+        areaId: parseInt(formData.area),
       };
 
       await adminService.createUser(userData);
-      // Close the dialog and optionally show success message
-      enqueueSnackbar("Create user successfully", {
+
+      enqueueSnackbar("Tạo người dùng thành công", {
         variant: "success",
         preventDuplicate: true,
         anchorOrigin: {
@@ -174,19 +152,18 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
       handleOpenChange(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        // Handle Axios-specific error
         const errorMessages = error.response?.data?.["error-messages"] || [
-          "An error occurred. Please try again.",
+          "Đã xảy ra lỗi. Vui lòng thử lại.",
         ];
         errorMessages.forEach((message) => {
-          enqueueSnackbar(`Error: ${message}`, {
+          enqueueSnackbar(`Lỗi: ${message}`, {
             variant: "error",
             anchorOrigin: { horizontal: "left", vertical: "bottom" },
             preventDuplicate: true,
           });
         });
       } else {
-        enqueueSnackbar("An error occurred during login", {
+        enqueueSnackbar("Đã xảy ra lỗi khi tạo người dùng", {
           variant: "error",
           preventDuplicate: true,
           anchorOrigin: {
@@ -195,20 +172,20 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
           },
         });
       }
-      console.error("Login failed:", error);
+      console.error("Tạo người dùng thất bại:", error);
     }
   };
 
   const getStepTitle = () => {
     switch (step) {
       case 1:
-        return "Select Role";
+        return "Chọn Vai Trò";
       case 2:
-        return "Choose Area";
+        return "Chọn Khu Vực";
       case 3:
-        return "User Information";
+        return "Thông Tin Người Dùng";
       default:
-        return "Create New User";
+        return "Tạo Người Dùng Mới";
     }
   };
 
@@ -216,17 +193,80 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
     return 3;
   };
 
+  const renderAreaSelectionForm = () => (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Label>Thành phố</Label>
+        <Input value="Thành Phố Hồ Chí Minh" disabled className="bg-gray-100" />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Quận</Label>
+        <Select
+          value={formData.district}
+          onValueChange={(district) =>
+            setFormData((prev) => ({ ...prev, district, area: "" }))
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn quận" />
+          </SelectTrigger>
+          <SelectContent className="max-h-[200px] overflow-y-auto">
+            {districts.map((district) => (
+              <SelectItem key={district.id} value={district.id.toString()}>
+                {district.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Khu vực</Label>
+        <Select
+          value={formData.area}
+          onValueChange={(area) => setFormData((prev) => ({ ...prev, area }))}
+          disabled={!formData.district}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn khu vực" />
+          </SelectTrigger>
+          <SelectContent className="max-h-[200px] overflow-y-auto">
+            {areas.map((area) => (
+              <SelectItem key={area.id} value={area.id.toString()}>
+                {area.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex space-x-4">
+        <Button onClick={prevStep} variant="outline" className="w-full">
+          Trước
+        </Button>
+        <Button
+          onClick={nextStep}
+          className="w-full"
+          disabled={!formData.district || !formData.area}
+        >
+          Tiếp
+        </Button>
+      </div>
+    </div>
+  );
+
   const renderUserInfoForm = () => (
     <div className="space-y-6">
       <div className="space-y-4">
         <div>
-          <Label>Name</Label>
+          <Label>Tên</Label>
           <Input
             value={formData.name}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, name: e.target.value }))
             }
-            placeholder="Enter name"
+            placeholder="Nhập tên"
           />
         </div>
         <div>
@@ -237,12 +277,12 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, email: e.target.value }))
             }
-            placeholder="Enter email"
+            placeholder="Nhập email"
           />
         </div>
 
         <div>
-          <Label>Password</Label>
+          <Label>Mật khẩu</Label>
           <Input
             type="password"
             value={formData.password}
@@ -252,26 +292,26 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
                 password: e.target.value,
               }))
             }
-            placeholder="Enter password"
+            placeholder="Nhập mật khẩu"
           />
         </div>
 
         <div className="flex items-center space-x-2">
           <Checkbox checked={true} disabled className="bg-gray-200" />
-          <Label>Status (Active)</Label>
+          <Label>Trạng thái (Đang hoạt động)</Label>
         </div>
       </div>
 
       <div className="flex space-x-4">
         <Button onClick={prevStep} variant="outline" className="w-full">
-          Previous
+          Trước
         </Button>
         <Button
           className="w-full"
           disabled={!formData.email || !formData.password || !formData.name}
           onClick={handleSubmit}
         >
-          Create User
+          Tạo Người Dùng
         </Button>
       </div>
     </div>
@@ -282,7 +322,7 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center mb-5">
-            {getStepTitle()} - Step {step}/{getTotalSteps()}
+            {getStepTitle()} - Bước {step}/{getTotalSteps()}
           </DialogTitle>
         </DialogHeader>
 
@@ -309,76 +349,12 @@ const CreateUserDialog = ({ open, onOpenChange }) => {
               className="w-full"
               disabled={!formData.roleId}
             >
-              Next
+              Tiếp
             </Button>
           </div>
         )}
 
-        {step === 2 && (
-          <div className="space-y-6">
-            {showCitySelect && (
-              <div className="space-y-2">
-                <Label>City</Label>
-                <Select
-                  value={formData.city}
-                  onValueChange={(city) =>
-                    setFormData((prev) => ({ ...prev, city, district: "" }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select city" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[200px] overflow-y-auto">
-                    {provinces.map((province) => (
-                      <SelectItem key={province.code} value={province.name}>
-                        {province.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {showDistrictSelect && (
-              <div className="space-y-2">
-                <Label>District</Label>
-                <Select
-                  value={formData.district}
-                  onValueChange={(district) =>
-                    setFormData((prev) => ({ ...prev, district }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select district" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[200px] overflow-y-auto">
-                    {districts.map((district) => (
-                      <SelectItem key={district.code} value={district.name}>
-                        {district.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div className="flex space-x-4">
-              <Button onClick={prevStep} variant="outline" className="w-full">
-                Previous
-              </Button>
-              <Button
-                onClick={nextStep}
-                className="w-full"
-                disabled={
-                  (showCitySelect && !formData.city) ||
-                  (showDistrictSelect && !formData.district)
-                }
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+        {step === 2 && renderAreaSelectionForm()}
 
         {step === 3 && renderUserInfoForm()}
       </DialogContent>

@@ -2,7 +2,7 @@ import { Footer } from "@/lib/all-site/Footer";
 import { Header } from "@/lib/all-site/Header";
 import * as React from "react";
 import RequestReportTable from "../components/RequestReportTable";
-import ThankYouHeader from "../components/ThankYouHeader";
+import ThankYouHeader from "../../send-requests-page/components/ThankYouHeader";
 
 export default function RequestReportPage() {
   return (

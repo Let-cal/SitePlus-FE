@@ -16,12 +16,12 @@ export default function AdminUserPage() {
   const adminItems = [
     {
       icon: <Home size={20} />,
-      label: "HOME",
+      label: "Trang chủ",
       href: "/admin-page",
     },
     {
       icon: <User size={20} />,
-      label: "USERS",
+      label: "Quản lý người dùng",
       href: "/admin-users",
       isActive: true,
     },
@@ -39,7 +39,7 @@ export default function AdminUserPage() {
       <div className="flex-grow flex flex-col">
         <Header
           defaultLocation="Quận 7 - TPHCM"
-          title="User Management" // Truyền title vào đây
+          title="Quản Lý Người Dùng" // Truyền title vào đây
           onNotificationClick={() => {}}
         />
 
@@ -49,7 +49,7 @@ export default function AdminUserPage() {
               className="lg:w-[15%] items-center"
               onClick={() => setIsDialogOpen(true)}
             >
-              Create User
+              Tạo Người Dùng
             </Button>
           </div>
 

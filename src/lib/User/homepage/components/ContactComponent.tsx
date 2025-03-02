@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import CustomButton from "@/lib/all-site/Button";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import * as React from "react";
@@ -13,8 +13,6 @@ const fadeInUp = {
 };
 
 export default function ModernContactForm() {
-  const [isHovered, setIsHovered] = React.useState(false);
-
   return (
     <div className="container mx-auto px-4 py-16 max-w-6xl">
       <div className="grid md:grid-cols-2 gap-8 items-stretch">
@@ -104,19 +102,14 @@ export default function ModernContactForm() {
                 </motion.div>
 
                 <motion.div {...fadeInUp} className="flex justify-center">
-                  <Button
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                    className="bg-[#ff7426] hover:bg-[#ff5c00] text-white px-8 py-6 text-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                  <CustomButton
+                    type="submit"
+                    width="40"
+                    color="orange"
+                    icon={<Send className="w-5 h-5" />}
                   >
-                    <motion.div
-                      className="flex items-center gap-2"
-                      animate={{ x: isHovered ? 5 : 0 }}
-                    >
-                      Gửi tin nhắn
-                      <Send className="w-5 h-5" />
-                    </motion.div>
-                  </Button>
+                    GỬI TIN NHẮN
+                  </CustomButton>
                 </motion.div>
               </motion.div>
             </CardContent>

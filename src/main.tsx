@@ -20,9 +20,7 @@ import ManagerTask from "./lib/manager/pages/ManagerTask";
 import ContactPage from "./lib/User/contact-page/pages/ContactPage";
 import HomePage from "./lib/User/homepage/pages/HomePage";
 import InfoPage from "./lib/User/infopage/pages/InfoPage";
-import RatingRequestsPage from "./lib/User/send-requests-page/pages/RatingRequestsPage";
 import SurveyRequestsPage from "./lib/User/send-requests-page/pages/SurveyRequestsPage";
-import RequestReportPage from "./lib/User/view-requests-reports-page/pages/RequestReportPage";
 import { AuthProvider } from "./services/AuthContext";
 import ProtectedRoute from "./services/ProtectedRoute";
 createRoot(document.getElementById("root")!).render(
@@ -49,7 +47,7 @@ createRoot(document.getElementById("root")!).render(
                 }
               />
               <Route
-                path="/customer-page"
+                path="/home-page"
                 element={
                   <ProtectedRoute element={<HomePage />} allowGuest={true} />
                 }
@@ -70,14 +68,9 @@ createRoot(document.getElementById("root")!).render(
                 }
               />
               <Route
-                path="/rating-requests-page"
-                element={<RatingRequestsPage />}
-              />
-              <Route
                 path="/survey-requests-page"
                 element={<SurveyRequestsPage />}
               />
-              <Route path="/khoa-sat-cua-ban" element={<RequestReportPage />} />
 
               <Route path="/sign-up" element={<RegisterPage />} />
               <Route path="/sign-in" element={<LoginPage />} />

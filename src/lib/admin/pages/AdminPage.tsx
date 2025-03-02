@@ -3,94 +3,120 @@ import Sidebar from "@/lib/all-site/SideBar";
 import { adminService } from "@/services/admin/admin.service";
 import { Home, User } from "lucide-react";
 import * as React from "react";
-import { useEffect, useState } from "react";
 import { useAuth } from "../../../services/AuthContext";
 import UsageChart from "../components/home-page/ChartTotal";
 import StatCardGrid from "../components/home-page/StatCardGrid";
-import RequestTable from "../components/home-page/TableRequests";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
+
 export default function AdminPage() {
   const { handleLogout } = useAuth();
   const adminItems = [
     {
       icon: <Home size={20} />,
-      label: "HOME",
+      label: "Trang chủ",
       href: "/admin-page",
       isActive: true,
     },
     {
       icon: <User size={20} />,
-      label: "USERS",
+      label: "Quản lý người dùng",
       href: "/admin-users",
     },
   ];
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalCustomers: 0,
-    totalRatings: 0,
-    totalSurveys: 0,
+
+  const [stats, setStats] = React.useState({
+    totalUsers: { total: 0, percentageChange: 0, trend: "Neutral" },
+    totalStaff: { total: 0, percentageChange: 0, trend: "Neutral" },
+    totalSites: { total: 0, percentageChange: 0, trend: "Neutral" },
+    totalReports: { total: 0, percentageChange: 0, trend: "Neutral" },
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     async function fetchData() {
-      const [users, customers, ratings, surveys] = await Promise.all([
+      const [usersData, staffData, sitesData, reportsData] = await Promise.all([
         adminService.getTotalUsers(),
-        adminService.getTotalCustomers(),
-        adminService.getTotalRatings(),
-        adminService.getTotalSurveys(),
+        adminService.getTotalStaff(),
+        adminService.getTotalSites(),
+        adminService.getTotalReports(),
       ]);
 
       setStats({
-        totalUsers: users,
-        totalCustomers: customers,
-        totalRatings: ratings,
-        totalSurveys: surveys,
+        totalUsers: {
+          total: usersData.total,
+          percentageChange: usersData.percentageChange,
+          trend: usersData.trend.toLowerCase(),
+        },
+        totalStaff: {
+          total: staffData.total,
+          percentageChange: staffData.percentageChange,
+          trend: staffData.trend.toLowerCase(),
+        },
+        totalSites: {
+          total: sitesData.total,
+          percentageChange: sitesData.percentageChange,
+          trend: sitesData.trend.toLowerCase(),
+        },
+        totalReports: {
+          total: reportsData.total,
+          percentageChange: reportsData.percentageChange,
+          trend: reportsData.trend.toLowerCase(),
+        },
       });
     }
 
     fetchData();
   }, []);
 
+  // Format percentage change (round to 1 decimal place)
+  const formatPercentage = (value: number) => {
+    return (value / 100).toFixed(1) + "%";
+  };
+
+  // Get change text based on trend
+  const getChangeText = (trend: string) => {
+    if (trend === "up") return "Up from yesterday";
+    if (trend === "down") return "Down from yesterday";
+    return "No change";
+  };
+
   const cards = [
     {
       title: "Total Users",
-      value: stats.totalUsers,
-      changeValue: "8.5%",
-      changeText: "Up from yesterday",
-      trend: "up",
+      value: stats.totalUsers.total.toString().padStart(2, "0"),
+      changeValue: formatPercentage(stats.totalUsers.percentageChange),
+      changeText: getChangeText(stats.totalUsers.trend),
+      trend: stats.totalUsers.trend,
       iconUrl: "https://cdn.lordicon.com/gznfrpfp.json",
     },
     {
-      title: "Total Customers",
-      value: stats.totalCustomers,
-      changeValue: "8.5%",
-      changeText: "Up from yesterday",
-      trend: "up",
+      title: "Total Staff",
+      value: stats.totalStaff.total.toString().padStart(2, "0"),
+      changeValue: formatPercentage(stats.totalStaff.percentageChange),
+      changeText: getChangeText(stats.totalStaff.trend),
+      trend: stats.totalStaff.trend,
       iconUrl: "https://cdn.lordicon.com/fqbvgezn.json",
     },
     {
-      title: "Total Rating-Requests",
-      value: stats.totalRatings,
-      changeValue: "8.5%",
-      changeText: "Down from yesterday",
-      trend: "down",
-      iconUrl: "https://cdn.lordicon.com/fozsorqm.json",
+      title: "Total Sites",
+      value: stats.totalSites.total.toString().padStart(2, "0"),
+      changeValue: formatPercentage(stats.totalSites.percentageChange),
+      changeText: getChangeText(stats.totalSites.trend),
+      trend: stats.totalSites.trend,
+      iconUrl: "https://cdn.lordicon.com/jeuxydnh.json",
     },
     {
-      title: "Total Survey-Requests",
-      value: stats.totalSurveys,
-      changeValue: "8.5%",
-      changeText: "Down from yesterday",
-      trend: "down",
-      iconUrl: "https://cdn.lordicon.com/jdgfsfzr.json",
+      title: "Total Reports",
+      value: stats.totalReports.total.toString().padStart(2, "0"),
+      changeValue: formatPercentage(stats.totalReports.percentageChange),
+      changeText: getChangeText(stats.totalReports.trend),
+      trend: stats.totalReports.trend,
+      iconUrl: "https://cdn.lordicon.com/fikcyfpp.json",
     },
-    // Add more card configs...
   ];
-  console.log(localStorage.getItem("tokens"));
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar container */}
-
       <Sidebar
         logoHref={LogoSitePlus}
         title="Admin Page"
@@ -100,15 +126,10 @@ export default function AdminPage() {
 
       {/* Main content area */}
       <div className="flex-grow flex flex-col">
-        <Header
-          defaultLocation="Quận 7 - TPHCM"
-          title="Dashboard" // Truyền title vào đây
-          onNotificationClick={() => {}}
-        />
+        <Header defaultLocation="Quận 7 - TPHCM" title="Tổng Quan" />
         <div className="flex-grow p-6 space-y-6">
           <StatCardGrid cards={cards} />
           <UsageChart />
-          <RequestTable />
         </div>
       </div>
     </div>

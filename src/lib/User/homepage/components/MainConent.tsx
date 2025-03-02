@@ -1,6 +1,5 @@
-import { Button } from "@/components/ui/button";
+import CustomButton from "@/lib/all-site/Button";
 import * as React from "react";
-
 import BackgroundMain from "/images/client/homepage/imageMainContent.png";
 interface MainContentProps {
   className?: string;
@@ -30,12 +29,14 @@ export default function MainContent({ className }: MainContentProps) {
             </h3>
             <div className="flex ">
               {/* {" buttons"} */}
-              <Button
+              <CustomButton
                 type="submit"
-                className="lg:w-[40%]  items-center bg-orange-500 hover:bg-orange-600 text-white"
+                color="orange"
+                width="40"
+                className="font-bold"
               >
                 LIÊN HỆ NGAY
-              </Button>
+              </CustomButton>
             </div>
           </div>
           {/* image */}

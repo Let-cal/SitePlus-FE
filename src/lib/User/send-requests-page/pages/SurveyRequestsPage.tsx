@@ -4,14 +4,15 @@ import { Header } from "@/lib/all-site/Header";
 import * as React from "react";
 import SurveyLayout from "../components/SurveyLayout";
 import SurveyRequestsForm from "../components/SurveyRequestsForm";
-
+import ThankYouHeader from "../components/ThankYouHeader";
 export default function SurveyRequestsPage() {
   return (
     <SurveyLayout>
       <div className="min-h-screen w-full flex flex-col space-y-4">
         <Header />
         <div className="flex-1 w-full px-4 lg:px-[124px] py-8">
-          <div className="max-w-4xl mx-auto w-full">
+          <div className="max-w-4xl mx-auto w-full space-y-12">
+            <ThankYouHeader />
             <SurveyRequestsForm />
           </div>
         </div>
