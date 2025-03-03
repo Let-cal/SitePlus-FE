@@ -1,9 +1,3 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -16,6 +10,7 @@ import { Bell, Menu } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { AuthLinks } from "../auth/components/AuthLink";
+import { Divider } from "./divider";
 import logo from "/images/logo-site-plus/logo.png";
 export function MobileNavigationMenu() {
   return (
@@ -42,7 +37,7 @@ export function MobileNavigationMenu() {
 
             {/* Auth Links */}
             <div className="flex flex-col gap-2">
-             <AuthLinks />
+              <AuthLinks />
             </div>
           </div>
           {/* Navigation Links */}
@@ -54,30 +49,13 @@ export function MobileNavigationMenu() {
               Trang chủ
             </Link>
 
-            <Accordion type="single" collapsible>
-              <AccordionItem value="strategic-consulting">
-                <AccordionTrigger className="px-4">
-                  Tư Vấn Chiến Lược
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="flex flex-col gap-2 pl-6">
-                    <Link
-                      to="/survey-requests-page"
-                      className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
-                    >
-                      Khảo sát tìm mặt bằng
-                    </Link>
-                    <Link
-                      to="/rating-requests-pagen"
-                      className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
-                    >
-                      Khảo sát mặt bằng của bạn
-                    </Link>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-
+            <Link
+              to="/survey-requests-page"
+              className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
+            >
+              Khảo sát tìm mặt bằng
+            </Link>
+            <Divider />
             <Link
               to="/info-page"
               className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
