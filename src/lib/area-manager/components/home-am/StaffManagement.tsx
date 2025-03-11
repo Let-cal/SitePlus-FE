@@ -18,19 +18,18 @@ import areaManagerService from "../../../../services/area-manager/area-manager.s
 // Định nghĩa interface cho dữ liệu nhân viên dựa trên API
 interface Staff {
   id: number;
-  staffId: number; // Lấy từ id của API
+  staffId: number; 
   name: string;
-  district: string; // Lấy từ districtName
+  district: string; 
   email: string;
-  status: string; // Lấy từ statusName (giá trị chuỗi từ API)
+  status: number; 
+  statusName: string;
+  createdAt: string; // Thêm trường createdAt
 }
 
-// Hàm lấy trạng thái đối lập dựa trên statusName hiện tại
-const getOppositeStatus = (currentStatus: string): string => {
-  // Giả định statusName chỉ có 2 giá trị: một giá trị là "Hoạt động" hoặc "Đang hoạt động" (hoặc tương tự),
-  // và một giá trị là "Vô hiệu" hoặc "Tạm ngưng" (hoặc tương tự)
-  const activeStatuses = ["Hoạt động", "Đang hoạt động", "Đang làm"]; // Danh sách các trạng thái "hoạt động"
-  return activeStatuses.includes(currentStatus) ? "Vô hiệu" : "Hoạt động"; // Chuyển đổi linh hoạt
+// Hàm lấy trạng thái đối lập dựa trên status hiện tại
+const getOppositeStatus = (currentStatus: number): number => {
+  return currentStatus === 1 ? 2 : 1;
 };
 
 const StaffManagement = () => {
@@ -38,21 +37,45 @@ const StaffManagement = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [selectedStaff, setSelectedStaff] = React.useState<Staff | null>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  // Thêm state lưu trữ tên trạng thái đối lập
+  const [statusNameMap, setStatusNameMap] = React.useState<Record<number, string>>({});
   const itemsPerPage = 5;
+
+  // Hàm lấy tên trạng thái đối lập dựa trên trạng thái hiện tại
+  const getOppositeStatusName = (currentStatus: number): string => {
+    return statusNameMap[getOppositeStatus(currentStatus)] || (currentStatus === 1 ? "Vô hiệu" : "Hoạt động");
+  };
 
   // Gọi API để lấy danh sách nhân viên khi component mount
   React.useEffect(() => {
     const fetchStaffData = async () => {
-      const users = await areaManagerService.fetchUsers(1, itemsPerPage);
+      // Lấy tất cả nhân viên để có thể sắp xếp đầy đủ
+      const users = await areaManagerService.fetchUsers(1, 100); // Lấy nhiều hơn để có thể sắp xếp tất cả
+      
       const mappedStaffs: Staff[] = users.map(user => ({
         id: user.id,
-        staffId: user.id, // id từ API làm mã nhân viên
+        staffId: user.id,
         name: user.name,
         district: user.districtName,
         email: user.email,
-        status: user.statusName, // Sử dụng statusName trực tiếp từ API
+        status: user.status,
+        statusName: user.statusName,
+        createdAt: user.createdAt, // Lưu createdAt từ API
       }));
-      setStaffs(mappedStaffs);
+      
+      // Sắp xếp nhân viên theo thời gian tạo mới nhất (giảm dần)
+      const sortedStaffs = [...mappedStaffs].sort((a, b) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      
+      setStaffs(sortedStaffs);
+      
+      // Tạo map lưu trữ status -> statusName
+      const newStatusNameMap: Record<number, string> = {};
+      users.forEach(user => {
+        newStatusNameMap[user.status] = user.statusName;
+      });
+      setStatusNameMap(newStatusNameMap);
     };
 
     fetchStaffData();
@@ -65,13 +88,17 @@ const StaffManagement = () => {
 
   const handleStatusChange = () => {
     if (selectedStaff) {
+      const newStatus = getOppositeStatus(selectedStaff.status);
+      // Lấy tên trạng thái từ map hoặc sử dụng giá trị mặc định
+      const newStatusName = statusNameMap[newStatus] || getOppositeStatusName(selectedStaff.status);
+      
       setStaffs(prevStaffs =>
         prevStaffs.map(s => {
           if (s.id === selectedStaff.id) {
-            const newStatus = getOppositeStatus(selectedStaff.status); // Lấy trạng thái đối lập
             return {
               ...s,
               status: newStatus,
+              statusName: newStatusName,
             };
           }
           return s;
@@ -112,13 +139,13 @@ const StaffManagement = () => {
                     <Badge
                       variant="outline"
                       className={`w-[100px] h-5 flex items-center justify-center cursor-pointer ${
-                        ["Hoạt động", "Đang hoạt động", "Đang làm"].includes(staff.status)
+                        staff.status === 1
                           ? "bg-green-500 hover:bg-green-600"
                           : "bg-gray-500 hover:bg-gray-600"
                       } text-white text-xs whitespace-nowrap`}
                       onClick={() => handleStatusClick(staff)}
                     >
-                      {staff.status}
+                      {staff.statusName}
                     </Badge>
                   </TableCell>
                 </TableRow>
@@ -164,8 +191,8 @@ const StaffManagement = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận thay đổi trạng thái</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn thay đổi trạng thái của {selectedStaff?.name} từ {selectedStaff?.status} sang{" "}
-              {getOppositeStatus(selectedStaff?.status || "")}?
+              Bạn có chắc chắn muốn thay đổi trạng thái của {selectedStaff?.name} từ {selectedStaff?.statusName} sang{" "}
+              {selectedStaff && (statusNameMap[getOppositeStatus(selectedStaff.status)] || getOppositeStatusName(selectedStaff.status))}?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

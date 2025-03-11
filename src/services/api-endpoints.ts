@@ -28,10 +28,16 @@ export const API_ENDPOINTS = {
   },
   AREA_MANAGER: {
     GET: {
-      GET_DISTRICTS: "/api/districts/get-all", 
+      GET_DISTRICTS: "/api/districts/get-all",
       GET_WARDS_BY_DISTRICT: "/api/areas",
       GET_USERS: "/api/user/get-users",
     },
-    // Không thêm POST hoặc các endpoint khác cho đến khi bạn đồng ý
+  },
+  MANAGER: {
+    GET: {
+      GET_DISTRICTS: "/api/districts/get-all",
+      GET_WARDS_BY_DISTRICT: "/api/areas",
+      GET_USERS: "/api/user/get-users",
+    },
   },
 };

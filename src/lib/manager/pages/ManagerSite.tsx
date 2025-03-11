@@ -51,7 +51,7 @@ export default function ManagerSite() {
         <Header
           defaultLocation="Quận 7 - TPHCM"
           title="KHO MẶT BẰNG" // Truyền title vào đây
-          onNotificationClick={() => { }}
+          // onNotificationClick={() => { }}
         />
 
         {/* Content area */}

@@ -86,7 +86,7 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
   const [jobCode] = useState(generateJobCode());
   const [name, setName] = useState("");
   const [priority, setPriority] = useState("Bình thường");
-  const [district, setDistrict] = useState("Quận 1");
+  const [district, setDistrict] = useState("");
   const [districtId, setDistrictId] = useState<number | null>(null);
   const [ward, setWard] = useState("");
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
@@ -100,14 +100,18 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
   const [loadingWards, setLoadingWards] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
+  // Fetch districts when component mounts
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchDistricts = async () => {
       setLoadingDistricts(true);
       try {
         const districtsData = await areaManagerService.fetchDistricts();
         setDistricts(districtsData);
-        const defaultDistrict = districtsData.find((d) => d.name === "Quận 1");
-        if (defaultDistrict) {
+        
+        // Set default district only if district is not already set
+        if (districtsData.length > 0 && !district) {
+          const defaultDistrict = districtsData.find((d) => d.name === "Quận 1") || districtsData[0];
+          setDistrict(defaultDistrict.name);
           setDistrictId(defaultDistrict.id);
         }
       } catch (error) {
@@ -118,12 +122,17 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
       }
     };
 
-    const fetchUsersData = async () => {
+    fetchDistricts();
+  }, []);
+
+  // Fetch users when component mounts
+  useEffect(() => {
+    const fetchUsers = async () => {
       setLoadingUsers(true);
       try {
-        const usersData = await areaManagerService.fetchUsers(1, 5); // Lấy 5 nhân viên từ trang 1
+        const usersData = await areaManagerService.fetchUsers(1, 20); // Lấy 20 nhân viên để đảm bảo có đủ dữ liệu
         console.log("Users Data in CreateTaskSheet:", usersData);
-        setUsers(usersData); // Giữ nguyên tất cả 3 nhân viên, không lọc trùng lặp
+        setUsers(usersData);
       } catch (error) {
         console.error("Fetch Users Error in CreateTaskSheet:", error);
         toast.error("Lỗi khi tải danh sách nhân viên", { position: "top-right", duration: 3000 });
@@ -133,26 +142,51 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
       }
     };
 
-    const fetchWardsData = async () => {
+    fetchUsers();
+  }, []);
+
+  // Fetch wards whenever districtId changes
+  useEffect(() => {
+    const fetchWards = async () => {
       if (districtId) {
+        console.log("Fetching wards for districtId:", districtId);
         setLoadingWards(true);
+        setWard(""); // Reset ward selection when district changes
+        
         try {
           const wardsData = await areaManagerService.fetchWardsByDistrictId(districtId);
+          console.log("Wards data received:", wardsData);
           setWards(wardsData);
-          setWard(""); // Reset ward selection when district changes
+          
+          // Không tự động chọn phường đầu tiên nữa
+          // Người dùng sẽ phải tự chọn phường
         } catch (error) {
+          console.error("Error fetching wards:", error);
           toast.error("Lỗi khi tải danh sách phường", { position: "top-right", duration: 3000 });
           setWards([]);
         } finally {
           setLoadingWards(false);
         }
+      } else {
+        // If no district is selected, clear wards
+        setWards([]);
+        setWard("");
       }
     };
-
-    fetchInitialData();
-    fetchUsersData();
-    fetchWardsData();
+  
+    fetchWards();
   }, [districtId]);
+
+  const handleDistrictChange = (value: string) => {
+    const selectedDistrict = districts.find((d) => d.name === value);
+    if (selectedDistrict) {
+      setDistrict(value);
+      setDistrictId(selectedDistrict.id);
+    } else {
+      setDistrict(value);
+      setDistrictId(null);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,21 +235,28 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
     onSubmit(newTask);
     onClose();
 
+    // Reset form
     setName("");
     setPriority("Bình thường");
-    setDistrict("Quận 1");
+    setDistrict("");
+    setDistrictId(null);
     setWard("");
     setDeadline(undefined);
     setSelectedEmployee(""); 
     setDescription("");
   };
 
-  const handleDistrictChange = (value: string) => {
-    const selectedDistrict = districts.find((d) => d.name === value);
-    setDistrict(value);
-    setDistrictId(selectedDistrict ? selectedDistrict.id : null);
-    setWard(""); // Reset ward selection when district changes
-  };
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!isOpen) {
+      setName("");
+      setPriority("Bình thường");
+      // Don't reset district/ward here to avoid unnecessary API calls
+      setDeadline(undefined);
+      setSelectedEmployee("");
+      setDescription("");
+    }
+  }, [isOpen]);
 
   // Add the global styles
   useEffect(() => {
@@ -232,7 +273,6 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
 
   return (
     <>
-      {/* Using Dialog and DialogContent with custom width via className */}
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent
           className="p-4 rounded-md shadow-lg border overflow-y-auto no-scrollbar dialog-custom-width"
@@ -296,7 +336,11 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
             <div className="flex space-x-4">
               <div className="flex-1 space-y-1">
                 <Label htmlFor="district" className="text-sm">Quận/Huyện</Label>
-                <Select value={district} onValueChange={handleDistrictChange} disabled={loadingDistricts}>
+                <Select 
+                  value={district} 
+                  onValueChange={handleDistrictChange} 
+                  disabled={loadingDistricts}
+                >
                   <SelectTrigger id="district" className="text-sm h-10">
                     <SelectValue placeholder={loadingDistricts ? "Đang tải..." : "Chọn quận/huyện"} />
                   </SelectTrigger>
@@ -311,9 +355,17 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
               </div>
               <div className="flex-1 space-y-1">
                 <Label htmlFor="ward" className="text-sm">Phường</Label>
-                <Select value={ward} onValueChange={setWard} disabled={loadingWards}>
+                <Select value={ward} onValueChange={setWard} disabled={loadingWards || !districtId}>
                   <SelectTrigger id="ward" className="text-sm h-10">
-                    <SelectValue placeholder={loadingWards ? "Đang tải..." : "Chọn phường"} />
+                    <SelectValue placeholder={
+                      loadingWards 
+                        ? "Đang tải..." 
+                        : !districtId 
+                          ? "Vui lòng chọn quận trước" 
+                          : wards.length === 0 
+                            ? "Không có phường" 
+                            : "Chọn phường"
+                    } />
                   </SelectTrigger>
                   <SelectContent className="max-h-[250px] overflow-y-auto no-scrollbar">
                     {wards.map((wardOption) => (
