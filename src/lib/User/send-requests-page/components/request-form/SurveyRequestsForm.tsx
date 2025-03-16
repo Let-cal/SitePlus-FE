@@ -9,7 +9,6 @@ import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form";
 import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
-
 // Định nghĩa schema validation cho form
 const formSchema = z.object({
   // Step 1: Thông tin cơ bản
@@ -21,11 +20,17 @@ const formSchema = z.object({
   representativePhone: z
     .string()
     .min(10, { message: "Số điện thoại không hợp lệ" }),
-  requestDate: z.date({ required_error: "Vui lòng chọn ngày" }),
+  representativeAddress: z
+    .string()
+    .min(1, { message: "Vui lòng nhập nơi thường trú của đại diện" }),
   industry: z.string({ required_error: "Vui lòng chọn ngành nghề" }),
   targetCustomers: z
     .array(z.string())
     .min(1, { message: "Vui lòng chọn ít nhất một đối tượng khách hàng" }),
+
+  targetIndustryCategories: z
+    .array(z.string())
+    .min(1, { message: "Vui lòng chọn ít nhất một ngành nghề đang hướng tới" }),
 
   // Step 2: Thông tin chi tiết yêu cầu
   locationType: z.string({ required_error: "Vui lòng chọn loại mặt bằng" }),
@@ -33,13 +38,32 @@ const formSchema = z.object({
   otherStoreProfileInfo: z.string().optional(),
 
   // Step 3: Thông tin diện tích và ngân sách
+  defaultArea: z
+    .string()
+    .min(1, { message: "Vui lòng nhập diện tích mặc định" }),
   minArea: z.string().min(1, { message: "Vui lòng nhập diện tích tối thiểu" }),
   maxArea: z.string().min(1, { message: "Vui lòng nhập diện tích tối đa" }),
+
+  defaultBudget: z
+    .string()
+    .min(1, { message: "Vui lòng nhập ngân sách mặc định" }),
   minBudget: z
     .string()
     .min(1, { message: "Vui lòng nhập ngân sách tối thiểu" }),
   maxBudget: z.string().min(1, { message: "Vui lòng nhập ngân sách tối đa" }),
+  areaCriteria: z.object({
+    attributeId: z.number().default(9),
+    defaultValue: z.string().optional(),
+    minValue: z.string().optional(),
+    maxValue: z.string().optional(),
+  }),
 
+  budgetCriteria: z.object({
+    attributeId: z.number().default(10),
+    defaultValue: z.string().optional(),
+    minValue: z.string().optional(),
+    maxValue: z.string().optional(),
+  }),
   // Step 4: Thông tin vị trí
   city: z.string().default("Thành phố Hồ Chí Minh"),
   districts: z
@@ -59,11 +83,18 @@ type Step1Fields =
   | "representativeName"
   | "representativeEmail"
   | "representativePhone"
-  | "requestDate"
+  | "representativeAddress"
   | "industry"
-  | "targetCustomers";
+  | "targetCustomers"
+  | "targetIndustryCategories";
 type Step2Fields = "locationType" | "storeProfile" | "otherStoreProfileInfo";
-type Step3Fields = "minArea" | "maxArea" | "minBudget" | "maxBudget";
+type Step3Fields =
+  | "defaultArea"
+  | "minArea"
+  | "maxArea"
+  | "defaultBudget"
+  | "minBudget"
+  | "maxBudget";
 
 const SurveyRequestsForm: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -78,6 +109,13 @@ const SurveyRequestsForm: React.FC = () => {
       nearbyAreas: [],
       districts: [],
       specificAreas: [],
+      // Add new default values
+      areaCriteria: {
+        attributeId: 9,
+      },
+      budgetCriteria: {
+        attributeId: 10,
+      },
     },
   });
 
@@ -96,11 +134,14 @@ const SurveyRequestsForm: React.FC = () => {
         "representativeName",
         "representativeEmail",
         "representativePhone",
-        "requestDate",
+        "representativeAddress",
         "industry",
         "targetCustomers",
+        "targetIndustryCategories",
       ];
       const step1Valid = await form.trigger(step1Fields);
+      console.log("Step 1 validation result:", step1Valid);
+      console.log("Form errors:", form.formState.errors);
       canProceed = step1Valid;
     } else if (step === 2) {
       // Validate fields của Step 2
@@ -113,8 +154,10 @@ const SurveyRequestsForm: React.FC = () => {
     } else if (step === 3) {
       // Validate fields của Step 3
       const step3Fields: Step3Fields[] = [
+        "defaultArea",
         "minArea",
         "maxArea",
+        "defaultBudget",
         "minBudget",
         "maxBudget",
       ];
@@ -140,7 +183,34 @@ const SurveyRequestsForm: React.FC = () => {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      console.log(data);
+      // Create storeProfileCriteria array from the criteria objects
+      const storeProfileCriteria = [
+        {
+          storeProfileId: 0, // This will be set by the backend
+          attributeId: data.areaCriteria.attributeId,
+          maxValue: data.maxArea,
+          minValue: data.minArea,
+          defaultValue: data.defaultArea,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          storeProfileId: 0, // This will be set by the backend
+          attributeId: data.budgetCriteria.attributeId,
+          maxValue: data.maxBudget,
+          minValue: data.minBudget,
+          defaultValue: data.defaultBudget,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+
+      // Prepare the payload for the API
+      const payload = {
+        // Other properties from your form data
+        // ...
+        storeProfileCriteria,
+      };
+
+      console.log(payload);
       // Simulate API request
       await new Promise((resolve) => setTimeout(resolve, 1500));
       // Xử lý gửi dữ liệu form ở đây
@@ -152,16 +222,6 @@ const SurveyRequestsForm: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
-  // Danh sách loại khách hàng
-  const customerTypes = [
-    { id: "student", label: "Học sinh/Sinh viên" },
-    { id: "worker", label: "Công nhân" },
-    { id: "office", label: "Nhân viên công chức" },
-    { id: "children", label: "Trẻ em" },
-    { id: "family", label: "Gia đình" },
-    { id: "business", label: "Doanh nhân" },
-  ];
 
   // Danh sách khu vực
   const areaTypes = [
@@ -175,7 +235,7 @@ const SurveyRequestsForm: React.FC = () => {
   const renderStepContent = () => {
     switch (step) {
       case 1:
-        return <Step1Form form={form} customerTypes={customerTypes} />;
+        return <Step1Form form={form} />;
       case 2:
         return <Step2Form form={form} />;
       case 3:
@@ -199,7 +259,10 @@ const SurveyRequestsForm: React.FC = () => {
             currentStep={step}
             totalSteps={totalSteps}
             onPrevious={handlePrevious}
-            onNext={handleNext}
+            onNext={() => {
+              console.log("Next button clicked");
+              handleNext();
+            }}
             isSubmitting={isSubmitting}
           />
         </form>

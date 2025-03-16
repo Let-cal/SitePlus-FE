@@ -6,6 +6,19 @@ export const API_ENDPOINTS = {
   },
   CLIENT: {
     UPDATE_PROFILE: "/api/update-from-user",
+    GET: {
+      GET_INDUSTRY: "/api/Industry",
+      GET_INDUSTRY_CATEGORY: "/api/IndustryCategory",
+      GET_INDUSTRY_CATEGORY_BY_INDUSTRY:
+        "/api/IndustryCategory/IndustryCategoryByIndustry",
+      GET_CUSTOMER_SEGMENT: "/api/CustomerSegment",
+      GET_CUSTOMER_SEGMENT_BY_INDUSTRY:
+        "/api/CustomerSegment/GetCustomerSegmentByIndustry",
+      GET_BRAND: "/api/Brand",
+    },
+    PUSH: {
+      CREATE_BRAND: "/api/Brand",
+    },
   },
   ADMIN: {
     GET: {
@@ -20,7 +33,7 @@ export const API_ENDPOINTS = {
       GET_TOTAL_REPORTS: "/api/Statistics/total-reports",
       GET_TOTAL_USERS_BY_MONTH: "/api/Statistics/total-users-by-month",
       GET_TOTAL_REQUESTS_BY_MONTH: "/api/Statistics/total-requests-by-month",
-      GET_USER_COUNT_BY_ROLE_PER_MONTH: '/api/user/count-by-role-per-month'
+      GET_USER_COUNT_BY_ROLE_PER_MONTH: "/api/user/count-by-role-per-month",
     },
     POST: {
       UPDATE_USRES: "/api/update-from-admin",
@@ -28,7 +41,7 @@ export const API_ENDPOINTS = {
   },
   AREA_MANAGER: {
     GET: {
-      GET_DISTRICTS: "/api/districts/get-all", 
+      GET_DISTRICTS: "/api/districts/get-all",
       GET_WARDS_BY_DISTRICT: "/api/areas",
       GET_USERS: "/api/user/get-users",
     },

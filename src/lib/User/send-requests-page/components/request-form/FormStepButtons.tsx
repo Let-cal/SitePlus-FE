@@ -1,38 +1,63 @@
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+"use client";
 
-const FormStepButtons = ({ currentStep, totalSteps, onPrevious, onNext, isSubmitting = false }) => {
+import * as React from "react";
+
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+
+interface FormStepButtonsProps {
+  currentStep: number;
+  totalSteps: number;
+  onPrevious: () => void;
+  onNext: () => void;
+  isSubmitting: boolean;
+}
+
+const FormStepButtons: React.FC<FormStepButtonsProps> = ({
+  currentStep,
+  totalSteps,
+  onPrevious,
+  onNext,
+  isSubmitting,
+}) => {
   return (
-    <div className="flex justify-between mt-8">
+    <div className="flex justify-between mt-8 pt-4 border-t border-gray-200">
       <Button
         type="button"
         variant="outline"
         onClick={onPrevious}
-        disabled={currentStep === 1}
-        className="border-orange-300 text-orange-600 hover:bg-orange-50"
+        disabled={currentStep === 1 || isSubmitting}
+        className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
       >
-        <ChevronLeft className="mr-1 h-4 w-4" />
         Quay lại
       </Button>
 
       {currentStep < totalSteps ? (
-        <Button 
-          type="button" 
-          onClick={onNext}
-          className="bg-orange-500 hover:bg-orange-600"
+        <Button
+          type="button"
+          onClick={() => {
+            console.log("Next button clicked");
+            onNext();
+          }}
+          disabled={isSubmitting}
+          className="bg-orange-500 hover:bg-orange-600 focus-visible:ring-orange-400 focus-visible:ring-offset-0"
         >
           Tiếp theo
-          <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
       ) : (
-        <Button 
+        <Button
           type="submit"
-          className="bg-orange-500 hover:bg-orange-600"
           disabled={isSubmitting}
+          className="bg-orange-500 hover:bg-orange-600 focus-visible:ring-orange-400 focus-visible:ring-offset-0"
         >
-          {isSubmitting ? "Đang gửi..." : "Gửi yêu cầu"}
-          <Check className="ml-1 h-4 w-4" />
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Đang gửi...
+            </>
+          ) : (
+            "Gửi yêu cầu"
+          )}
         </Button>
       )}
     </div>
