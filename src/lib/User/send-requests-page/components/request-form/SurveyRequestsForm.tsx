@@ -4,6 +4,7 @@ import { useSnackbar } from "notistack";
 import * as React from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import * as z from "zod";
 import FormStepButtons from "./FormStepButtons";
 import ProgressHeader from "./ProgressHeader";
@@ -324,6 +325,7 @@ const SurveyRequestsForm: React.FC = () => {
     }
   };
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     setApiError(null);
@@ -430,6 +432,8 @@ const SurveyRequestsForm: React.FC = () => {
           },
         }
       );
+      form.reset();
+      navigate("/");
     } catch (error) {
       console.error("Error submitting form:", error);
       setApiError("Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.");
