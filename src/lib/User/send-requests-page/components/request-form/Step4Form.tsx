@@ -77,8 +77,82 @@ const Step4Form = ({ form, areaTypes }) => {
 
     return allAreas;
   };
-
   const allAreas = getAllAreas();
+  useEffect(() => {
+    // Lấy các giá trị từ form
+    const city = watch("city") || "Thành phố Hồ Chí Minh";
+    const selectedDistricts = watch("districts") || [];
+    const street = watch("street") || "";
+    const specificAreaIds = watch("specificAreas") || [];
+    const nearbyAreaIds = watch("nearbyAreas") || [];
+    const specialRequirements = watch("specialRequirements") || "";
+
+    // Tạo danh sách tên của các khu vực đã chọn
+    const allAreas = getAllAreas();
+    const specificAreaNames = specificAreaIds
+      .map((id) => {
+        const area = allAreas.find((a) => a.id.toString() === id);
+        return area ? area.name : "";
+      })
+      .filter((name) => name !== "");
+
+    // Lấy tên của các khu vực lân cận đã chọn
+    const nearbyAreaNames = nearbyAreaIds
+      .map((id) => {
+        const area = areaTypes.find((a) => a.id === id);
+        return area ? area.label : "";
+      })
+      .filter((name) => name !== "");
+    // Cập nhật giá trị cho specificAreaCriteria (attributeId: 33)
+    if (specificAreaNames.length > 0) {
+      setValue(
+        "specificAreaCriteria.defaultValue",
+        specificAreaNames.join(", ")
+      );
+    } else {
+      setValue("specificAreaCriteria.defaultValue", "");
+    }
+    // Cập nhật giá trị cho nearbyAreaCriteria (attributeId: 32)
+    if (nearbyAreaNames.length > 0) {
+      setValue("nearbyAreaCriteria.defaultValue", nearbyAreaNames.join(", "));
+    } else {
+      setValue("nearbyAreaCriteria.defaultValue", "");
+    }
+    // Tạo chuỗi mô tả với các thành phần được phân tách bằng " - "
+    let description = `Tỉnh/Thành phố: ${city}`;
+
+    if (selectedDistricts.length > 0) {
+      description += ` - Quận/Huyện: ${selectedDistricts.join(", ")}`;
+    }
+
+    if (street) {
+      description += ` - Đường: ${street}`;
+    }
+
+    if (specificAreaNames.length > 0) {
+      description += ` - Khu vực mong muốn: ${specificAreaNames.join(", ")}`;
+    }
+
+    if (nearbyAreaNames.length > 0) {
+      description += ` - Gần khu vực: ${nearbyAreaNames.join(", ")}`;
+    }
+
+    if (specialRequirements) {
+      description += ` - Yêu cầu đặc biệt: ${specialRequirements}`;
+    }
+
+    // Cập nhật description vào brandRequest
+    const currentBrandRequest = form.getValues("brandRequestEntity") || {};
+    setValue("brandRequestEntity", {
+      ...currentBrandRequest,
+      description: description,
+    });
+    console.log("description: ", description);
+    console.log("currentBrandRequest: ", currentBrandRequest);
+    // Cũng lưu description vào field riêng để dễ truy cập
+    setValue("locationDescription", description);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [areaTypes, form, setValue, watch]);
 
   return (
     <FormSection title="Thông tin vị trí">

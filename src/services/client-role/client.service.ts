@@ -6,7 +6,40 @@ interface UserUpdate {
   name: string;
   email: string;
 }
-
+interface BrandRequestPayload {
+  brandRequest: {
+    id: number;
+    brandId: number;
+    description: string;
+    nameCustomer: string;
+    emailCustomer: string;
+    phoneCustomer: string;
+    addressCustomer: string;
+    status: number;
+    createdAt: string;
+  };
+  brandRequestStoreProfile: {
+    storeProfileId: number;
+  };
+  brandRequestCustomerSegment: Array<{
+    customerSegmentId: number;
+  }>;
+  brandRequestIndustryCategory: {
+    industryCategoryId: number;
+  };
+  storeProfile: {
+    storeProfileCategoryId: number;
+    createdAt: string;
+  };
+  storeProfileCriteria: Array<{
+    storeProfileId: number;
+    attributeId: number;
+    maxValue?: string;
+    minValue?: string;
+    defaultValue?: string;
+    createdAt: string;
+  }>;
+}
 class ClientService {
   private getAuthHeader() {
     return {
@@ -14,7 +47,21 @@ class ClientService {
       accept: "*/*",
     };
   }
-
+  async createBrandRequest(payload: BrandRequestPayload) {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}${API_ENDPOINTS.CLIENT.PUSH.CREATE_BRAND_REQUEST}`,
+        payload,
+        {
+          headers: this.getAuthHeader(),
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error creating brand request:", error);
+      throw error;
+    }
+  }
   // Thêm method mới để update profile
   async updateUserProfile(userData: UserUpdate): Promise<void> {
     try {

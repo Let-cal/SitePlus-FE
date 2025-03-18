@@ -14,7 +14,7 @@ import {
   StoreProfileCategory,
 } from "@/services/admin/admin.service";
 import * as React from "react";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FormField from "./FormField";
 import FormSection from "./FormSection";
 
@@ -22,37 +22,45 @@ const Step2Form = ({ form }) => {
   const { watch, setValue, formState } = form;
   const { errors } = formState;
   const [siteCategories, setSiteCategories] = useState<SiteCategory[]>([]);
-  const [allStoreProfileCategories, setAllStoreProfileCategories] = useState<StoreProfileCategory[]>([]);
+  const [allStoreProfileCategories, setAllStoreProfileCategories] = useState<
+    StoreProfileCategory[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const locationType = watch("locationType");
   const storeProfile = watch("storeProfile");
+  const brandId = watch("brandId"); // Lấy brandId từ step1Form
 
   // Fetch all required data on component mount
   useEffect(() => {
     const fetchAllData = async () => {
-      setIsLoading(true);
-      try {
-        // Load both data sets in parallel for better performance
-        const [siteData, profileData] = await Promise.all([
-          adminService.getAllSiteCategories(),
-          adminService.getAllStoreProfileCategories()
-        ]);
-        
-        console.log("Site categories fetched:", siteData);
-        console.log("All store profile categories fetched:", profileData);
-        
-        setSiteCategories(siteData);
-        setAllStoreProfileCategories(profileData);
-      } catch (error) {
-        console.error("Error fetching initial data:", error);
-      } finally {
-        setIsLoading(false);
+      if (
+        siteCategories.length === 0 ||
+        allStoreProfileCategories.length === 0
+      ) {
+        setIsLoading(true);
+        try {
+          // Load both data sets in parallel for better performance
+          const [siteData, profileData] = await Promise.all([
+            adminService.getAllSiteCategories(),
+            adminService.getAllStoreProfileCategories(),
+          ]);
+
+          console.log("Site categories fetched:", siteData);
+          console.log("All store profile categories fetched:", profileData);
+
+          setSiteCategories(siteData);
+          setAllStoreProfileCategories(profileData);
+        } catch (error) {
+          console.error("Error fetching initial data:", error);
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchAllData();
-  }, []);
+  }, [siteCategories.length, allStoreProfileCategories.length]);
 
   // Filter store profile categories based on selected locationType
   const filteredStoreProfileCategories = useMemo(() => {
@@ -77,8 +85,33 @@ const Step2Form = ({ form }) => {
   useEffect(() => {
     if (locationType) {
       setValue("storeProfile", "");
+
+      // Cũng reset giá trị storeProfileEntity khi thay đổi locationType
+      setValue("storeProfileEntity", {
+        brandId: brandId || 0,
+        storeProfileCategoryId: 0,
+        createdAt: new Date().toISOString(),
+      });
     }
-  }, [locationType, setValue]);
+  }, [locationType, setValue, brandId]);
+
+  // Cập nhật storeProfileEntity khi storeProfile thay đổi
+  useEffect(() => {
+    if (storeProfile && storeProfile !== "other") {
+      // Cập nhật storeProfileEntity với storeProfileCategoryId mới
+      setValue("storeProfileEntity", {
+        brandId: brandId || 0,
+        storeProfileCategoryId: parseInt(storeProfile, 10),
+        createdAt: new Date().toISOString(),
+      });
+
+      console.log("Updated storeProfileEntity:", {
+        brandId: brandId || 0,
+        storeProfileCategoryId: parseInt(storeProfile, 10),
+        createdAt: new Date().toISOString(),
+      });
+    }
+  }, [storeProfile, setValue, brandId]);
 
   // Fallback UI if no site categories are loaded
   if (siteCategories.length === 0 && !isLoading) {
@@ -145,8 +178,19 @@ const Step2Form = ({ form }) => {
           className="mb-6"
         >
           <Select
-            onValueChange={(value) => setValue("storeProfile", value)}
-            value={watch("storeProfile")}
+            onValueChange={(value) => {
+              setValue("storeProfile", value);
+
+              // Nếu chọn "other", đặt storeProfileCategoryId = 0
+              if (value === "other") {
+                setValue("storeProfileEntity", {
+                  brandId: brandId || 0,
+                  storeProfileCategoryId: 0,
+                  createdAt: new Date().toISOString(),
+                });
+              }
+            }}
+            value={watch("storeProfile") || ""}
             disabled={isLoading || filteredStoreProfileCategories.length === 0}
           >
             <SelectTrigger className="focus:border-orange-400">

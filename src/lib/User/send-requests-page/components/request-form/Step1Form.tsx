@@ -1,4 +1,4 @@
-"use client";
+// Modify the brand selection part in Step1Form to use the new BrandCombobox component
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,17 +15,17 @@ import ClientService from "@/services/client-role/client.service";
 import { PlusCircle } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
+import BrandCombobox from "../brand/BrandCombobox";
 import CreateBrandDialog from "../brand/CreateBrandDialog";
 import FormField from "./FormField";
 import FormSection from "./FormSection";
-
 const Step1Form = ({ form }) => {
   const { watch, setValue, formState, trigger } = form;
   const { errors } = formState;
   const selectedIndustry = watch("industry");
   const selectedBrand = watch("brand");
   const targetCustomers = watch("targetCustomers") || [];
-  const targetIndustryCategories = watch("targetIndustryCategories") || [];
+  const targetIndustryCategory = watch("targetIndustryCategory") || "";
 
   const [industries, setIndustries] = useState([]);
   const [suggestedSegments, setSuggestedSegments] = useState([]);
@@ -35,20 +35,70 @@ const Step1Form = ({ form }) => {
   const [allIndustryCategories, setAllIndustryCategories] = useState([]);
   const [brands, setBrands] = useState([]);
 
-  // Add this near the top of the component
+  // Theo dõi form values
   useEffect(() => {
     console.log("Current form values:", {
       brand: watch("brand"),
+      brandId: watch("brandId"),
       representativeName: watch("representativeName"),
       representativeAddress: watch("representativeAddress"),
       representativeEmail: watch("representativeEmail"),
       representativePhone: watch("representativePhone"),
       industry: watch("industry"),
       targetCustomers: watch("targetCustomers"),
-      targetIndustryCategories: watch("targetIndustryCategories"),
+      targetIndustryCategory: watch("targetIndustryCategory"),
     });
     console.log("Form errors:", formState.errors);
+    // Cập nhật các entity cho API request
+    updateApiEntities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watch, formState.errors]);
+
+  // Hàm này sẽ cập nhật các entity cần thiết cho API request
+  const updateApiEntities = () => {
+    // Cập nhật brandRequest
+    const brandRequest = {
+      id: 0,
+      brandId: watch("brandId") || 0,
+      description: "", // Sẽ được cập nhật từ Step4Form
+      nameCustomer: watch("representativeName") || "",
+      emailCustomer: watch("representativeEmail") || "",
+      phoneCustomer: watch("representativePhone") || "",
+      addressCustomer: watch("representativeAddress") || "",
+      status: 0, // InProgress
+      createdAt: new Date().toISOString(),
+    };
+
+    setValue("brandRequestEntity", brandRequest);
+
+    // Cập nhật brandRequestCustomerSegment
+    const brandRequestCustomerSegments = (watch("targetCustomers") || []).map(
+      (segmentId) => ({
+        customerSegmentId: Number(segmentId),
+      })
+    );
+
+    setValue(
+      "brandRequestCustomerSegmentEntities",
+      brandRequestCustomerSegments
+    );
+
+    // Cập nhật brandRequestIndustryCategory
+    const selectedCategoryId = watch("targetIndustryCategory");
+
+    if (selectedCategoryId) {
+      const brandRequestIndustryCategory = {
+        industryCategoryId: Number(selectedCategoryId),
+      };
+
+      setValue(
+        "brandRequestIndustryCategoryEntity",
+        brandRequestIndustryCategory
+      );
+    } else {
+      setValue("brandRequestIndustryCategoryEntity", null);
+    }
+  };
 
   // Load industries when component mounts
   useEffect(() => {
@@ -101,28 +151,35 @@ const Step1Form = ({ form }) => {
       }
     };
     fetchBrands();
-  }, []); // Keep this as an empty dependency array to only run on mount
+  }, []);
 
-  // Callback when brand is created successfully
+  // Callback khi brand được tạo thành công
   const handleBrandCreated = (brand) => {
     console.log("Brand created:", brand);
-    // Add the new brand to the local state
+    // Thêm brand mới vào state
     setBrands((prev) => [...prev, brand]);
 
-    // Set the brand value in the form
+    // Set giá trị brand trong form
     setValue("brand", brand.name);
+    setValue("brandId", brand.id);
 
-    // Trigger validation to clear any errors
+    // Trigger validation để xóa lỗi
     trigger("brand");
 
-    // Log the current form state after setting the brand
-    console.log("Form values after brand creation:", {
-      brand: watch("brand"),
-      errors: formState.errors,
-    });
+    // Cập nhật brandRequest entity
+    updateApiEntities();
   };
 
-  // When industry changes, get customer segments and industry categories by industry
+  // Handle brand selection from combobox
+  const handleBrandSelect = (brand) => {
+    setValue("brand", brand.name);
+    setValue("brandId", brand.id);
+    console.log("Brand selected:", brand.name, "ID:", brand.id);
+    trigger("brand");
+    updateApiEntities();
+  };
+
+  // Khi industry thay đổi, lấy customer segments và industry categories theo industry
   useEffect(() => {
     const fetchSuggestedData = async () => {
       if (selectedIndustry) {
@@ -159,47 +216,36 @@ const Step1Form = ({ form }) => {
   return (
     <FormSection title="Thông tin cơ bản">
       <div className="space-y-6">
-        {/* Brand Selection Section */}
+        {/* Brand Selection Section with Combobox */}
         <Card className="border border-gray-200 shadow-sm">
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
               <div className="space-y-2">
                 <FormField
                   label="Thương hiệu"
                   required
                   error={errors.brand?.message}
                 >
-                  <Select
-                    onValueChange={(value) => {
-                      setValue("brand", value);
-                      console.log("Brand selected:", value);
-                    }}
-                    defaultValue={selectedBrand}
-                  >
-                    <SelectTrigger className="w-full focus-visible:ring-orange-400 focus-visible:ring-offset-0">
-                      <SelectValue placeholder="Chọn thương hiệu" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {brands.map((brand) => (
-                        <SelectItem key={brand.id} value={brand.name}>
-                          {brand.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <BrandCombobox
+                    brands={brands}
+                    selectedBrand={selectedBrand}
+                    onSelect={handleBrandSelect}
+                    error={errors.brand?.message}
+                  />
                 </FormField>
                 <p className="text-sm text-gray-500">
                   Nếu không tìm thấy tên thương hiệu đề xuất, hãy tạo tên cho
                   thương hiệu của bạn.
                 </p>
               </div>
-              <div className="flex items-center mb-5">
+              <div className="flex items-center justify-center">
                 <CreateBrandDialog onBrandCreated={handleBrandCreated} />
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Rest of the code remains the same */}
         {/* Representative Information Section */}
         <Card className="border border-gray-200 shadow-sm">
           <CardContent className="p-6">
@@ -216,6 +262,10 @@ const Step1Form = ({ form }) => {
                   {...form.register("representativeName")}
                   placeholder="Nhập tên đại diện"
                   className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
+                  onChange={(e) => {
+                    form.setValue("representativeName", e.target.value);
+                    updateApiEntities();
+                  }}
                 />
               </FormField>
 
@@ -229,6 +279,10 @@ const Step1Form = ({ form }) => {
                   {...form.register("representativeEmail")}
                   placeholder="example@company.com"
                   className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
+                  onChange={(e) => {
+                    form.setValue("representativeEmail", e.target.value);
+                    updateApiEntities();
+                  }}
                 />
               </FormField>
 
@@ -241,6 +295,10 @@ const Step1Form = ({ form }) => {
                   {...form.register("representativePhone")}
                   placeholder="0901234567"
                   className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
+                  onChange={(e) => {
+                    form.setValue("representativePhone", e.target.value);
+                    updateApiEntities();
+                  }}
                 />
               </FormField>
               <FormField
@@ -252,6 +310,10 @@ const Step1Form = ({ form }) => {
                   {...form.register("representativeAddress")}
                   placeholder="Địa chỉ thường trú của đại diện"
                   className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
+                  onChange={(e) => {
+                    form.setValue("representativeAddress", e.target.value);
+                    updateApiEntities();
+                  }}
                 />
               </FormField>
             </div>
@@ -273,7 +335,10 @@ const Step1Form = ({ form }) => {
               className="mb-6"
             >
               <Select
-                onValueChange={(value) => setValue("industry", value)}
+                onValueChange={(value) => {
+                  setValue("industry", value);
+                  updateApiEntities();
+                }}
                 defaultValue={selectedIndustry}
               >
                 <SelectTrigger className="focus-visible:ring-orange-400 focus-visible:ring-offset-0">
@@ -306,16 +371,12 @@ const Step1Form = ({ form }) => {
                           variant="outline"
                           className="px-3 py-1 bg-white text-orange-700 border-orange-200 hover:bg-orange-100 cursor-pointer"
                           onClick={() => {
-                            if (
-                              !targetIndustryCategories.includes(
-                                String(category.id)
-                              )
-                            ) {
-                              setValue("targetIndustryCategories", [
-                                ...targetIndustryCategories,
-                                String(category.id),
-                              ]);
-                            }
+                            // Cập nhật trực tiếp một giá trị, không phải array
+                            setValue(
+                              "targetIndustryCategory",
+                              String(category.id)
+                            );
+                            updateApiEntities();
                           }}
                         >
                           {category.name}
@@ -330,7 +391,7 @@ const Step1Form = ({ form }) => {
                 <FormField
                   label="Phân loại ngành nghề"
                   required
-                  error={errors.targetIndustryCategories?.message}
+                  error={errors.targetIndustryCategory?.message}
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 border border-gray-200 rounded-lg p-4 bg-gray-50">
                     {allIndustryCategories.map((category) => (
@@ -342,36 +403,18 @@ const Step1Form = ({ form }) => {
                           id={`category-${category.id}`}
                           onCheckedChange={(checked) => {
                             if (checked) {
-                              const newTargetCategories = [
-                                ...targetIndustryCategories,
-                                String(category.id),
-                              ];
                               setValue(
-                                "targetIndustryCategories",
-                                newTargetCategories
-                              );
-                              console.log(
-                                "Updated target categories:",
-                                newTargetCategories
+                                "targetIndustryCategory",
+                                String(category.id)
                               );
                             } else {
-                              const newTargetCategories =
-                                targetIndustryCategories.filter(
-                                  (value) => value !== String(category.id)
-                                );
-                              setValue(
-                                "targetIndustryCategories",
-                                newTargetCategories
-                              );
-                              console.log(
-                                "Updated target categories:",
-                                newTargetCategories
-                              );
+                              setValue("targetIndustryCategory", "");
                             }
+                            updateApiEntities();
                           }}
-                          checked={targetIndustryCategories.includes(
-                            String(category.id)
-                          )}
+                          checked={
+                            targetIndustryCategory === String(category.id)
+                          }
                           className="text-orange-500 border-orange-300 focus:ring-orange-500"
                         />
                         <Label
@@ -402,10 +445,12 @@ const Step1Form = ({ form }) => {
                           className="px-3 py-1 bg-white text-orange-700 border-orange-200 hover:bg-orange-100 cursor-pointer"
                           onClick={() => {
                             if (!targetCustomers.includes(String(segment.id))) {
-                              setValue("targetCustomers", [
+                              const newCustomers = [
                                 ...targetCustomers,
                                 String(segment.id),
-                              ]);
+                              ];
+                              setValue("targetCustomers", newCustomers);
+                              updateApiEntities();
                             }
                           }}
                         >
@@ -438,19 +483,13 @@ const Step1Form = ({ form }) => {
                                 String(segment.id),
                               ];
                               setValue("targetCustomers", newTargetCustomers);
-                              console.log(
-                                "Updated target customers:",
-                                newTargetCustomers
-                              );
+                              updateApiEntities();
                             } else {
                               const newTargetCustomers = targetCustomers.filter(
                                 (value) => value !== String(segment.id)
                               );
                               setValue("targetCustomers", newTargetCustomers);
-                              console.log(
-                                "Updated target customers:",
-                                newTargetCustomers
-                              );
+                              updateApiEntities();
                             }
                           }}
                           checked={targetCustomers.includes(String(segment.id))}

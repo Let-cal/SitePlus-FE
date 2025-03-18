@@ -12,7 +12,7 @@ const Step3Form = ({ form }) => {
   React.useEffect(() => {
     // Initialize the store profile criteria with attribute IDs when the component mounts
     form.setValue("areaCriteria", { attributeId: 9 });
-    form.setValue("budgetCriteria", { attributeId: 10 });
+    form.setValue("budgetCriteria", { attributeId: 31 });
   }, [form]);
 
   return (

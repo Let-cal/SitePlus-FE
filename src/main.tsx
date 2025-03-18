@@ -23,6 +23,7 @@ import InfoPage from "./lib/User/infopage/pages/InfoPage";
 import SurveyRequestsPage from "./lib/User/send-requests-page/pages/SurveyRequestsPage";
 import { AuthProvider } from "./services/AuthContext";
 import ProtectedRoute from "./services/ProtectedRoute";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <SnackbarProvider
@@ -156,6 +157,3 @@ createRoot(document.getElementById("root")!).render(
     </SnackbarProvider>
   </StrictMode>
 );
-
-
-

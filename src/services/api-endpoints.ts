@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
     },
     PUSH: {
       CREATE_BRAND: "/api/Brand",
+      CREATE_BRAND_REQUEST: "/api/BrandRequest",
     },
   },
   ADMIN: {
