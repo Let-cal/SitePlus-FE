@@ -7,9 +7,7 @@ import {
 } from "@/components/ui/card";
 import * as React from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts/lib/index.js";
-
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-
 import { ChartContainer } from "@/components/ui/chart";
 
 type ChartConfig = {
@@ -23,26 +21,26 @@ type ChartConfig = {
 };
 
 const chartData = [
-  { date: "2024-01-01", requests: 15000 },
-  { date: "2024-02-01", requests: 17500 },
-  { date: "2024-03-01", requests: 16800 },
-  { date: "2024-04-01", requests: 19200 },
-  { date: "2024-05-01", requests: 22000 },
-  { date: "2024-06-01", requests: 21500 },
-  { date: "2024-07-01", requests: 23000 },
-  { date: "2024-08-01", requests: 25000 },
-  { date: "2024-09-01", requests: 24500 },
-  { date: "2024-10-01", requests: 26000 },
-  { date: "2024-11-01", requests: 27500 },
-  { date: "2024-12-01", requests: 28000 },
+  { date: "2025-01-01", requests: 15000 },
+  { date: "2025-02-01", requests: 17500 },
+  { date: "2025-03-01", requests: 16800 },
+  { date: "2025-04-01", requests: 19200 },
+  { date: "2025-05-01", requests: 22000 },
+  { date: "2025-06-01", requests: 21500 },
+  { date: "2025-07-01", requests: 23000 },
+  { date: "2025-08-01", requests: 25000 },
+  { date: "2025-09-01", requests: 24500 },
+  { date: "2025-10-01", requests: 26000 },
+  { date: "2025-11-01", requests: 27500 },
+  { date: "2025-12-01", requests: 28000 },
 ];
 
 const chartConfig = {
   stats: {
-    label: "Statistics",
+    label: "Thống kê",
   },
   requests: {
-    label: "Requests",
+    label: "Yêu cầu",
     color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
@@ -62,9 +60,9 @@ export default function RequestsChart() {
     <Card>
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
-          <CardTitle>Total Statistics</CardTitle>
+          <CardTitle>Tổng Yêu Cầu Nhận Được</CardTitle>
           <CardDescription>
-            Monthly requests overview for the year
+            Tổng quan số lượng yêu cầu hàng tháng trong năm 2025
           </CardDescription>
         </div>
         <div className="flex">
@@ -107,12 +105,10 @@ export default function RequestsChart() {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              minTickGap={32}
+              minTickGap={0}
               tickFormatter={(value) => {
                 const date = new Date(value);
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                });
+                return `Tháng ${date.getMonth() + 1}`;
               }}
             />
             <ChartTooltip
@@ -120,11 +116,12 @@ export default function RequestsChart() {
                 <ChartTooltipContent
                   className="w-[150px]"
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
+                    return new Date(value).toLocaleDateString("vi-VN", {
                       month: "long",
                       year: "numeric",
                     });
                   }}
+                  formatter={(value) => `${value.toLocaleString()} yêu cầu`} 
                 />
               }
             />

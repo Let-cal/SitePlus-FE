@@ -52,7 +52,7 @@ export default function ManagerRequest() {
         <Header
           defaultLocation="Quận 7 - TPHCM"
           title="YÊU CẦU" // Truyền title vào đây
-          onNotificationClick={() => { }}
+          // onNotificationClick={() => { }}
         />
 
         {/* Content area */}

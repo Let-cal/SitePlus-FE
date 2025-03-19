@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
       GET_DISTRICTS: "/api/districts/get-all",
       GET_WARDS_BY_DISTRICT: "/api/areas",
       GET_USERS: "/api/user/get-users",
+      GET_TASKS: "/api/Task",
     },
   },
   MANAGER: {
