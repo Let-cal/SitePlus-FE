@@ -15,7 +15,9 @@ import Step4Form from "./Step4Form";
 // Định nghĩa schema validation cho form
 const formSchema = z.object({
   // Step 1: Thông tin cơ bản
-  brand: z.string().min(2, { message: "Vui lòng nhập thương hiệu" }),
+  brand: z
+    .string({ required_error: "Vui lòng nhập thương hiệu" })
+    .min(2, { message: "Vui lòng nhập thương hiệu" }),
   brandId: z.number().default(0),
   representativeName: z
     .string()
@@ -23,7 +25,8 @@ const formSchema = z.object({
   representativeEmail: z.string().email({ message: "Email không hợp lệ" }),
   representativePhone: z
     .string()
-    .min(10, { message: "Số điện thoại không hợp lệ" }),
+    .min(10, { message: "Số điện thoại không hợp lệ" })
+    .max(10, "Số điện thoại không hợp lệ"),
   representativeAddress: z
     .string()
     .min(1, { message: "Vui lòng nhập nơi thường trú của đại diện" }),
@@ -39,7 +42,9 @@ const formSchema = z.object({
 
   // Step 2: Thông tin chi tiết yêu cầu
   locationType: z.string({ required_error: "Vui lòng chọn loại mặt bằng" }),
-  storeProfile: z.string({ required_error: "Vui lòng chọn loại cửa hàng" }),
+  storeProfile: z
+    .string({ required_error: "Vui lòng chọn loại cửa hàng" })
+    .min(1, { message: "Vui lòng chọn loại cửa hàng" }),
   otherStoreProfileInfo: z.string().optional(),
 
   // Step 3: Thông tin diện tích và ngân sách
@@ -289,12 +294,15 @@ const SurveyRequestsForm: React.FC = () => {
       console.log("Form errors:", form.formState.errors);
       canProceed = step1Valid;
     } else if (step === 2) {
-      // Validate fields của Step 2
       const step2Fields: Step2Fields[] = ["locationType", "storeProfile"];
       if (storeProfile === "other") {
         step2Fields.push("otherStoreProfileInfo");
       }
       const step2Valid = await form.trigger(step2Fields);
+      console.log("Step 2 validation result:", step2Valid);
+      console.log("locationType value:", watch("locationType"));
+      console.log("storeProfile value:", watch("storeProfile"));
+      console.log("Form errors:", form.formState.errors);
       canProceed = step2Valid;
     } else if (step === 3) {
       // Validate fields của Step 3
@@ -433,7 +441,7 @@ const SurveyRequestsForm: React.FC = () => {
         }
       );
       form.reset();
-      navigate("/");
+      navigate("/home-page");
     } catch (error) {
       console.error("Error submitting form:", error);
       setApiError("Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.");

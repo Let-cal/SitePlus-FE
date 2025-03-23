@@ -230,7 +230,6 @@ const Step1Form = ({ form }) => {
                     brands={brands}
                     selectedBrand={selectedBrand}
                     onSelect={handleBrandSelect}
-                    error={errors.brand?.message}
                   />
                 </FormField>
                 <p className="text-sm text-gray-500">

@@ -190,7 +190,7 @@ const Step2Form = ({ form }) => {
                 });
               }
             }}
-            value={watch("storeProfile") || ""}
+            value={watch("storeProfile")}
             disabled={isLoading || filteredStoreProfileCategories.length === 0}
           >
             <SelectTrigger className="focus:border-orange-400">
