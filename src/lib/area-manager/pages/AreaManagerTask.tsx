@@ -1,5 +1,5 @@
 import Sidebar from "@/lib/all-site/SideBar";
-import { Briefcase, FileText, Home, Send } from "lucide-react";
+import { Briefcase, Home } from "lucide-react";
 import * as React from "react";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
@@ -35,6 +35,7 @@ export default function AreaManagerTask() {
 
   const { handleLogout } = useAuth();
 
+
   return (
     <div className="flex h-screen overflow-hidden">
       <div className="flex-none">
@@ -49,7 +50,6 @@ export default function AreaManagerTask() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          defaultLocation="Quận 7 - TPHCM"
           title="GIAO VIỆC" // Truyền title vào đây
           // onNotificationClick={() => {}}
         />

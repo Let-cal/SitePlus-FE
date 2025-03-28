@@ -62,6 +62,16 @@ interface Task {
   updatedAt: string;
 }
 
+// Interface cho dữ liệu gửi lên khi tạo task
+interface CreateTaskRequest {
+  name: string;
+  description: string;
+  areaId: number;
+  staffId: number;
+  deadline: string;
+  priority: number;
+}
+
 // Định nghĩa interface chung cho phản hồi API
 interface ApiResponse<T> {
   data: {
@@ -74,15 +84,41 @@ interface ApiResponse<T> {
   message: string;
 }
 
+// Interface cho phản hồi của API POST (có thể khác với GET)
+interface CreateTaskResponse {
+  success: boolean;
+  message: string;
+  data: Task; // Task vừa được tạo
+}
+
+// Interface cho phản hồi của API GET Task by ID (không có phân trang)
+interface TaskResponse {
+  success: boolean;
+  message: string;
+  data: Task;
+}
+
+// Interface cho tham số của fetchTasks
+interface FetchTasksParams {
+  search?: string;
+  status?: number;
+  priority?: number;
+  isCompanyTaskOnly?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+interface FetchUsersParams {
+  search?: string;
+}
+
 class AreaManagerService {
   // Hàm lấy token và trả về header chung cho tất cả API
   private getAuthHeader(): { headers: Record<string, string> } | null {
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn", { position: "top-right", duration: 3000 });
-      // Có thể thêm logic chuyển hướng nếu cần
-      // window.location.href = "/login";
-      return null; // Trả về null nếu không có token
+      return null;
     }
 
     return {
@@ -98,7 +134,7 @@ class AreaManagerService {
   async fetchDistricts(): Promise<District[]> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
-      return []; // Trả về mảng rỗng nếu không có token
+      return [];
     }
 
     try {
@@ -130,7 +166,6 @@ class AreaManagerService {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-right", duration: 3000 });
         localStorage.removeItem("token");
-        // window.location.href = "/login";
       } else {
         toast.error(
           "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
@@ -145,7 +180,7 @@ class AreaManagerService {
   async fetchWardsByDistrictId(districtId: number): Promise<Ward[]> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
-      return []; // Trả về mảng rỗng nếu không có token
+      return [];
     }
 
     try {
@@ -177,7 +212,6 @@ class AreaManagerService {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-right", duration: 3000 });
         localStorage.removeItem("token");
-        // window.location.href = "/login";
       } else {
         toast.error(
           "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
@@ -188,38 +222,69 @@ class AreaManagerService {
     }
   }
 
-  // Get users with pagination (for Area Manager) 
-  async fetchUsers(page: number = 1, pageSize: number = 5): Promise<User[]> {
+  // Get users (for Area Manager) - Sửa để lấy toàn bộ dữ liệu và hỗ trợ tìm kiếm
+  async fetchUsers(params: FetchUsersParams = {}): Promise<User[]> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
-      return []; // Trả về mảng rỗng nếu không có token
+      return [];
     }
 
+    const { search } = params;
+
     try {
+      // Xây dựng query string từ tham số search
+      const queryParams = new URLSearchParams();
+      queryParams.append("page", "1");
+      queryParams.append("pageSize", "1000"); // Đặt pageSize lớn để lấy toàn bộ dữ liệu
+      if (search) queryParams.append("search", search);
+
+      // Gọi API lần đầu để lấy dữ liệu
       const response = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_USERS}?page=${page}&pageSize=${pageSize}`,
+        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_USERS}?${queryParams.toString()}`,
         authHeader
       );
 
-      console.log("API Response for Users:", response.data); // Log để debug
+      console.log("API Response for Users:", response.data);
       const data: ApiResponse<User> = response.data;
       if (data.success) {
         let allUsers: User[] = [...data.data.listData];
-        if (data.data.totalPage > 1) {
-          const pages = Array.from({ length: data.data.totalPage - 1 }, (_, i) => i + 2);
-          const pagePromises = pages.map((pageNum) =>
-            axios
-              .get(`${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_USERS}?page=${pageNum}&pageSize=${pageSize}`, authHeader)
+        const totalPages = data.data.totalPage;
+
+        // Nếu có nhiều hơn 1 trang, gọi API song song để lấy dữ liệu từ các trang còn lại
+        if (totalPages > 1) {
+          const pages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+          const pagePromises = pages.map((pageNum) => {
+            const pageQueryParams = new URLSearchParams();
+            pageQueryParams.append("page", pageNum.toString());
+            pageQueryParams.append("pageSize", "1000");
+            if (search) pageQueryParams.append("search", search);
+
+            return axios
+              .get(
+                `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_USERS}?${pageQueryParams.toString()}`,
+                authHeader
+              )
               .then((res) => {
                 console.log(`Page ${pageNum} Response for Users:`, res.data);
                 return res.data.data.listData as User[];
               })
-          );
+              .catch((error) => {
+                console.error(`Error fetching page ${pageNum}:`, error);
+                return [];
+              });
+          });
+
           const additionalUsers = (await Promise.all(pagePromises)).flat() as User[];
           allUsers = allUsers.concat(additionalUsers);
         }
-        console.log("All Users Fetched:", allUsers); // Log danh sách nhân viên cuối cùng
-        return allUsers;
+
+        // Loại bỏ các user trùng lặp (dựa trên id)
+        const uniqueUsers = Array.from(
+          new Map(allUsers.map(user => [user.id, user])).values()
+        );
+
+        console.log(`Fetched ${allUsers.length} users, ${uniqueUsers.length} unique users`);
+        return uniqueUsers;
       } else {
         console.log("API Error: Success is false", data.message);
         toast.error(data.message || "Lỗi khi tải danh sách nhân viên", { position: "top-right", duration: 3000 });
@@ -240,72 +305,179 @@ class AreaManagerService {
     }
   }
 
-  // Get Tasks with pagination (for Area Manager)
-  async fetchTasks(page: number = 1, pageSize: number = 10): Promise<Task[]> {
+  // Get Tasks with pagination and filters (for Area Manager)
+  async fetchTasks(params: FetchTasksParams = {}): Promise<Task[]> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
-      return []; // Return empty array if no token
+      return [];
     }
-  
+
+    const {
+      search,
+      status,
+      priority,
+      isCompanyTaskOnly,
+      page = 1,
+      pageSize = 10, // Đặt pageSize mặc định là 10
+    } = params;
+
     try {
-      // Lấy trang đầu tiên và thông tin tổng số trang
+      // Xây dựng query string từ các tham số
+      const queryParams = new URLSearchParams();
+      queryParams.append("page", page.toString());
+      queryParams.append("pageSize", pageSize.toString());
+      if (search) queryParams.append("search", search);
+      if (status !== undefined) queryParams.append("status", status.toString());
+      if (priority !== undefined) queryParams.append("priority", priority.toString());
+      if (isCompanyTaskOnly !== undefined) queryParams.append("isCompanyTaskOnly", isCompanyTaskOnly.toString());
+
+      // Gọi API lần đầu để lấy totalPage và dữ liệu trang đầu tiên
       const response = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_TASKS}?page=${page}&pageSize=${pageSize}`,
+        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_TASKS}?${queryParams.toString()}`,
         authHeader
       );
-  
+
       const data: ApiResponse<Task> = response.data;
-      
+
       if (!data.success) {
-        toast.error(data.message || "Lỗi khi tải danh sách công việc", { 
-          position: "top-right", duration: 3000 
+        toast.error(data.message || "Lỗi khi tải danh sách công việc", {
+          position: "top-right",
+          duration: 3000,
         });
         return [];
       }
-      
-      // Lưu danh sách từ trang đầu tiên
-      const allTasks: Task[] = [...data.data.listData];
+
+      let allTasks: Task[] = [...data.data.listData];
       const totalPages = data.data.totalPage;
-      
-      // Nếu có nhiều hơn 1 trang, tải các trang còn lại tuần tự để tránh trùng lặp
+
+      // Nếu có nhiều hơn 1 trang, gọi API song song để lấy dữ liệu từ các trang còn lại
       if (totalPages > 1) {
-        for (let pageNum = 2; pageNum <= totalPages; pageNum++) {
-          const nextPageResponse = await axios.get(
-            `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_TASKS}?page=${pageNum}&pageSize=${pageSize}`,
-            authHeader
-          );
-          
-          const nextPageData = nextPageResponse.data;
-          if (nextPageData.success) {
-            // Nối dữ liệu từ trang tiếp theo
-            allTasks.push(...nextPageData.data.listData);
-          }
-        }
+        const pages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+        const pagePromises = pages.map((pageNum) => {
+          const pageQueryParams = new URLSearchParams();
+          pageQueryParams.append("page", pageNum.toString());
+          pageQueryParams.append("pageSize", pageSize.toString());
+          if (search) pageQueryParams.append("search", search);
+          if (status !== undefined) pageQueryParams.append("status", status.toString());
+          if (priority !== undefined) pageQueryParams.append("priority", priority.toString());
+          if (isCompanyTaskOnly !== undefined) pageQueryParams.append("isCompanyTaskOnly", isCompanyTaskOnly.toString());
+
+          return axios
+            .get(
+              `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_TASKS}?${pageQueryParams.toString()}`,
+              authHeader
+            )
+            .then((res) => {
+              const pageData: ApiResponse<Task> = res.data;
+              if (pageData.success) {
+                return pageData.data.listData as Task[];
+              }
+              return [];
+            })
+            .catch((error) => {
+              console.error(`Error fetching page ${pageNum}:`, error);
+              return [];
+            });
+        });
+
+        const additionalTasks = (await Promise.all(pagePromises)).flat() as Task[];
+        allTasks = allTasks.concat(additionalTasks);
       }
-      
-      // Kiểm tra và loại bỏ các nhiệm vụ trùng lặp dựa trên ID
+
+      // Loại bỏ các task trùng lặp (dựa trên id)
       const uniqueTasks = Array.from(
         new Map(allTasks.map(task => [task.id, task])).values()
       );
-      
+
       console.log(`Fetched ${allTasks.length} tasks, ${uniqueTasks.length} unique tasks`);
       return uniqueTasks;
-      
+
     } catch (error) {
       console.error("API Error for Tasks:", error.response ? error.response.data : error.message);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { 
-          position: "top-right", duration: 3000 
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+          position: "top-right",
+          duration: 3000,
         });
         localStorage.removeItem("token");
       } else {
         toast.error(
-          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? 
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ?
             error.response?.data?.message || error.message : "Không xác định"),
           { position: "top-right", duration: 3000 }
         );
       }
       return [];
+    }
+  }
+
+  // Get Task by ID
+  async fetchTaskById(taskId: number): Promise<Task | null> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return null;
+    }
+
+    try {
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_TASK_BY_ID}`.replace(":taskId", taskId.toString());
+      const response = await axios.get(endpoint, authHeader);
+
+      const data: TaskResponse = response.data;
+      if (data.success) {
+        return data.data;
+      } else {
+        toast.error(data.message || "Lỗi khi tải thông tin công việc", { position: "top-right", duration: 3000 });
+        return null;
+      }
+    } catch (error) {
+      console.error("API Error for Task by ID:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-right", duration: 3000 });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-right", duration: 3000 }
+        );
+      }
+      return null;
+    }
+  }
+
+  // Create a new task (POST)
+  async createTask(taskData: CreateTaskRequest): Promise<CreateTaskResponse> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      throw new Error("No token available");
+    }
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.POST.CREATE_TASK}`,
+        taskData,
+        authHeader
+      );
+
+      const data: CreateTaskResponse = response.data;
+      if (data.success) {
+        console.log("Task created successfully:", data.data);
+        return data;
+      } else {
+        toast.error(data.message || "Lỗi khi tạo công việc", { position: "top-right", duration: 3000 });
+        throw new Error(data.message || "Failed to create task");
+      }
+    } catch (error) {
+      console.error("API Error for Create Task:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-right", duration: 3000 });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-right", duration: 3000 }
+        );
+      }
+      throw error;
     }
   }
 }

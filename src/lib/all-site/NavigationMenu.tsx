@@ -5,15 +5,12 @@ import { Link } from "react-router-dom";
 
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import HomePageNav from "./HomePageNav";
-import logo from "/images/logo-site-plus/logo.png";
 export function NavigationMenuDemo() {
   return (
     <NavigationMenu>
@@ -26,62 +23,14 @@ export function NavigationMenuDemo() {
           </Link>
         </NavigationMenuItem>
         {/* Tư Vấn Chiến Lược với dropdown */}
+
         <NavigationMenuItem>
-          <NavigationMenuTrigger>
-            <div className="flex items-center">Tư Vấn Chiến Lược</div>
-          </NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul
-              className="grid gap-3 p-4 
-                  sm:grid-cols-1 sm:w-full 
-                  md:grid-cols-2 md:w-[400px] 
-                  lg:grid-cols-[.75fr_1fr] lg:w-[500px]"
-            >
-              {/* Logo */}
-              <li className="row-span-3">
-                <NavigationMenuLink asChild>
-                  <a
-                    className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                    href="/"
-                  >
-                    <div className="flex items-center justify-center w-full h-auto">
-                      <img
-                        src={logo}
-                        alt="Logo"
-                        className="h-auto w-full" // Điều chỉnh chiều cao logo theo nhu cầu
-                      />
-                    </div>
-
-                    <div className="mb-2 mt-4 text-lg font-medium ">
-                      SitePlus
-                    </div>
-                    <p className="text-sm leading-tight text-muted-foreground">
-                      Tư Vấn Chiến Lược Điểm Bán
-                    </p>
-                  </a>
-                </NavigationMenuLink>
-              </li>
-
-              {/* Các ListItem */}
-              <ListItem
-                href="/survey-requests-page"
-                title="Khảo sát tìm mặt bằng"
-              >
-                Site Plus phân tích, tư vấn và lập chiến lược mở điểm bán tiềm
-                năng, phù hợp với định hướng của doanh nghiệp.
-              </ListItem>
-              <ListItem
-                href="/rating-requests-page"
-                title="Khảo sát mặt bằng của bạn"
-              >
-                Đánh giá chi tiết mặt bằng hiện tại để tìm ra các giải pháp cải
-                tiến hiệu quả. Tối ưu hóa không gian để phù hợp hơn với mục tiêu
-                kinh doanh của bạn.
-              </ListItem>
-            </ul>
-          </NavigationMenuContent>
+          <Link to="/survey-requests-page">
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              Khảo sát tìm mặt bằng
+            </NavigationMenuLink>
+          </Link>
         </NavigationMenuItem>
-
         {/* Các liên kết khác */}
         <NavigationMenuItem>
           <Link to="/info-page">

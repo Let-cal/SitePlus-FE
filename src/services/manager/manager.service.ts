@@ -17,6 +17,10 @@ interface User {
     createdAt: string;
 }
 
+interface FetchUsersParams {
+    search?: string;
+}
+
 // API Response interface 
 interface ApiResponse<T> {
     data: {
@@ -48,74 +52,84 @@ class ManagerService {
     }
 
     // Get users with pagination (similar to Area Manager approach)
-    async fetchUsers(page: number = 1, pageSize: number = 5): Promise<User[]> {
+    async fetchUsers(params: FetchUsersParams = {}): Promise<User[]> {
         const authHeader = this.getAuthHeader();
         if (!authHeader) {
-            return []; // Trả về mảng rỗng nếu không có token
+            return [];
         }
 
+        const { search } = params;
+
         try {
+            // Xây dựng query string từ tham số search
+            const queryParams = new URLSearchParams();
+            queryParams.append("page", "1");
+            queryParams.append("pageSize", "1000"); // Đặt pageSize lớn để lấy toàn bộ dữ liệu
+            if (search) queryParams.append("search", search);
+
+            // Gọi API lần đầu để lấy dữ liệu
             const response = await axios.get(
-                `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_USERS}?page=${page}&pageSize=${pageSize}`,
+                `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_USERS}?${queryParams.toString()}`,
                 authHeader
             );
 
-            console.log("API Response for Users (First Page):", JSON.stringify(response.data, null, 2)); // Detailed logging
+            console.log("API Response for Users:", response.data);
             const data: ApiResponse<User> = response.data;
             if (data.success) {
                 let allUsers: User[] = [...data.data.listData];
+                const totalPages = data.data.totalPage;
 
-                // Log first page details
-                console.log(`First Page Details:
-            - Total Pages: ${data.data.totalPage}
-            - Total Records: ${data.data.totalRecords}
-            - Current Page: ${data.data.page}
-            - Users on First Page: ${allUsers.length}`);
+                // Nếu có nhiều hơn 1 trang, gọi API song song để lấy dữ liệu từ các trang còn lại
+                if (totalPages > 1) {
+                    const pages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+                    const pagePromises = pages.map((pageNum) => {
+                        const pageQueryParams = new URLSearchParams();
+                        pageQueryParams.append("page", pageNum.toString());
+                        pageQueryParams.append("pageSize", "1000");
+                        if (search) pageQueryParams.append("search", search);
 
-                if (data.data.totalPage > 1) {
-                    const pages = Array.from({ length: data.data.totalPage - 1 }, (_, i) => i + 2);
-                    const pagePromises = pages.map((pageNum) =>
-                        axios
-                            .get(`${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_USERS}?page=${pageNum}&pageSize=${pageSize}`, authHeader)
+                        return axios
+                            .get(
+                                `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_USERS}?${pageQueryParams.toString()}`,
+                                authHeader
+                            )
                             .then((res) => {
-                                console.log(`Page ${pageNum} Response for Users:`, JSON.stringify(res.data, null, 2));
+                                console.log(`Page ${pageNum} Response for Users:`, res.data);
                                 return res.data.data.listData as User[];
                             })
-                    );
+                            .catch((error) => {
+                                console.error(`Error fetching page ${pageNum}:`, error);
+                                return [];
+                            });
+                    });
+
                     const additionalUsers = (await Promise.all(pagePromises)).flat() as User[];
                     allUsers = allUsers.concat(additionalUsers);
                 }
 
-                console.log(`All Users Fetched:
-                - Total Pages Processed: ${data.data.totalPage}
-                - Total Users Retrieved: ${allUsers.length}
-                - Users Details:`, JSON.stringify(allUsers, null, 2));
+                // Loại bỏ các user trùng lặp (dựa trên id)
+                const uniqueUsers = Array.from(
+                    new Map(allUsers.map(user => [user.id, user])).values()
+                );
 
-                return allUsers;
+                console.log(`Fetched ${allUsers.length} users, ${uniqueUsers.length} unique users`);
+                return uniqueUsers;
             } else {
-                console.error("API Error: Success is false", data.message);
+                console.log("API Error: Success is false", data.message);
                 toast.error(data.message || "Lỗi khi tải danh sách nhân viên", { position: "top-right", duration: 3000 });
                 return [];
             }
         } catch (error) {
-            console.error("API Error for Users:", {
-                errorResponse: error.response ? JSON.stringify(error.response.data, null, 2) : null,
-                errorMessage: error.message,
-                errorConfig: error.config
-            });
-
+            console.error("API Error for Users:", error.response ? error.response.data : error.message);
             if (axios.isAxiosError(error) && error.response?.status === 401) {
                 toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-right", duration: 3000 });
                 localStorage.removeItem("token");
-                // Uncomment if you want to redirect to login
-                // window.location.href = "/login";
             } else {
                 toast.error(
                     "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
                     { position: "top-right", duration: 3000 }
                 );
             }
-
             return [];
         }
     }

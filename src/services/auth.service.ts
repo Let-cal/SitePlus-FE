@@ -18,6 +18,10 @@ interface LoginResponse {
   role: string;
   hint: number;
   name: string;
+  areaId: number;
+  area: string;
+  districtId: number;
+  district: string;
 }
 
 interface LoginRequest {
@@ -46,10 +50,14 @@ class AuthService {
         }
       );
 
-      // Store token in localStorage if login successful
+      console.log("API Response:", response.data);
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("userRole", response.data.role);
+        localStorage.setItem("areaId", response.data.areaId.toString());
+        localStorage.setItem("area", response.data.area);
+        localStorage.setItem("districtId", response.data.districtId.toString());
+        localStorage.setItem("district", response.data.district);
       }
 
       return response.data;

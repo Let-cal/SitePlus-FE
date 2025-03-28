@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Bell } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { AuthLinks } from "../auth/components/AuthLink";
@@ -44,9 +42,6 @@ export function Header() {
 
           {/* Desktop Auth */}
           <div className="hidden lg:flex items-center gap-2 border-l-2 border-solid pl-3">
-            <Button variant="ghost" size="icon">
-              <Bell className="h-5 w-5 text-gray-600" />
-            </Button>
             <AuthLinks />
           </div>
           {/* Mobile Navigation */}
