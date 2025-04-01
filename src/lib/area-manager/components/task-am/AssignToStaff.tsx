@@ -71,7 +71,7 @@ type FilterType = "all" | "normal" | "request";
 type FilterPriority = "all" | "1" | "2" | "3";
 
 const filterLabels = {
-  all: "Tất cả (Trạng thái)",
+  all: "Trạng thái",
   1: "Đã giao",
   2: "Tiến hành",
   3: "Chờ duyệt",
@@ -79,13 +79,13 @@ const filterLabels = {
 };
 
 const typeLabels = {
-  all: "Tất cả (Loại)",
+  all: "Loại",
   normal: "Thông thường",
   request: "Theo yêu cầu",
 };
 
 const priorityLabels = {
-  all: "Tất cả (Độ ưu tiên)",
+  all: "Độ ưu tiên",
   1: "Thấp",
   2: "Trung bình",
   3: "Cao",

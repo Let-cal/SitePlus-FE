@@ -62,7 +62,7 @@ interface Task {
   updatedAt: string;
 }
 
-// Interface cho dữ liệu gửi lên khi tạo task
+// Định nghĩa interface cho dữ liệu gửi lên khi tạo task
 interface CreateTaskRequest {
   name: string;
   description: string;
@@ -70,6 +70,56 @@ interface CreateTaskRequest {
   staffId: number;
   deadline: string;
   priority: number;
+}
+
+// BrandRequest interfaces
+interface StoreProfileCriteria {
+  id: number;
+  storeProfileId: number;
+  attributeId: number;
+  attributeName: string;
+  maxValue: string;
+  minValue: string;
+  defaultValue: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface StoreProfile {
+  id: number;
+  brandId: number;
+  storeProfileCategoryId: number;
+  storeProfileCategoryName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface BrandRequestStoreProfile {
+  id: number;
+  storeProfileId: number;
+  brandRequestId: number;
+}
+
+interface BrandRequest {
+  id: number;
+  brandId: number;
+  brandName: string;
+  nameCustomer: string;
+  emailCustomer: string;
+  phoneCustomer: string;
+  addressCustomer: string;
+  status: number;
+  statusName: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface BrandRequestResponse {
+  brandRequest: BrandRequest;
+  brandRequestStoreProfile: BrandRequestStoreProfile;
+  storeProfile: StoreProfile;
+  storeProfileCriteria: StoreProfileCriteria[];
 }
 
 // Định nghĩa interface chung cho phản hồi API
@@ -96,6 +146,13 @@ interface TaskResponse {
   success: boolean;
   message: string;
   data: Task;
+}
+
+// Interface cho phản hồi của API GET Brand Requests (không có phân trang)
+interface BrandRequestApiResponse {
+  data: BrandRequestResponse[];
+  success: boolean;
+  message: string;
 }
 
 // Interface cho tham số của fetchTasks
@@ -358,9 +415,9 @@ class AreaManagerService {
           pageQueryParams.append("page", pageNum.toString());
           pageQueryParams.append("pageSize", pageSize.toString());
           if (search) pageQueryParams.append("search", search);
-          if (status !== undefined) pageQueryParams.append("status", status.toString());
-          if (priority !== undefined) pageQueryParams.append("priority", priority.toString());
-          if (isCompanyTaskOnly !== undefined) pageQueryParams.append("isCompanyTaskOnly", isCompanyTaskOnly.toString());
+          if (status !== undefined) queryParams.append("status", status.toString());
+          if (priority !== undefined) queryParams.append("priority", priority.toString());
+          if (isCompanyTaskOnly !== undefined) queryParams.append("isCompanyTaskOnly", isCompanyTaskOnly.toString());
 
           return axios
             .get(
@@ -478,6 +535,54 @@ class AreaManagerService {
         );
       }
       throw error;
+    }
+  }
+
+  // Get Brand Requests
+  async fetchBrandRequests(): Promise<BrandRequestResponse[]> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return [];
+    }
+
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append("page", "1");
+      queryParams.append("pageSize", "1000");
+
+      const response = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_BRAND_REQUESTS}?${queryParams.toString()}`,
+        authHeader
+      );
+
+      console.log("API Response for Brand Requests:", response.data);
+      const data: BrandRequestApiResponse = response.data;
+      if (data.success) {
+        const allBrandRequests: BrandRequestResponse[] = [...data.data];
+
+        const uniqueBrandRequests = Array.from(
+          new Map(allBrandRequests.map(item => [item.brandRequest.id, item])).values()
+        );
+
+        console.log(`Fetched ${allBrandRequests.length} brand requests, ${uniqueBrandRequests.length} unique brand requests`);
+        return uniqueBrandRequests;
+      } else {
+        console.log("API Error: Success is false", data.message);
+        toast.error(data.message || "Lỗi khi tải danh sách yêu cầu thương hiệu", { position: "top-right", duration: 3000 });
+        return [];
+      }
+    } catch (error) {
+      console.error("API Error for Brand Requests:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-right", duration: 3000 });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-right", duration: 3000 }
+        );
+      }
+      return [];
     }
   }
 }
