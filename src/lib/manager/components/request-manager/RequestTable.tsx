@@ -31,51 +31,91 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"; // Sử dụng AlertDialog thay vì Dialog
+import toast, { Toaster } from "react-hot-toast";
+import managerService from "../../../../services/manager/manager.service";
+import RequestDetail from "./RequestDetail";
 
 interface Request {
   id: string;
   brand: string;
   email: string;
-  location: string; // Vị trí khảo sát trong TP.HCM
-  status?: "accepted" | "rejected";
+  description: string;
+  status?: number;
+  statusName?: string;
+  createdAt: string; // Thêm trường createdAt
 }
 
-const sampleData: Request[] = [
-  { id: "AB123", brand: "Highlands Coffee", email: "contact@highlands.vn", location: "Quận 1, TP.HCM" },
-  { id: "CD123", brand: "The Coffee House", email: "info@tch.vn", location: "Quận 7, TP.HCM" },
-  { id: "AB535", brand: "Starbucks", email: "vn@starbucks.com", location: "Quận 3, TP.HCM" },
-  { id: "AB610", brand: "Phúc Long", email: "support@phuclong.vn", location: "Quận 10, TP.HCM" },
-  { id: "CD892", brand: "Trung Nguyên", email: "contact@trungnguyen.vn", location: "Bình Thạnh, TP.HCM" },
-];
-
-const processedData: Request[] = [
-  { id: "AB129", brand: "Highlands Coffee", email: "contact@highlands.vn", location: "Quận 1, TP.HCM", status: "rejected" },
-  { id: "CD125", brand: "The Coffee House", email: "info@tch.vn", location: "Quận 7, TP.HCM", status: "accepted" },
-  { id: "AB126", brand: "Starbucks", email: "vn@starbucks.com", location: "Quận 3, TP.HCM", status: "accepted" },
-  { id: "CD127", brand: "Phúc Long", email: "support@phuclong.vn", location: "Quận 10, TP.HCM", status: "rejected" },
-];
-
-type FilterStatus = "all" | "accepted" | "rejected";
+type FilterStatus = "all" | "accepted" | "matching";
 
 const filterLabels = {
   all: "Tất cả",
   accepted: "Chấp nhận",
-  rejected: "Từ chối",
+  matching: "Đang ghép",
 };
 
 export default function RequestTableWithTabs() {
   const [activeTab, setActiveTab] = React.useState<"new" | "processed">("new");
   const [filterStatus, setFilterStatus] = React.useState<FilterStatus>("all");
   const [currentPage, setCurrentPage] = React.useState(1);
-  const itemsPerPage = 5;
+  const [requests, setRequests] = React.useState<Request[]>([]);
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [selectedRequestId, setSelectedRequestId] = React.useState<string | null>(null);
+  const itemsPerPage = 10;
+
+  // State để quản lý AlertDialog xác nhận
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [dialogAction, setDialogAction] = React.useState<"accepted" | "rejected" | null>(null);
+  const [dialogRequestId, setDialogRequestId] = React.useState<string | null>(null);
+
+  // Gọi API khi component mount và sắp xếp theo createdAt
+  React.useEffect(() => {
+    const loadBrandRequests = async () => {
+      const data = await managerService.fetchBrandRequests();
+      const mappedData: Request[] = data.map((item) => ({
+        id: item.brandRequest.id.toString(),
+        brand: item.brandRequest.brandName,
+        email: item.brandRequest.emailCustomer,
+        description: item.brandRequest.description,
+        status: item.brandRequest.status,
+        statusName: item.brandRequest.statusName,
+        createdAt: item.brandRequest.createdAt, // Lấy createdAt từ API
+      }));
+
+      // Sắp xếp theo createdAt giảm dần (mới nhất trước)
+      const sortedData = [...mappedData].sort((a, b) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+
+      setRequests(sortedData);
+    };
+    loadBrandRequests();
+  }, []);
 
   const getFilteredData = () => {
-    if (activeTab === "new") return sampleData;
+    let data = requests;
 
-    let data = processedData;
-    if (filterStatus !== "all") {
-      data = processedData.filter(item => item.status === filterStatus);
+    if (activeTab === "new") {
+      return data.filter((item) => item.status === 0);
     }
+
+    data = data.filter((item) => item.status === 1 || item.status === 3);
+
+    if (filterStatus === "accepted") {
+      data = data.filter((item) => item.status === 1);
+    } else if (filterStatus === "matching") {
+      data = data.filter((item) => item.status === 3);
+    }
+
     return data;
   };
 
@@ -90,8 +130,64 @@ export default function RequestTableWithTabs() {
     currentPage * itemsPerPage
   );
 
+  // Hàm xử lý hành động (Chấp nhận/Từ chối) - Mở AlertDialog xác nhận
   const handleAction = (id: string, action: "accepted" | "rejected") => {
-    // No logic needed for UI demonstration
+    setDialogRequestId(id);
+    setDialogAction(action);
+    setIsDialogOpen(true);
+  };
+
+  // Hàm xác nhận hành động trong AlertDialog
+  const confirmAction = async () => {
+    if (!dialogRequestId || !dialogAction) return;
+
+    const requestId = parseInt(dialogRequestId);
+    const newStatus = dialogAction === "accepted" ? 1 : 2; // 1: Chấp nhận, 2: Từ chối
+
+    try {
+      // Gọi API để cập nhật trạng thái
+      const success = await managerService.updateBrandRequestStatus(requestId, newStatus);
+      if (success) {
+        // Cập nhật danh sách requests
+        setRequests((prevRequests) =>
+          prevRequests.map((req) =>
+            req.id === dialogRequestId
+              ? {
+                  ...req,
+                  status: newStatus,
+                  statusName: dialogAction === "accepted" ? "Chấp nhận" : "Từ chối",
+                }
+              : req
+          )
+        );
+        toast.success(
+          `Đã ${dialogAction === "accepted" ? "chấp nhận" : "từ chối"} yêu cầu ID: ${dialogRequestId}`,
+          { position: "top-right", duration: 3000 }
+        );
+      } else {
+        toast.error("Lỗi khi cập nhật trạng thái", { position: "top-right", duration: 3000 });
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Lỗi khi cập nhật trạng thái", { position: "top-right", duration: 3000 });
+    } finally {
+      // Đóng AlertDialog sau khi xử lý
+      setIsDialogOpen(false);
+      setDialogRequestId(null);
+      setDialogAction(null);
+    }
+  };
+
+  // Hàm mở drawer khi bấm "Xem chi tiết"
+  const handleViewDetail = (requestId: string) => {
+    setSelectedRequestId(requestId);
+    setIsDrawerOpen(true);
+  };
+
+  // Hàm đóng drawer
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    setSelectedRequestId(null);
   };
 
   const ActionButton = ({ request }: { request: Request }) => {
@@ -100,12 +196,12 @@ export default function RequestTableWithTabs() {
         <div className="flex gap-2">
           <Badge
             className={
-              request.status === "accepted"
-                ? "bg-emerald-500 dark:bg-emerald-600 hover:bg-emerald-600 dark:hover:bg-emerald-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap" // Tăng chiều rộng lên w-24, thêm whitespace-nowrap để không xuống dòng
-                : "bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap" // Tăng chiều rộng lên w-24, thêm whitespace-nowrap để không xuống dòng
+              request.status === 1
+                ? "bg-emerald-500 dark:bg-emerald-600 hover:bg-emerald-600 dark:hover:bg-emerald-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
+                : "bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
             }
           >
-            {request.status === "accepted" ? "Chấp nhận" : "Từ chối"}
+            {request.statusName}
           </Badge>
         </div>
       );
@@ -129,6 +225,10 @@ export default function RequestTableWithTabs() {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+  };
+
+  const truncateDescription = (desc: string) => {
+    return desc.length > 15 ? desc.substring(0, 15) + "..." : desc;
   };
 
   return (
@@ -174,10 +274,10 @@ export default function RequestTableWithTabs() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[12%]">Mã yêu cầu</TableHead>
+            <TableHead className="w-[12%]">ID</TableHead>
             <TableHead className="w-[20%]">Thương hiệu</TableHead>
-            <TableHead className="w-[20%]">Email</TableHead>
-            <TableHead className="w-[20%]">Vị trí khảo sát</TableHead>
+            <TableHead className="w-[20%]">Email khách hàng</TableHead>
+            <TableHead className="w-[20%]">Yêu cầu</TableHead>
             <TableHead className="w-[12%]">Xem chi tiết</TableHead>
             <TableHead className="w-[8%]">{activeTab === "new" ? "Hành động" : "Trạng thái"}</TableHead>
           </TableRow>
@@ -188,9 +288,13 @@ export default function RequestTableWithTabs() {
               <TableCell>{request.id}</TableCell>
               <TableCell>{request.brand}</TableCell>
               <TableCell>{request.email}</TableCell>
-              <TableCell>{request.location}</TableCell>
+              <TableCell>{truncateDescription(request.description)}</TableCell>
               <TableCell>
-                <Button variant="link" className="text-blue-500 p-0 underline hover:text-blue-700">
+                <Button
+                  variant="link"
+                  className="text-blue-500 p-0 underline hover:text-blue-700"
+                  onClick={() => handleViewDetail(request.id)}
+                >
                   Xem chi tiết
                 </Button>
               </TableCell>
@@ -230,6 +334,34 @@ export default function RequestTableWithTabs() {
           </PaginationContent>
         </Pagination>
       </div>
+
+      {/* Drawer hiển thị chi tiết BrandRequest */}
+      {selectedRequestId && (
+        <RequestDetail
+          isOpen={isDrawerOpen}
+          onClose={handleCloseDrawer}
+          brandRequestId={parseInt(selectedRequestId)}
+        />
+      )}
+
+      {/* AlertDialog xác nhận hành động */}
+      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận hành động</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn{" "}
+              {dialogAction === "accepted" ? "chấp nhận" : "từ chối"} yêu cầu ID: {dialogRequestId} không?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmAction}>Xác nhận</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Toaster />
     </div>
   );
 }

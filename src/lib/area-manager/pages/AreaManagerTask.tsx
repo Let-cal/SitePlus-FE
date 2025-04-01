@@ -6,6 +6,7 @@ import Header from "../../all-site/HeaderOtherRole";
 import AreaMap from "../components/home-am/Map";
 import AssignToStaff from "../components/task-am/AssignToStaff";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
+import TaskChart from "../components/task-am/TaskChart";
 
 export default function AreaManagerTask() {
   const areaManagerItems = [
@@ -34,6 +35,7 @@ export default function AreaManagerTask() {
 
   const { handleLogout } = useAuth();
 
+
   return (
     <div className="flex h-screen overflow-hidden">
       <div className="flex-none">
@@ -48,14 +50,15 @@ export default function AreaManagerTask() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          defaultLocation="Quận 7 - TPHCM"
-          title="ASSIGN TASK" // Truyền title vào đây
+          title="GIAO VIỆC" // Truyền title vào đây
+          // onNotificationClick={() => {}}
         />
 
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
-            <AreaMap />
+            {/* <AreaMap /> */}
+            <TaskChart />
             <AssignToStaff />
           </div>
         </div>

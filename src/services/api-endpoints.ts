@@ -45,7 +45,31 @@ export const API_ENDPOINTS = {
       GET_DISTRICTS: "/api/districts/get-all",
       GET_WARDS_BY_DISTRICT: "/api/areas",
       GET_USERS: "/api/user/get-users",
+      GET_TASKS: "/api/Task",
+      GET_TASK_BY_ID: "/api/Task/:taskId",
+      GET_BRAND_REQUESTS: "/api/BrandRequest",
     },
-    // Không thêm POST hoặc các endpoint khác cho đến khi bạn đồng ý
+    POST: {
+      CREATE_TASK: "/api/Task",
+    }
+  },
+  MANAGER: {
+    GET: {
+      GET_DISTRICTS: "/api/districts/get-all",
+      GET_WARDS_BY_DISTRICT: "/api/areas",
+      GET_USERS: "/api/user/get-users",
+      GET_BRAND_REQUESTS: "/api/BrandRequest",
+      GET_BRAND_REQUEST_BY_ID: "/api/BrandRequest/:brandRequestId",
+      SEARCH_BY_AI: "/api/Qdrant/matching",
+      GET_FAVORITES: "/api/Qdrant/brand-request/:requestId",
+      EXPORT_PDF: "/api/generate/:brandRequestId",
+    },
+    PUT: {
+      UPDATE_BRAND_REQUEST_STATUS: "/api/BrandRequest/Status/:id",
+      UPDATE_MATCHED_SITE: "/api/Qdrant/update-matched-site",
+    },
+    PATCH: { 
+      UPDATE_SITE_STATUS: "/api/site/status",
+    },
   },
 };

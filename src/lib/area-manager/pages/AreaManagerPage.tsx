@@ -49,16 +49,14 @@ export default function AreaManagerPage() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          defaultLocation="Quận 7 - TPHCM"
           title="TRANG CHỦ" 
-          onNotificationClick={() => {}}
         />
 
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
             <Cards />
-            <AreaMap />
+            {/* <AreaMap /> */}
             <StaffManagement />
           </div>
         </div>

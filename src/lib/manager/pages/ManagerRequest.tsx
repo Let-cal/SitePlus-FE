@@ -50,15 +50,12 @@ export default function ManagerRequest() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          defaultLocation="Quận 7 - TPHCM"
-          title="YÊU CẦU" // Truyền title vào đây
-          onNotificationClick={() => { }}
+          title="YÊU CẦU" 
         />
 
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
-            {/* <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">REQUEST</h2> */}
             <BarChart />
             <RequestTable />
           </div>

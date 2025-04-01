@@ -23,27 +23,27 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Button } from "@/components/ui/button"; // Đảm bảo import Button
+import { Button } from "@/components/ui/button";
 
 interface Site {
   id: string;
   address: string; // Địa chỉ (tên đường và quận ở TP.HCM)
   area: string; // Diện tích, ví dụ: "50m²"
-  inBuilding: "Có" | "Không"; // Trong tòa nhà
+  type: "Mặt bằng nội khu" | "Mặt bằng độc lập"; // Thay inBuilding thành type
   status: "Đã thuê" | "Còn trống" | "Sắp trống";
 }
 
 const sampleSites: Site[] = [
-  { id: "MB001", address: "123 Lê Lợi, Quận 1", area: "80m²", inBuilding: "Có", status: "Đã thuê" },
-  { id: "MB002", address: "45 Nguyễn Huệ, Quận 7", area: "60m²", inBuilding: "Không", status: "Còn trống" },
-  { id: "MB003", address: "78 Pasteur, Quận 3", area: "100m²", inBuilding: "Có", status: "Sắp trống" },
-  { id: "MB004", address: "90 Bùi Thị Xuân, Quận 10", area: "70m²", inBuilding: "Không", status: "Đã thuê" },
-  { id: "MB005", address: "22 Lê Văn Sỹ, Quận Phú Nhuận", area: "50m²", inBuilding: "Có", status: "Còn trống" },
-  { id: "MB006", address: "15 Điện Biên Phủ, Quận Bình Thạnh", area: "90m²", inBuilding: "Có", status: "Sắp trống" },
-  { id: "MB007", address: "33 Phạm Văn Đồng, Quận Gò Vấp", area: "65m²", inBuilding: "Không", status: "Đã thuê" },
-  { id: "MB008", address: "67 Võ Văn Kiệt, Quận 5", area: "85m²", inBuilding: "Có", status: "Còn trống" },
-  { id: "MB009", address: "88 Tô Hiến Thành, Quận 10", area: "75m²", inBuilding: "Không", status: "Sắp trống" },
-  { id: "MB010", address: "12 Nguyễn Trãi, Quận 5", area: "95m²", inBuilding: "Có", status: "Đã thuê" },
+  { id: "MB001", address: "123 Lê Lợi, Quận 1", area: "80m²", type: "Mặt bằng nội khu", status: "Đã thuê" },
+  { id: "MB002", address: "45 Nguyễn Huệ, Quận 7", area: "60m²", type: "Mặt bằng độc lập", status: "Còn trống" },
+  { id: "MB003", address: "78 Pasteur, Quận 3", area: "100m²", type: "Mặt bằng nội khu", status: "Sắp trống" },
+  { id: "MB004", address: "90 Bùi Thị Xuân, Quận 10", area: "70m²", type: "Mặt bằng độc lập", status: "Đã thuê" },
+  { id: "MB005", address: "22 Lê Văn Sỹ, Quận Phú Nhuận", area: "50m²", type: "Mặt bằng nội khu", status: "Còn trống" },
+  { id: "MB006", address: "15 Điện Biên Phủ, Quận Bình Thạnh", area: "90m²", type: "Mặt bằng nội khu", status: "Sắp trống" },
+  { id: "MB007", address: "33 Phạm Văn Đồng, Quận Gò Vấp", area: "65m²", type: "Mặt bằng độc lập", status: "Đã thuê" },
+  { id: "MB008", address: "67 Võ Văn Kiệt, Quận 5", area: "85m²", type: "Mặt bằng nội khu", status: "Còn trống" },
+  { id: "MB009", address: "88 Tô Hiến Thành, Quận 10", area: "75m²", type: "Mặt bằng độc lập", status: "Sắp trống" },
+  { id: "MB010", address: "12 Nguyễn Trãi, Quận 5", area: "95m²", type: "Mặt bằng nội khu", status: "Đã thuê" },
 ];
 
 type FilterStatus = "all" | "Đã thuê" | "Còn trống" | "Sắp trống";
@@ -106,7 +106,7 @@ export default function SiteManagement() {
             <TableHead className="w-[12%]">Mã mặt bằng</TableHead>
             <TableHead className="w-[20%]">Địa chỉ</TableHead>
             <TableHead className="w-[15%]">Diện tích</TableHead>
-            <TableHead className="w-[15%]">Trong tòa nhà</TableHead>
+            <TableHead className="w-[15%]">Loại</TableHead> {/* Đổi tên cột */}
             <TableHead className="w-[12%]">Xem chi tiết</TableHead>
             <TableHead className="w-[10%]">Trạng thái</TableHead>
           </TableRow>
@@ -117,7 +117,7 @@ export default function SiteManagement() {
               <TableCell>{site.id}</TableCell>
               <TableCell>{site.address}</TableCell>
               <TableCell>{site.area}</TableCell>
-              <TableCell>{site.inBuilding}</TableCell>
+              <TableCell>{site.type}</TableCell> {/* Hiển thị dữ liệu mới */}
               <TableCell>
                 <Button variant="link" className="text-blue-500 p-0 underline hover:text-blue-700">
                   Xem chi tiết

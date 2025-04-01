@@ -5,19 +5,25 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import DynamicLordIcon from "./DynamicLordIcon";
 import Heading from "./Heading";
+
 const Header = ({
-  defaultLocation = "Quận 9 - TPHCM",
-  title,
+  title, // Bỏ defaultLocation khỏi props
   className = "",
 }) => {
   const [userRole, setUserRole] = useState("");
+  const [location, setLocation] = useState(""); // Khởi tạo rỗng, sẽ cập nhật từ localStorage
+
   useEffect(() => {
     defineElement(lottie.loadAnimation);
   }, []);
+
   useEffect(() => {
     // Lấy thông tin từ localStorage
     const storedRole = localStorage.getItem("role");
+    const storedDistrict = localStorage.getItem("area");
+
     if (storedRole) setUserRole(storedRole);
+    if (storedDistrict) setLocation(storedDistrict); 
   }, []);
 
   // Render phần location dựa theo role
@@ -26,12 +32,12 @@ const Header = ({
       return null;
     }
 
-    if (userRole === "Area-Manager") {
+    if (userRole === "Area-Manager" && location) { // Chỉ hiển thị nếu có location
       return (
         <div className="flex items-center gap-2 pr-5 border-r border-theme-border-light dark:border-theme-border-dark">
           <MapPin className="w-6 h-6 text-theme-text-light dark:text-theme-text-dark" />
           <span className="text-sm font-bold text-theme-text-light dark:text-theme-text-dark">
-            {defaultLocation}
+            {location}
           </span>
         </div>
       );
@@ -55,7 +61,7 @@ const Header = ({
           color={false}
           size="sm"
           center={false}
-          hasMargin={false} // Thêm prop này để không có margin bottom
+          hasMargin={false}
         />
       </div>
 

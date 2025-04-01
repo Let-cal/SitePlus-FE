@@ -48,9 +48,8 @@ export default function AreaManagerSend() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          defaultLocation="Quận 7 - TPHCM"
           title="SEND REPORT" // Truyền title vào đây
-          onNotificationClick={() => {}}
+          // onNotificationClick={() => {}}
         />
 
         {/* Content area */}

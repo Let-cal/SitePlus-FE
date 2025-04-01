@@ -37,17 +37,25 @@ const BarChart: React.FC = () => {
   }, []);
 
   const chartColors = {
-    purple: "#A855F7",
-    green: "#22C55E",
+    green: "#22C55E", // Màu cho Chấp nhận
+    red: "#EF4444",   // Màu cho Từ chối
   };
 
+  // Số lượng thực tế
+  const rawData = {
+    accepted: 350, // Số yêu cầu được chấp nhận
+    rejected: 150, // Số yêu cầu bị từ chối
+  };
+
+  const total = rawData.accepted + rawData.rejected; // Tổng số yêu cầu
+
   const doughnutData = {
-    labels: ["Finding new locations", "Evaluating locations"],
+    labels: ["Chấp nhận", "Từ chối"],
     datasets: [
       {
         label: "%",
-        data: [38, 62],
-        backgroundColor: [chartColors.purple, chartColors.green],
+        data: [rawData.accepted, rawData.rejected], // Dữ liệu là số lượng thực tế
+        backgroundColor: [chartColors.green, chartColors.red],
         borderWidth: 0,
         hoverOffset: 4,
       },
@@ -59,16 +67,16 @@ const BarChart: React.FC = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "bottom" as const, // Chuyển legend xuống dưới
+        position: "bottom" as const,
         align: "center" as const,
         labels: {
           font: {
             size: 13,
             weight: 500,
           },
-          color: theme === "dark" ? "#fff" : "#64748b", // Màu text hiện đại hơn
+          color: theme === "dark" ? "#fff" : "#64748b",
           padding: 16,
-          usePointStyle: true, // Sử dụng style point thay vì hình chữ nhật
+          usePointStyle: true,
           pointStyle: "circle",
         },
       },
@@ -90,12 +98,16 @@ const BarChart: React.FC = () => {
           weight: 600,
         },
         callbacks: {
-          label: (context) => `${context.label}: ${context.parsed}%`,
+          label: (context) => {
+            const value = context.raw as number;
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${context.label}: ${value} (${percentage}%)`;
+          },
         },
       },
     },
-    cutout: "75%", 
-    radius: "90%", 
+    cutout: "75%",
+    radius: "90%",
   };
 
   return (
@@ -107,10 +119,10 @@ const BarChart: React.FC = () => {
       <div className="bg-background border border-border rounded-xl p-6 shadow-sm w-[30%] hover:shadow-md transition-shadow duration-200">
         <div className="h-[350px] flex flex-col">
           <h3 className="text-lg font-semibold mb-2 text-foreground">
-            Requests breakdown
+            Tỷ lệ xử lý yêu cầu
           </h3>
           <p className="text-sm text-muted-foreground mb-6">
-            Distribution of location requests
+            Phân bố giữa yêu cầu được chấp nhận và từ chối
           </p>
           <div className="flex-1 flex items-center justify-center">
             <Doughnut data={doughnutData} options={doughnutOptions} />
