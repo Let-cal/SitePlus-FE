@@ -37,6 +37,7 @@ const getOppositeStatus = (currentStatus: number): number => {
 };
 
 const UserManagement = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [staffs, setStaffs] = useState<Staff[]>([]);
   const [filteredStaffs, setFilteredStaffs] = useState<Staff[]>([]); // Dữ liệu sau khi lọc
   const [currentPage, setCurrentPage] = useState(1);

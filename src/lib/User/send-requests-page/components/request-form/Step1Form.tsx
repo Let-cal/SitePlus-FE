@@ -1,4 +1,3 @@
-// Modify the brand selection part in Step1Form to use the new BrandCombobox component
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,6 +18,7 @@ import BrandCombobox from "../brand/BrandCombobox";
 import CreateBrandDialog from "../brand/CreateBrandDialog";
 import FormField from "./FormField";
 import FormSection from "./FormSection";
+
 const Step1Form = ({ form }) => {
   const { watch, setValue, formState, trigger } = form;
   const { errors } = formState;
@@ -35,7 +35,6 @@ const Step1Form = ({ form }) => {
   const [allIndustryCategories, setAllIndustryCategories] = useState([]);
   const [brands, setBrands] = useState([]);
 
-  // Theo dõi form values
   useEffect(() => {
     console.log("Current form values:", {
       brand: watch("brand"),
@@ -49,48 +48,39 @@ const Step1Form = ({ form }) => {
       targetIndustryCategory: watch("targetIndustryCategory"),
     });
     console.log("Form errors:", formState.errors);
-    // Cập nhật các entity cho API request
     updateApiEntities();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watch, formState.errors]);
 
-  // Hàm này sẽ cập nhật các entity cần thiết cho API request
   const updateApiEntities = () => {
-    // Cập nhật brandRequest
     const brandRequest = {
       id: 0,
       brandId: watch("brandId") || 0,
-      description: "", // Sẽ được cập nhật từ Step4Form
+      description: "",
       nameCustomer: watch("representativeName") || "",
       emailCustomer: watch("representativeEmail") || "",
       phoneCustomer: watch("representativePhone") || "",
       addressCustomer: watch("representativeAddress") || "",
-      status: 0, // InProgress
+      status: 0,
       createdAt: new Date().toISOString(),
     };
-
     setValue("brandRequestEntity", brandRequest);
 
-    // Cập nhật brandRequestCustomerSegment
     const brandRequestCustomerSegments = (watch("targetCustomers") || []).map(
       (segmentId) => ({
         customerSegmentId: Number(segmentId),
       })
     );
-
     setValue(
       "brandRequestCustomerSegmentEntities",
       brandRequestCustomerSegments
     );
 
-    // Cập nhật brandRequestIndustryCategory
     const selectedCategoryId = watch("targetIndustryCategory");
-
     if (selectedCategoryId) {
       const brandRequestIndustryCategory = {
         industryCategoryId: Number(selectedCategoryId),
       };
-
       setValue(
         "brandRequestIndustryCategoryEntity",
         brandRequestIndustryCategory
@@ -100,7 +90,6 @@ const Step1Form = ({ form }) => {
     }
   };
 
-  // Load industries when component mounts
   useEffect(() => {
     const fetchIndustries = async () => {
       try {
@@ -113,7 +102,6 @@ const Step1Form = ({ form }) => {
     fetchIndustries();
   }, []);
 
-  // Load all customer segments from API
   useEffect(() => {
     const fetchAllSegments = async () => {
       try {
@@ -126,7 +114,6 @@ const Step1Form = ({ form }) => {
     fetchAllSegments();
   }, []);
 
-  // Load all industry categories from API
   useEffect(() => {
     const fetchAllIndustryCategories = async () => {
       try {
@@ -139,13 +126,11 @@ const Step1Form = ({ form }) => {
     fetchAllIndustryCategories();
   }, []);
 
-  // Load brands from API
   useEffect(() => {
     const fetchBrands = async () => {
       try {
         const data = await ClientService.getAllBrands();
         setBrands(data);
-        console.log("Fetched brands:", data);
       } catch (error) {
         console.error("Error fetching brands", error);
       }
@@ -153,33 +138,21 @@ const Step1Form = ({ form }) => {
     fetchBrands();
   }, []);
 
-  // Callback khi brand được tạo thành công
   const handleBrandCreated = (brand) => {
-    console.log("Brand created:", brand);
-    // Thêm brand mới vào state
     setBrands((prev) => [...prev, brand]);
-
-    // Set giá trị brand trong form
     setValue("brand", brand.name);
     setValue("brandId", brand.id);
-
-    // Trigger validation để xóa lỗi
     trigger("brand");
-
-    // Cập nhật brandRequest entity
     updateApiEntities();
   };
 
-  // Handle brand selection from combobox
   const handleBrandSelect = (brand) => {
     setValue("brand", brand.name);
     setValue("brandId", brand.id);
-    console.log("Brand selected:", brand.name, "ID:", brand.id);
     trigger("brand");
     updateApiEntities();
   };
 
-  // Khi industry thay đổi, lấy customer segments và industry categories theo industry
   useEffect(() => {
     const fetchSuggestedData = async () => {
       if (selectedIndustry) {
@@ -188,13 +161,10 @@ const Step1Form = ({ form }) => {
         );
         if (industry) {
           try {
-            // Fetch suggested customer segments
             const segments = await ClientService.getCustomerSegmentsByIndustry(
               industry.id
             );
             setSuggestedSegments(segments);
-
-            // Fetch suggested industry categories
             const categories =
               await ClientService.getIndustryCategoriesByIndustry(industry.id);
             setSuggestedIndustryCategories(categories);
@@ -213,10 +183,16 @@ const Step1Form = ({ form }) => {
     fetchSuggestedData();
   }, [selectedIndustry, industries]);
 
+  // Hàm xử lý chỉ cho phép nhập số
+  const handlePhoneChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ""); // Loại bỏ mọi ký tự không phải số
+    setValue("representativePhone", value);
+    updateApiEntities();
+  };
+
   return (
     <FormSection title="Thông tin cơ bản">
       <div className="space-y-6">
-        {/* Brand Selection Section with Combobox */}
         <Card className="border border-gray-200 shadow-sm">
           <CardContent className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
@@ -244,8 +220,6 @@ const Step1Form = ({ form }) => {
           </CardContent>
         </Card>
 
-        {/* Rest of the code remains the same */}
-        {/* Representative Information Section */}
         <Card className="border border-gray-200 shadow-sm">
           <CardContent className="p-6">
             <h3 className="text-base font-medium mb-4 text-gray-800">
@@ -262,12 +236,11 @@ const Step1Form = ({ form }) => {
                   placeholder="Nhập tên đại diện"
                   className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
                   onChange={(e) => {
-                    form.setValue("representativeName", e.target.value);
+                    setValue("representativeName", e.target.value);
                     updateApiEntities();
                   }}
                 />
               </FormField>
-
               <FormField
                 label="Email đại diện"
                 required
@@ -279,12 +252,11 @@ const Step1Form = ({ form }) => {
                   placeholder="example@company.com"
                   className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
                   onChange={(e) => {
-                    form.setValue("representativeEmail", e.target.value);
+                    setValue("representativeEmail", e.target.value);
                     updateApiEntities();
                   }}
                 />
               </FormField>
-
               <FormField
                 label="Số điện thoại đại diện"
                 required
@@ -293,11 +265,9 @@ const Step1Form = ({ form }) => {
                 <Input
                   {...form.register("representativePhone")}
                   placeholder="0901234567"
+                  type="text" // Đổi sang type="text" để xử lý regex
                   className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
-                  onChange={(e) => {
-                    form.setValue("representativePhone", e.target.value);
-                    updateApiEntities();
-                  }}
+                  onChange={handlePhoneChange} // Sử dụng hàm xử lý chỉ nhập số
                 />
               </FormField>
               <FormField
@@ -310,7 +280,7 @@ const Step1Form = ({ form }) => {
                   placeholder="Địa chỉ thường trú của đại diện"
                   className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
                   onChange={(e) => {
-                    form.setValue("representativeAddress", e.target.value);
+                    setValue("representativeAddress", e.target.value);
                     updateApiEntities();
                   }}
                 />
@@ -319,14 +289,11 @@ const Step1Form = ({ form }) => {
           </CardContent>
         </Card>
 
-        {/* Industry and Customer Segments Section */}
         <Card className="border border-gray-200 shadow-sm">
           <CardContent className="p-6">
             <h3 className="text-base font-medium mb-4 text-gray-800">
               Ngành nghề và Khách hàng
             </h3>
-
-            {/* Industry Selection */}
             <FormField
               label="Ngành nghề"
               required
@@ -352,12 +319,8 @@ const Step1Form = ({ form }) => {
                 </SelectContent>
               </Select>
             </FormField>
-
-            {/* Industry Categories & Customer Segments Container */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Industry Categories Section */}
               <div>
-                {/* Suggested Industry Categories */}
                 {selectedIndustry && suggestedIndustryCategories.length > 0 && (
                   <div className="mb-6 p-4 rounded-lg bg-orange-50 border border-orange-100">
                     <h4 className="text-sm font-semibold mb-3 text-orange-800">
@@ -370,7 +333,6 @@ const Step1Form = ({ form }) => {
                           variant="outline"
                           className="px-3 py-1 bg-white text-orange-700 border-orange-200 hover:bg-orange-100 cursor-pointer"
                           onClick={() => {
-                            // Cập nhật trực tiếp một giá trị, không phải array
                             setValue(
                               "targetIndustryCategory",
                               String(category.id)
@@ -385,8 +347,6 @@ const Step1Form = ({ form }) => {
                     </div>
                   </div>
                 )}
-
-                {/* Industry Categories Selection */}
                 <FormField
                   label="Phân loại ngành nghề"
                   required
@@ -427,10 +387,7 @@ const Step1Form = ({ form }) => {
                   </div>
                 </FormField>
               </div>
-
-              {/* Customer Segments Section */}
               <div>
-                {/* Suggested Customer Segments */}
                 {selectedIndustry && suggestedSegments.length > 0 && (
                   <div className="mb-6 p-4 rounded-lg bg-orange-50 border border-orange-100">
                     <h4 className="text-sm font-semibold mb-3 text-orange-800">
@@ -460,8 +417,6 @@ const Step1Form = ({ form }) => {
                     </div>
                   </div>
                 )}
-
-                {/* Target Customer Models */}
                 <FormField
                   label="Mô hình khách hàng đang nhắm tới"
                   required
@@ -482,14 +437,13 @@ const Step1Form = ({ form }) => {
                                 String(segment.id),
                               ];
                               setValue("targetCustomers", newTargetCustomers);
-                              updateApiEntities();
                             } else {
                               const newTargetCustomers = targetCustomers.filter(
                                 (value) => value !== String(segment.id)
                               );
                               setValue("targetCustomers", newTargetCustomers);
-                              updateApiEntities();
                             }
+                            updateApiEntities();
                           }}
                           checked={targetCustomers.includes(String(segment.id))}
                           className="text-orange-500 border-orange-300 focus:ring-orange-500"

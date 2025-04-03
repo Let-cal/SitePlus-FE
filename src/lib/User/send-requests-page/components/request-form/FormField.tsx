@@ -8,6 +8,7 @@ interface FormFieldProps {
   error?: string;
   children: React.ReactNode;
   className?: string;
+  textTheme?: boolean;
 }
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -17,12 +18,17 @@ const FormField: React.FC<FormFieldProps> = ({
   error = "",
   children,
   className = "",
+  textTheme = false,
 }) => {
+  const labelClassName = textTheme 
+    ? "text-md font-medium text-theme-orange-500 mb-2" 
+    : "text-gray-700";
+
   return (
     <div className={`space-y-2 ${className}`}>
       <div className="flex flex-row space-x-2 items-center">
         {label && (
-          <Label className="text-gray-700">
+          <Label className={labelClassName}>
             {label} {required && <span className="text-red-500">*</span>}
           </Label>
         )}
