@@ -7,14 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Pagination,
   PaginationContent,
@@ -24,153 +16,201 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import managerService from "../../../../services/manager/manager.service";
+import areaManagerService from "../../../../services/area-manager/area-manager.service";
+import SiteDetail from "./SiteDetail"; // Import component SiteDetail
 
+// Interface cho site (đơn giản hóa từ API)
 interface Site {
-  id: string;
-  address: string; // Địa chỉ (tên đường và quận ở TP.HCM)
-  area: string; // Diện tích, ví dụ: "50m²"
-  type: "Mặt bằng nội khu" | "Mặt bằng độc lập"; // Thay inBuilding thành type
-  status: "Đã thuê" | "Còn trống" | "Sắp trống";
+  id: number;
+  address: string;
+  areaName?: string; // Tùy chọn
+  districtName?: string; // Tùy chọn
+  size: number;
+  status: number;
+  siteCategoryId: number; // Thêm siteCategoryId
+  siteCategoryName: string;
 }
 
-const sampleSites: Site[] = [
-  { id: "MB001", address: "123 Lê Lợi, Quận 1", area: "80m²", type: "Mặt bằng nội khu", status: "Đã thuê" },
-  { id: "MB002", address: "45 Nguyễn Huệ, Quận 7", area: "60m²", type: "Mặt bằng độc lập", status: "Còn trống" },
-  { id: "MB003", address: "78 Pasteur, Quận 3", area: "100m²", type: "Mặt bằng nội khu", status: "Sắp trống" },
-  { id: "MB004", address: "90 Bùi Thị Xuân, Quận 10", area: "70m²", type: "Mặt bằng độc lập", status: "Đã thuê" },
-  { id: "MB005", address: "22 Lê Văn Sỹ, Quận Phú Nhuận", area: "50m²", type: "Mặt bằng nội khu", status: "Còn trống" },
-  { id: "MB006", address: "15 Điện Biên Phủ, Quận Bình Thạnh", area: "90m²", type: "Mặt bằng nội khu", status: "Sắp trống" },
-  { id: "MB007", address: "33 Phạm Văn Đồng, Quận Gò Vấp", area: "65m²", type: "Mặt bằng độc lập", status: "Đã thuê" },
-  { id: "MB008", address: "67 Võ Văn Kiệt, Quận 5", area: "85m²", type: "Mặt bằng nội khu", status: "Còn trống" },
-  { id: "MB009", address: "88 Tô Hiến Thành, Quận 10", area: "75m²", type: "Mặt bằng độc lập", status: "Sắp trống" },
-  { id: "MB010", address: "12 Nguyễn Trãi, Quận 5", area: "95m²", type: "Mặt bằng nội khu", status: "Đã thuê" },
-];
-
-type FilterStatus = "all" | "Đã thuê" | "Còn trống" | "Sắp trống";
-
-const filterLabels = {
-  all: "Tất cả",
-  "Đã thuê": "Đã thuê",
-  "Còn trống": "Còn trống",
-  "Sắp trống": "Sắp trống",
-};
+// Interface cho response của API GET_SITES
+interface SitesApiResponse {
+  data: {
+    page: number;
+    totalPage: number;
+    totalRecords: number;
+    currentPageCount: number;
+    listData: Site[];
+  };
+  success: boolean;
+  message: string;
+  totalCount: number;
+}
 
 export default function SiteManagement() {
-  const [filterStatus, setFilterStatus] = React.useState<FilterStatus>("all");
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const itemsPerPage = 5;
+  const [sites, setSites] = React.useState<Site[]>([]); // State để lưu danh sách site
+  const [currentPage, setCurrentPage] = React.useState(1); // Trang hiện tại
+  const [totalPages, setTotalPages] = React.useState(1); // Tổng số trang
+  const [isLoading, setIsLoading] = React.useState(false); // Trạng thái loading
+  const [selectedCategory, setSelectedCategory] = React.useState<string>("all"); // State để lọc theo siteCategoryId
+  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(null); // State để lưu siteId khi bấm "Xem chi tiết"
+  const itemsPerPage = 10; // Số lượng site trên mỗi trang
 
-  const getFilteredData = () => {
-    let data = sampleSites;
-    if (filterStatus !== "all") {
-      data = sampleSites.filter(item => item.status === filterStatus);
-    }
-    return data;
-  };
+  // Danh sách các category để hiển thị trong dropdown
+  const categories = [
+    { id: "all", name: "Tất cả" },
+    { id: "1", name: "Mặt bằng nội khu" }, // siteCategoryId: 1
+    { id: "2", name: "Mặt bằng độc lập" }, // siteCategoryId: 2
+  ];
 
+  // Gọi API fetchSites khi currentPage hoặc selectedCategory thay đổi
   React.useEffect(() => {
-    setCurrentPage(1);
-  }, [filterStatus]);
-
-  const filteredData = getFilteredData();
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const currentItems = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+    const loadSites = async () => {
+      setIsLoading(true);
+      try {
+        const response: SitesApiResponse = await managerService.fetchSites(currentPage, itemsPerPage, 1); // Gọi API với status=1
+        console.log("Sites loaded:", response); // Kiểm tra dữ liệu
+        if (response.success) {
+          // Lọc site theo selectedCategory
+          const filteredSites =
+            selectedCategory === "all"
+              ? response.data.listData
+              : response.data.listData.filter(
+                (site) => site.siteCategoryId.toString() === selectedCategory
+              );
+          setSites(filteredSites);
+          setTotalPages(response.data.totalPage || 1); // Lấy totalPage từ API response
+        } else {
+          setSites([]);
+          setTotalPages(1);
+        }
+      } catch (error) {
+        console.error("Error loading sites:", error);
+        setSites([]);
+        setTotalPages(1);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSites();
+  }, [currentPage, selectedCategory]);
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl text-gray-800"></div>
+      <div className="flex justify-end">
         <Select
-          value={filterStatus}
-          onValueChange={(value: FilterStatus) => setFilterStatus(value)}
+          value={selectedCategory}
+          onValueChange={(value) => {
+            setSelectedCategory(value);
+            setCurrentPage(1); // Reset về trang 1 khi thay đổi bộ lọc
+          }}
         >
           <SelectTrigger className="w-[180px] border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
-            <SelectValue placeholder="Lọc theo trạng thái" />
+            <SelectValue placeholder="Lọc theo loại mặt bằng" />
           </SelectTrigger>
           <SelectContent className="border border-gray-300 rounded-md shadow-sm">
-            {Object.entries(filterLabels).map(([key, label]) => (
-              <SelectItem key={key} value={key} className="hover:bg-gray-100">
-                {label}
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id} className="hover:bg-gray-100">
+                {category.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[12%]">Mã mặt bằng</TableHead>
-            <TableHead className="w-[20%]">Địa chỉ</TableHead>
-            <TableHead className="w-[15%]">Diện tích</TableHead>
-            <TableHead className="w-[15%]">Loại</TableHead> {/* Đổi tên cột */}
-            <TableHead className="w-[12%]">Xem chi tiết</TableHead>
-            <TableHead className="w-[10%]">Trạng thái</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currentItems.map((site) => (
-            <TableRow key={site.id}>
-              <TableCell>{site.id}</TableCell>
-              <TableCell>{site.address}</TableCell>
-              <TableCell>{site.area}</TableCell>
-              <TableCell>{site.type}</TableCell> {/* Hiển thị dữ liệu mới */}
-              <TableCell>
-                <Button variant="link" className="text-blue-500 p-0 underline hover:text-blue-700">
-                  Xem chi tiết
-                </Button>
-              </TableCell>
-              <TableCell>
-                <Badge
-                  className={
-                    site.status === "Đã thuê"
-                      ? "bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
-                      : site.status === "Còn trống"
-                      ? "bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
-                      : "bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
-                  }
-                >
-                  {site.status}
-                </Badge>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      {isLoading ? (
+        <div className="text-center py-4">Đang tải...</div>
+      ) : sites.length === 0 ? (
+        <div className="text-center py-4">Không có dữ liệu để hiển thị</div>
+      ) : (
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[8%]">ID</TableHead>
+                <TableHead className="w-[30%]">Địa chỉ</TableHead>
+                <TableHead className="w-[15%]">Quận</TableHead>
+                <TableHead className="w-[10%]">Diện tích</TableHead>
+                <TableHead className="w-[15%]">Loại</TableHead>
+                <TableHead className="w-[8%]">Xem chi tiết</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sites.map((site) => (
+                <TableRow key={site.id}>
+                  <TableCell>{site.id}</TableCell>
+                  <TableCell>{`${site.address}${site.areaName ? `, ${site.areaName}` : ""}`}</TableCell>
+                  <TableCell>{site.districtName || "Không xác định"}</TableCell>
+                  <TableCell>{`${site.size}m²`}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        site.siteCategoryId === 1
+                          ? "bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 w-32 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
+                          : "bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-700 w-32 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
+                      }
+                    >
+                      {site.siteCategoryName}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="link"
+                      className="text-blue-500 p-0 underline hover:text-blue-700"
+                      onClick={() => setSelectedSiteId(site.id)} // Mở modal khi bấm "Xem chi tiết"
+                    >
+                      Xem chi tiết
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <div className="mt-4 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <PaginationItem key={i}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(i + 1)}
+                      isActive={currentPage === i + 1}
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </>
+      )}
 
-      <div className="mt-4 flex justify-center">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink
-                  onClick={() => setCurrentPage(i + 1)}
-                  isActive={currentPage === i + 1}
-                >
-                  {i + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+      {/* Hiển thị modal SiteDetail khi có siteId được chọn */}
+      {selectedSiteId && (
+        <SiteDetail
+          siteId={selectedSiteId}
+          onClose={() => setSelectedSiteId(null)} // Đóng modal
+        />
+      )}
     </div>
   );
 }

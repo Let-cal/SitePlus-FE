@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from 'react';
+import toast from "react-hot-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -12,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, MoreVertical, Eye, Trash, Search } from "lucide-react"; // Thêm icon Search
+import { Plus, MoreVertical, Eye, Trash, Search, Check, FileBarChart, XCircle } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -36,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import CreateTaskSheet from "./CreateTaskSheet";
 import TaskDetail from "./TaskDetail";
+import SiteDetail from "../../../manager/components/site-manager/SiteDetail"; 
 import areaManagerService from "../../../../services/area-manager/area-manager.service";
 import { Loader2 } from "lucide-react";
 import { useDebounce } from 'use-debounce';
@@ -53,21 +55,23 @@ interface Task {
   location: {
     areaId: number;
     areaName: string;
-    siteId: number;
+    siteId?: number;
     siteAddress?: string;
     buildingName?: string;
   };
   brandInfo: {
     requestId: number;
-    brandName?: string;
   };
+  siteDeals: {
+    siteDealId: number;
+    createdAt: string;
+  }[];
   deadline: string;
   createdAt: string;
   updatedAt: string;
 }
 
 type FilterStatus = "all" | "1" | "2" | "3" | "4";
-type FilterType = "all" | "normal" | "request";
 type FilterPriority = "all" | "1" | "2" | "3";
 
 const filterLabels = {
@@ -76,12 +80,6 @@ const filterLabels = {
   2: "Tiến hành",
   3: "Chờ duyệt",
   4: "Hoàn thành",
-};
-
-const typeLabels = {
-  all: "Loại",
-  normal: "Thông thường",
-  request: "Theo yêu cầu",
 };
 
 const priorityLabels = {
@@ -104,19 +102,23 @@ const priorityTextColors = {
   3: "text-white-600",
 };
 
-const getTaskType = (task: Task) => {
-  return task.brandInfo && task.brandInfo.requestId > 0 ? "Theo yêu cầu" : "Thông thường";
-};
-
 const truncateName = (name: string, maxLength: number = 15) => {
   if (name.length <= maxLength) return name;
   return name.substring(0, maxLength) + "...";
 };
 
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
 const AssignToStaff = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
-  const [filterType, setFilterType] = useState<FilterType>("all");
   const [filterPriority, setFilterPriority] = useState<FilterPriority>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
@@ -124,8 +126,9 @@ const AssignToStaff = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+  const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null); // Thêm state cho SiteDetail
   const [isLoading, setIsLoading] = useState(true);
-  const itemsPerPage = 10; // Đồng bộ với pageSize=10 trong fetchTasks
+  const itemsPerPage = 10;
 
   // Load tasks from API
   useEffect(() => {
@@ -136,9 +139,11 @@ const AssignToStaff = () => {
           search: debouncedSearchQuery || undefined,
           status: filterStatus !== "all" ? parseInt(filterStatus) : undefined,
           priority: filterPriority !== "all" ? parseInt(filterPriority) : undefined,
-          isCompanyTaskOnly: filterType === "request" ? true : filterType === "normal" ? false : undefined,
         });
-        setTasks(tasksData);
+        const filteredTasks = filterStatus !== "all"
+          ? tasksData.filter(task => task.status === parseInt(filterStatus))
+          : tasksData;
+        setTasks(filteredTasks);
       } catch (error) {
         console.error("Error fetching tasks:", error);
         setTasks([]);
@@ -148,11 +153,11 @@ const AssignToStaff = () => {
     };
 
     fetchTasks();
-  }, [debouncedSearchQuery, filterStatus, filterType, filterPriority]);
+  }, [debouncedSearchQuery, filterStatus, filterPriority]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterStatus, filterType, filterPriority, debouncedSearchQuery]);
+  }, [filterStatus, filterPriority, debouncedSearchQuery]);
 
   const getFilteredData = () => {
     let data = tasks;
@@ -187,9 +192,105 @@ const AssignToStaff = () => {
     setIsDetailOpen(true);
   };
 
+  const handleViewSiteDetail = (siteId: number | undefined) => {
+    // Đóng dropdown menu trước
+    document.body.click(); // Cách đơn giản để đóng tất cả các dropdown đang mở
+    
+    // Sau đó mới mở dialog với timeout nhỏ
+    setTimeout(() => {
+      if (siteId) {
+        setSelectedSiteId(siteId);
+      } else {
+        toast.error("Task này không liên quan đến site", { position: "top-right", duration: 3000 });
+      }
+    }, 50); // Timeout nhỏ để đảm bảo dropdown đã đóng hoàn toàn
+  };
+
+  const handleCloseSiteDetail = () => {
+    setSelectedSiteId(null);
+  };
+
   const handleDelete = (taskId: number) => {
     console.log(`Xóa task ID: ${taskId}`);
     // Thêm logic để xóa task (ví dụ: gọi API xóa và reload danh sách)
+  };
+
+  const handleAccept = async (task: Task) => {
+    try {
+      const siteId = task.location.siteId;
+      if (siteId) {
+        const siteUpdated = await areaManagerService.updateSiteStatus({ siteId, status: 1 });
+        if (!siteUpdated) {
+          throw new Error("Failed to update site status");
+        }
+      }
+
+      const taskUpdated = await areaManagerService.updateTaskStatus({ taskId: task.id, status: 4 });
+      if (!taskUpdated) {
+        throw new Error("Failed to update task status");
+      }
+
+      if (task.siteDeals && task.siteDeals.length > 0) {
+        const latestSiteDeal = task.siteDeals.sort((a, b) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        })[0];
+
+        const siteDealUpdated = await areaManagerService.updateSiteDealStatus({
+          id: latestSiteDeal.siteDealId,
+          status: 1,
+        });
+        if (!siteDealUpdated) {
+          throw new Error("Failed to update site deal status");
+        }
+      }
+
+      toast.success("Chấp nhận task thành công!", { position: "top-right", duration: 3000 });
+
+      const tasksData = await areaManagerService.fetchTasks({
+        search: debouncedSearchQuery || undefined,
+        status: filterStatus !== "all" ? parseInt(filterStatus) : undefined,
+        priority: filterPriority !== "all" ? parseInt(filterPriority) : undefined,
+      });
+      const filteredTasks = filterStatus !== "all"
+        ? tasksData.filter(task => task.status === parseInt(filterStatus))
+        : tasksData;
+      setTasks(filteredTasks);
+    } catch (error) {
+      console.error("Error accepting task:", error);
+      toast.error("Lỗi khi chấp nhận task", { position: "top-right", duration: 3000 });
+    }
+  };
+
+  const handleReject = async (task: Task) => {
+    try {
+      const siteId = task.location.siteId;
+      if (siteId) {
+        const siteUpdated = await areaManagerService.updateSiteStatus({ siteId, status: 4 });
+        if (!siteUpdated) {
+          throw new Error("Failed to update site status");
+        }
+      }
+
+      const taskUpdated = await areaManagerService.updateTaskStatus({ taskId: task.id, status: 2 });
+      if (!taskUpdated) {
+        throw new Error("Failed to update task status");
+      }
+
+      toast.success("Từ chối task thành công!", { position: "top-right", duration: 3000 });
+
+      const tasksData = await areaManagerService.fetchTasks({
+        search: debouncedSearchQuery || undefined,
+        status: filterStatus !== "all" ? parseInt(filterStatus) : undefined,
+        priority: filterPriority !== "all" ? parseInt(filterPriority) : undefined,
+      });
+      const filteredTasks = filterStatus !== "all"
+        ? tasksData.filter(task => task.status === parseInt(filterStatus))
+        : tasksData;
+      setTasks(filteredTasks);
+    } catch (error) {
+      console.error("Error rejecting task:", error);
+      toast.error("Lỗi khi từ chối task", { position: "top-right", duration: 3000 });
+    }
   };
 
   const handleUpdateTask = () => {
@@ -222,17 +323,15 @@ const AssignToStaff = () => {
         <CardContent>
           <div className="mb-4">
             <div className="flex gap-3 flex-wrap justify-end">
-              {/* Ô search với icon kính lúp */}
               <div className="relative w-[300px]">
                 <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                 <Input
                   placeholder="Tìm kiếm..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10" // Thêm padding-left để không đè lên icon
+                  className="pl-10"
                 />
               </div>
-              {/* 3 ô select */}
               <Select
                 value={filterStatus}
                 onValueChange={(value: FilterStatus) => setFilterStatus(value)}
@@ -242,29 +341,6 @@ const AssignToStaff = () => {
                 </SelectTrigger>
                 <SelectContent className="border border-gray-300 rounded-md shadow-sm">
                   {Object.entries(filterLabels)
-                    .sort(([keyA], [keyB]) => {
-                      if (keyA === "all") return -1;
-                      if (keyB === "all") return 1;
-                      return 0;
-                    })
-                    .map(([key, label]) => (
-                      <SelectItem key={key} value={key} className="hover:bg-gray-100">
-                        {label}
-                      </SelectItem>
-                    ))
-                  }
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={filterType}
-                onValueChange={(value: FilterType) => setFilterType(value)}
-              >
-                <SelectTrigger className="w-[180px] border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
-                  <SelectValue placeholder="Lọc theo loại" />
-                </SelectTrigger>
-                <SelectContent className="border border-gray-300 rounded-md shadow-sm">
-                  {Object.entries(typeLabels)
                     .sort(([keyA], [keyB]) => {
                       if (keyA === "all") return -1;
                       if (keyB === "all") return 1;
@@ -301,8 +377,6 @@ const AssignToStaff = () => {
                   }
                 </SelectContent>
               </Select>
-
-              
             </div>
           </div>
 
@@ -316,10 +390,10 @@ const AssignToStaff = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[8%]">Id</TableHead>
-                    <TableHead className="w-[12%]">Loại</TableHead>
                     <TableHead className="w-[12%]">Tên</TableHead>
                     <TableHead className="w-[15%]">Nhân viên</TableHead>
                     <TableHead className="w-[15%]">Độ ưu tiên</TableHead>
+                    <TableHead className="w-[15%]">Deadline</TableHead>
                     <TableHead className="w-[10%] text-center">Trạng thái</TableHead>
                     <TableHead className="w-[10%] text-center">Hành động</TableHead>
                   </TableRow>
@@ -329,12 +403,12 @@ const AssignToStaff = () => {
                     currentItems.map((task) => (
                       <TableRow key={task.id}>
                         <TableCell>{task.id}</TableCell>
-                        <TableCell>{getTaskType(task)}</TableCell>
                         <TableCell>{truncateName(task.name)}</TableCell>
                         <TableCell>{task.staffName || "Chưa giao"}</TableCell>
                         <TableCell className={`font-medium ${priorityTextColors[task.priority] || 'text-gray-600'}`}>
                           {task.priorityName}
                         </TableCell>
+                        <TableCell>{formatDate(task.deadline)}</TableCell>
                         <TableCell className="text-center p-1 min-w-24">
                           <Badge
                             variant="outline"
@@ -355,11 +429,29 @@ const AssignToStaff = () => {
                                 <Eye size={16} className="mr-2" />
                                 Xem chi tiết
                               </DropdownMenuItem>
-                              {(task.status === 1 || task.status === 2) && (
+                              {/* {(task.status === 1 || task.status === 2) && (
                                 <DropdownMenuItem onClick={() => handleDelete(task.id)}>
                                   <Trash size={16} className="mr-2" />
                                   Xóa
                                 </DropdownMenuItem>
+                              )} */}
+                              {(task.status === 3 || task.status === 4) && (
+                                <DropdownMenuItem onClick={() => handleViewSiteDetail(task.location.siteId)}>
+                                  <FileBarChart size={16} className="mr-2" />
+                                  Xem báo cáo
+                                </DropdownMenuItem>
+                              )}
+                              {task.status === 3 && (
+                                <>
+                                  <DropdownMenuItem onClick={() => handleAccept(task)}>
+                                    <Check size={16} className="mr-2" />
+                                    Chấp nhận
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleReject(task)}>
+                                    <XCircle size={16} className="mr-2" />
+                                    Từ chối
+                                  </DropdownMenuItem>
+                                </>
                               )}
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -426,6 +518,13 @@ const AssignToStaff = () => {
           }}
           taskId={selectedTaskId}
           onUpdate={handleUpdateTask}
+        />
+      )}
+
+      {selectedSiteId !== null && (
+        <SiteDetail
+          siteId={selectedSiteId}
+          onClose={handleCloseSiteDetail}
         />
       )}
     </>

@@ -1,5 +1,5 @@
 import Sidebar from "@/lib/all-site/SideBar";
-import { Briefcase, FileText, Home, Send } from "lucide-react";
+import { Briefcase, Home, CheckCircle } from "lucide-react";
 import * as React from "react";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
@@ -21,16 +21,11 @@ export default function AreaManagerPage() {
       label: "GIAO VIỆC",
       href: "/area-manager-task",
     },
-    // {
-    //   icon: <FileText size={20} />,
-    //   label: "SURVEY",
-    //   href: "/area-manager-survey",
-    // },
-    // {
-    //   icon: <Send size={20} />,
-    //   label: "SEND REPORTS",
-    //   href: "/area-manager-send",
-    // },
+    {
+      icon: <CheckCircle size={20} />,
+      label: "KIỂM TRA MẶT BẰNG",
+      href: "/area-manager-sitecheck",
+    },
   ];
 
   const { handleLogout } = useAuth();
