@@ -49,9 +49,7 @@ export default function ManagerSite() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          defaultLocation="Quận 7 - TPHCM"
           title="KHO MẶT BẰNG" // Truyền title vào đây
-          // onNotificationClick={() => { }}
         />
 
         {/* Content area */}

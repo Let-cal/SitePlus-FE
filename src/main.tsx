@@ -10,8 +10,7 @@ import AdminPage from "./lib/admin/pages/AdminPage";
 import AdminUserPage from "./lib/admin/pages/AdminUserPage";
 import { ThemeProvider } from "./lib/all-site/ThemeProvider";
 import AreaManagerPage from "./lib/area-manager/pages/AreaManagerPage";
-import AreaManagerSend from "./lib/area-manager/pages/AreaManagerSend";
-import AreaManagerSurvey from "./lib/area-manager/pages/AreaManagerSurvey";
+import AreaManagerSiteCheck from "./lib/area-manager/pages/AreaManagerSiteCheck";
 import AreaManagerTask from "./lib/area-manager/pages/AreaManagerTask";
 import ManagerPage from "./lib/manager/pages/ManagerPage";
 import ManagerRequest from "./lib/manager/pages/ManagerRequest";
@@ -133,19 +132,10 @@ createRoot(document.getElementById("root")!).render(
                 }
               />
               <Route
-                path="/area-manager-survey"
+                path="/area-manager-sitecheck"
                 element={
                   <ProtectedRoute
-                    element={<AreaManagerSurvey />}
-                    roles={["Area-Manager"]}
-                  />
-                }
-              />
-              <Route
-                path="/area-manager-send"
-                element={
-                  <ProtectedRoute
-                    element={<AreaManagerSend />}
+                    element={<AreaManagerSiteCheck />}
                     roles={["Area-Manager"]}
                   />
                 }

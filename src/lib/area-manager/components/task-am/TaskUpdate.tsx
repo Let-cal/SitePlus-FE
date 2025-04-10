@@ -23,7 +23,7 @@ interface Task {
   location: {
     areaId: number;
     areaName: string;
-    siteId: number;
+    siteId?: number;
     siteAddress?: string;
     buildingName?: string;
   };

@@ -55,8 +55,11 @@ interface Task {
   };
   brandInfo: {
     requestId: number;
-    brandName?: string;
   };
+  siteDeals: {
+    siteDealId: number;
+    createdAt: string;
+  }[];
   deadline: string;
   createdAt: string;
   updatedAt: string;
@@ -64,6 +67,7 @@ interface Task {
 
 // Định nghĩa interface cho dữ liệu gửi lên khi tạo task
 interface CreateTaskRequest {
+  siteId?: number,
   name: string;
   description: string;
   areaId: number;
@@ -122,7 +126,111 @@ interface BrandRequestResponse {
   storeProfileCriteria: StoreProfileCriteria[];
 }
 
-// Định nghĩa interface chung cho phản hồi API
+// Interface cho tham số của updateSiteDealStatus
+interface UpdateSiteDealStatusParams {
+  id: number;
+  status: number;
+}
+
+// Interface cho phản hồi của API PUT Update Site Deal Status
+interface UpdateSiteDealStatusResponse {
+  success: boolean;
+  message: string;
+  messageQdrant: string;
+  totalCount: number;
+}
+
+// Định nghĩa interface cho dữ liệu chi tiết site từ API
+interface SiteImage {
+  id: number;
+  url: string;
+}
+
+interface SiteDeal {
+  proposedPrice: number;
+  leaseTerm: string;
+  deposit: number;
+  additionalTerms: string;
+  depositMonth: string;
+  status: number;
+  statusName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AttributeValue {
+  id: number;
+  value: string;
+  additionalInfo: string;
+}
+
+interface Attribute {
+  id: number;
+  name: string;
+  values: AttributeValue[];
+}
+
+interface AttributeGroup {
+  id: number;
+  name: string;
+  attributes: Attribute[];
+}
+
+interface SiteDetail {
+  id: number;
+  address: string;
+  size: number;
+  floor: number;
+  totalFloor: number;
+  description: string;
+  buildingName: string;
+  status: number;
+  statusName: string;
+  areaId: number;
+  areaName: string;
+  districtName: string;
+  cityName: string;
+  siteCategoryId: number;
+  siteCategoryName: string;
+  images: SiteImage[];
+  attributeGroups: AttributeGroup[];
+  siteDeals: SiteDeal[];
+}
+
+// Định nghĩa interface cho phản hồi API chi tiết site
+interface SiteDetailResponse {
+  data: SiteDetail;
+  success: boolean;
+  message: string;
+  totalCount: number;
+}
+// Interface cho tham số của updateTaskStatus
+interface UpdateTaskStatusParams {
+  taskId: number;
+  status: number;
+}
+
+// Interface cho phản hồi của API PATCH Update Task Status
+interface UpdateTaskStatusResponse {
+  success: boolean;
+  message: string;
+  data: Task;
+}
+
+interface UpdateSiteStatusParams {
+  siteId: number;
+  status: number;
+}
+
+// Interface cho phản hồi của API PATCH Update Site Status
+interface UpdateSiteStatusResponse {
+  data: boolean;
+  success: boolean;
+  message: string;
+  totalCount: number;
+}
+
+// Định nghĩa interface chung cho phản hồi API (có phân trang)
 interface ApiResponse<T> {
   data: {
     page: number;
@@ -583,6 +691,184 @@ class AreaManagerService {
         );
       }
       return [];
+    }
+  }
+
+  // Get Site by ID
+  async getSiteById(siteId: number): Promise<SiteDetail | null> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return null;
+    }
+
+    try {
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_SITE_BY_ID}`.replace(":siteId", siteId.toString());
+      const response = await axios.get(endpoint, authHeader);
+
+      const data: SiteDetailResponse = response.data;
+      if (data.success) {
+        return data.data;
+      } else {
+        toast.error(data.message || "Lỗi khi tải thông tin site", { position: "top-right", duration: 3000 });
+        return null;
+      }
+    } catch (error) {
+      console.error("API Error for Site by ID:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-right", duration: 3000 });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-right", duration: 3000 }
+        );
+      }
+      return null;
+    }
+  }
+
+  // Update Task Status (PATCH)
+  async updateTaskStatus(params: UpdateTaskStatusParams): Promise<Task | null> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return null;
+    }
+
+    const { taskId, status } = params;
+
+    try {
+      const response = await axios.patch(
+        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.PATCH.UPDATE_TASK_STATUS}`,
+        { taskId, status },
+        authHeader
+      );
+
+      const data: UpdateTaskStatusResponse = response.data;
+      if (data.success) {
+        // toast.success(data.message || "Cập nhật trạng thái task thành công!", {
+        //   position: "top-right",
+        //   duration: 3000,
+        // });
+        return data.data;
+      } else {
+        // toast.error(data.message || "Lỗi khi cập nhật trạng thái task", {
+        //   position: "top-right",
+        //   duration: 3000,
+        // });
+        return null;
+      }
+    } catch (error) {
+      console.error("API Error for Update Task Status:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+          position: "top-right",
+          duration: 3000,
+        });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-right", duration: 3000 }
+        );
+      }
+      return null;
+    }
+  }
+
+  // Update Site Status (PATCH)
+  async updateSiteStatus(params: UpdateSiteStatusParams): Promise<boolean> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return false;
+    }
+
+    const { siteId, status } = params;
+
+    try {
+      const response = await axios.patch(
+        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.PATCH.UPDATE_SITE_STATUS}`,
+        { siteId, status },
+        authHeader
+      );
+
+      const data: UpdateSiteStatusResponse = response.data;
+      if (data.success) {
+        // toast.success(data.message || "Cập nhật trạng thái Site thành công!", {
+        //   position: "top-right",
+        //   duration: 3000,
+        // });
+        return data.data;
+      } else {
+        // toast.error(data.message || "Lỗi khi cập nhật trạng thái Site", {
+        //   position: "top-right",
+        //   duration: 3000,
+        // });
+        return false;
+      }
+    } catch (error) {
+      console.error("API Error for Update Site Status:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+          position: "top-right",
+          duration: 3000,
+        });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-right", duration: 3000 }
+        );
+      }
+      return false;
+    }
+  }
+
+  // Update Site Deal Status (PUT)
+  async updateSiteDealStatus(params: UpdateSiteDealStatusParams): Promise<boolean> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return false;
+    }
+
+    const { id, status } = params;
+
+    try {
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.PUT.UPDATE_SITE_DEAL_STATUS}`.replace(":id", id.toString());
+      const response = await axios.put(
+        endpoint,
+        { status },
+        authHeader
+      );
+
+      const data: UpdateSiteDealStatusResponse = response.data;
+      if (data.success) {
+        // toast.success(data.message || "Cập nhật trạng thái Site Deal thành công!", {
+        //   position: "top-right",
+        //   duration: 3000,
+        // });
+        return true;
+      } else {
+        // toast.error(data.message || "Lỗi khi cập nhật trạng thái Site Deal", {
+        //   position: "top-right",
+        //   duration: 3000,
+        // });
+        return false;
+      }
+    } catch (error) {
+      console.error("API Error for Update Site Deal Status:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+          position: "top-right",
+          duration: 3000,
+        });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-right", duration: 3000 }
+        );
+      }
+      return false;
     }
   }
 }

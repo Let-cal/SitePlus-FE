@@ -67,30 +67,26 @@ interface BrandRequestResponse {
   storeProfileCriteria: StoreProfileCriteria[];
 }
 
-// Interface cho kết quả tìm kiếm bằng AI
-interface Project {
-  id: number;
-  nameSite?: string; // Tùy chọn, dùng cho API searchByAI
+// Interface cho kết quả tìm kiếm bằng AI (API mới)
+export interface SearchAIProject {
+  siteId: number;
+  siteDealId: number;
+  address: string;
+  size: number;
+  leaseTerm: string;
+  proposedPrice: number;
+  deposit: number;
+  additionalTerms: string;
   imageUrl: string;
-  score?: number; // Tùy chọn, chỉ có trong API searchByAI
-  siteCategoryName?: string; // Thêm từ API GET_FAVORITES
-  area?: string; // Thêm từ API GET_FAVORITES
-  address?: string; // Thêm từ API GET_FAVORITES
-  size?: number; // Thêm từ API GET_FAVORITES
-  floor?: number; // Thêm từ API GET_FAVORITES
-  totalFloor?: number; // Thêm từ API GET_FAVORITES
-  description?: string; // Thêm từ API GET_FAVORITES
-  statusName?: string; // Thêm từ API GET_FAVORITES
-  buildingName?: string; // Thêm từ API GET_FAVORITES
+  totalScore: number;
+  nameSite?: string;
 }
 
 interface SearchAIResponse {
   status: string;
-  data: {
-    requestId: number;
-    numberOfProjects: number;
-    projects: Project[];
-  };
+  message: string;
+  requestId: number;
+  data: SearchAIProject[];
 }
 
 // Interface cho response của API cập nhật status
@@ -107,11 +103,30 @@ interface UpdateMatchedSiteResponse {
   message: string;
 }
 
+// Interface cho response của API fetchFavorites (danh sách quan tâm)
+export interface FavoriteSiteResponse {
+  id: number;
+  buildingName: string;
+  siteCategoryName: string;
+  area: string;
+  address: string;
+  size: number;
+  floor: number;
+  description: string;
+  statusName: string;
+  imageUrl: string;
+  proposedPrice: number;
+  leaseTerm: string;
+  deposit: number;
+  additionalTerms: string;
+  depositMonth: string;
+}
+
 // Interface cho response của API lấy danh sách favorites
 interface FetchFavoritesResponse {
   data: {
     closedSites: any[];
-    matchedSites: Project[];
+    matchedSites: FavoriteSiteResponse[]; // Sửa từ SearchAIProject[] thành FavoriteSiteResponse[]
   };
   success: boolean;
   message: string;
@@ -120,6 +135,57 @@ interface FetchFavoritesResponse {
 
 interface FetchUsersParams {
   search?: string;
+}
+
+// Interface cho hình ảnh của site
+interface SiteImage {
+  id: number;
+  url: string;
+}
+
+// Interface cho building của site
+interface SiteBuilding {
+  id: number;
+  name: string;
+  areaId: number;
+  status: string;
+}
+
+// Interface cho site
+interface Site {
+  id: number;
+  buildingId?: number;
+  buildingName?: string;
+  siteCategoryId: number;
+  siteCategoryName: string;
+  address: string;
+  size: number;
+  floor: number;
+  totalFloor: number;
+  description: string;
+  status: number;
+  statusName: string;
+  areaId: number;
+  areaName?: string;
+  districtName?: string;
+  building?: SiteBuilding;
+  images: SiteImage[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Interface cho response của API GET_SITES
+interface SitesApiResponse {
+  data: {
+    page: number;
+    totalPage: number;
+    totalRecords: number;
+    currentPageCount: number;
+    listData: Site[];
+  };
+  success: boolean;
+  message: string;
+  totalCount: number;
 }
 
 // API Response interface for Brand Requests (danh sách)
@@ -134,7 +200,7 @@ interface BrandRequestDetailApiResponse {
   data: BrandRequestResponse;
   success: boolean;
   totalCount: number;
-  message?: string; // Đặt message là tùy chọn
+  message?: string;
 }
 
 // API Response interface for Users
@@ -325,8 +391,7 @@ class ManagerService {
     }
   }
 
-  // Phương thức Tìm kiếm bằng AI
-  async searchByAI(requestId: number, limit: number = 6): Promise<Project[]> {
+  async searchByAI(requestId: number, limit: number = 6): Promise<SearchAIProject[]> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
       return [];
@@ -337,18 +402,19 @@ class ManagerService {
       queryParams.append("requestId", requestId.toString());
       queryParams.append("limit", limit.toString());
 
-      const response = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.SEARCH_BY_AI}?${queryParams.toString()}`,
+      const response = await axios.post(
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.POST.SEARCH_BY_AI}?${queryParams.toString()}`,
+        {},
         authHeader
       );
 
       console.log("API Response for Search by AI:", response.data);
       const data: SearchAIResponse = response.data;
-      if (data.status === "ok" && data.data.projects) {
-        return data.data.projects;
+      if (data.status === "ok" && data.data) {
+        return data.data;
       } else {
         console.log("API Error: Status is not ok", data.status);
-        toast.error("Không tìm thấy kết quả từ AI", { position: "top-left", duration: 3000 });
+        toast.error(data.message || "Không tìm thấy kết quả từ AI", { position: "top-left", duration: 3000 });
         return [];
       }
     } catch (error) {
@@ -366,7 +432,6 @@ class ManagerService {
     }
   }
 
-  // Phương thức Cập nhật status của brand request
   async updateBrandRequestStatus(requestId: number, status: number): Promise<boolean> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
@@ -406,8 +471,7 @@ class ManagerService {
     }
   }
 
-  // Phương thức Thêm site vào kho quan tâm (matched sites)
-  async updateMatchedSite(requestId: number, siteId: number, score: number): Promise<boolean> {
+  async updateMatchedSite(requestId: number, siteDealId: number, score: number): Promise<boolean> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
       return false;
@@ -416,7 +480,7 @@ class ManagerService {
     try {
       const queryParams = new URLSearchParams();
       queryParams.append("requestId", requestId.toString());
-      queryParams.append("siteId", siteId.toString());
+      queryParams.append("siteDealId", siteDealId.toString());
       queryParams.append("score", score.toString());
 
       const response = await axios.put(
@@ -449,7 +513,6 @@ class ManagerService {
     }
   }
 
-  // Phương thức Cập nhật status của site
   async updateSiteStatus(siteId: number, status: number): Promise<boolean> {
     const authHeader = this.getAuthHeader(true);
     if (!authHeader) {
@@ -492,11 +555,18 @@ class ManagerService {
     }
   }
 
-  // Phương thức Lấy danh sách site đã quan tâm (favorites)
-  async fetchFavorites(requestId: number): Promise<Project[]> {
+  async fetchFavorites(requestId: number): Promise<FetchFavoritesResponse> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
-      return [];
+      return {
+        data: {
+          closedSites: [],
+          matchedSites: [],
+        },
+        success: false,
+        message: "Không có quyền truy cập",
+        totalCount: 0,
+      };
     }
 
     try {
@@ -506,16 +576,19 @@ class ManagerService {
       console.log("API Response for Fetch Favorites:", response.data);
       const data: FetchFavoritesResponse = response.data;
       if (data.success) {
-        // Gán address hoặc buildingName + address làm nameSite để hiển thị
-        const favorites = data.data.matchedSites.map((site) => ({
-          ...site,
-          nameSite: site.buildingName ? `${site.buildingName}, ${site.address}` : site.address,
-        }));
-        return favorites;
+        return data;
       } else {
         console.log("API Error: Success is false", data.message);
         toast.error(data.message || "Lỗi khi tải danh sách quan tâm", { position: "top-left", duration: 3000 });
-        return [];
+        return {
+          data: {
+            closedSites: [],
+            matchedSites: [],
+          },
+          success: false,
+          message: data.message || "Lỗi khi tải danh sách quan tâm",
+          totalCount: 0,
+        };
       }
     } catch (error) {
       console.error("API Error for Fetch Favorites:", error.response ? error.response.data : error.message);
@@ -524,8 +597,15 @@ class ManagerService {
           toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-left", duration: 3000 });
           localStorage.removeItem("token");
         } else if (error.response?.status === 404) {
-          // Nếu lỗi 404, không hiển thị toast, chỉ trả về mảng rỗng
-          return [];
+          return {
+            data: {
+              closedSites: [],
+              matchedSites: [],
+            },
+            success: false,
+            message: "Không tìm thấy danh sách quan tâm",
+            totalCount: 0,
+          };
         } else {
           toast.error(
             "Lỗi kết nối API: " + (error.response?.data?.message || error.message),
@@ -535,11 +615,18 @@ class ManagerService {
       } else {
         toast.error("Lỗi kết nối API: Không xác định", { position: "top-left", duration: 3000 });
       }
-      return [];
+      return {
+        data: {
+          closedSites: [],
+          matchedSites: [],
+        },
+        success: false,
+        message: "Lỗi khi tải danh sách quan tâm",
+        totalCount: 0,
+      };
     }
   }
 
-  // Phương thức Xuất PDF
   async exportPDF(brandRequestId: number): Promise<Blob | null> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
@@ -550,11 +637,11 @@ class ManagerService {
       const endpoint = `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.EXPORT_PDF}`.replace(":brandRequestId", brandRequestId.toString());
       const response = await axios.get(endpoint, {
         ...authHeader,
-        responseType: "blob", // Đặt responseType là blob để nhận file PDF
+        responseType: "blob",
       });
 
       console.log("API Response for Export PDF:", response);
-      return response.data; // Trả về file PDF dưới dạng Blob
+      return response.data;
     } catch (error) {
       console.error("API Error for Export PDF:", error.response ? error.response.data : error.message);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -567,6 +654,65 @@ class ManagerService {
         );
       }
       return null;
+    }
+  }
+
+  async fetchSites(pageNumber: number = 1, pageSize: number = 6, status?: number): Promise<SitesApiResponse> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return {
+        data: {
+          page: 1,
+          totalPage: 1,
+          totalRecords: 0,
+          currentPageCount: 0,
+          listData: [],
+        },
+        success: false,
+        message: "Không có quyền truy cập",
+        totalCount: 0,
+      };
+    }
+
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append("pageNumber", pageNumber.toString());
+      queryParams.append("pageSize", pageSize.toString());
+      if (status !== undefined) {
+        queryParams.append("status", status.toString());
+      }
+
+      const response = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_SITES}?${queryParams.toString()}`,
+        authHeader
+      );
+
+      console.log("API Response for Fetch Sites:", response.data);
+      const data: SitesApiResponse = response.data;
+      return data;
+    } catch (error) {
+      console.error("API Error for Fetch Sites:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-left", duration: 3000 });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-left", duration: 3000 }
+        );
+      }
+      return {
+        data: {
+          page: 1,
+          totalPage: 1,
+          totalRecords: 0,
+          currentPageCount: 0,
+          listData: [],
+        },
+        success: false,
+        message: "Lỗi khi tải danh sách site",
+        totalCount: 0,
+      };
     }
   }
 }

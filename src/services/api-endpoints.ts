@@ -48,10 +48,18 @@ export const API_ENDPOINTS = {
       GET_TASKS: "/api/Task",
       GET_TASK_BY_ID: "/api/Task/:taskId",
       GET_BRAND_REQUESTS: "/api/BrandRequest",
+      GET_SITE_BY_ID: "/api/Site/:siteId",
     },
     POST: {
       CREATE_TASK: "/api/Task",
-    }
+    },
+    PATCH: {
+      UPDATE_TASK_STATUS: "/api/Task/status",
+      UPDATE_SITE_STATUS: "/api/Site/status",
+    },
+    PUT: {
+      UPDATE_SITE_DEAL_STATUS: "/api/SiteDeal/:id/status",
+    },
   },
   MANAGER: {
     GET: {
@@ -60,16 +68,19 @@ export const API_ENDPOINTS = {
       GET_USERS: "/api/user/get-users",
       GET_BRAND_REQUESTS: "/api/BrandRequest",
       GET_BRAND_REQUEST_BY_ID: "/api/BrandRequest/:brandRequestId",
-      SEARCH_BY_AI: "/api/Qdrant/matching",
       GET_FAVORITES: "/api/Qdrant/brand-request/:requestId",
       EXPORT_PDF: "/api/generate/:brandRequestId",
+      GET_SITES: "/api/Site",
     },
     PUT: {
       UPDATE_BRAND_REQUEST_STATUS: "/api/BrandRequest/Status/:id",
       UPDATE_MATCHED_SITE: "/api/Qdrant/update-matched-site",
     },
-    PATCH: { 
+    PATCH: {
       UPDATE_SITE_STATUS: "/api/site/status",
+    },
+    POST: { // Thêm POST nếu chưa có
+      SEARCH_BY_AI: "/api/Qdrant/compare", // Thêm endpoint mới
     },
   },
 };
