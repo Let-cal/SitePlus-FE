@@ -26,6 +26,7 @@ const Step1Form = ({ form }) => {
   const selectedBrand = watch("brand");
   const targetCustomers = watch("targetCustomers") || [];
   const targetIndustryCategory = watch("targetIndustryCategory") || "";
+  const [newlyCreatedBrand, setNewlyCreatedBrand] = useState(null);
 
   const [industries, setIndustries] = useState([]);
   const [suggestedSegments, setSuggestedSegments] = useState([]);
@@ -34,23 +35,6 @@ const Step1Form = ({ form }) => {
   const [allCustomerSegments, setAllCustomerSegments] = useState([]);
   const [allIndustryCategories, setAllIndustryCategories] = useState([]);
   const [brands, setBrands] = useState([]);
-
-  useEffect(() => {
-    console.log("Current form values:", {
-      brand: watch("brand"),
-      brandId: watch("brandId"),
-      representativeName: watch("representativeName"),
-      representativeAddress: watch("representativeAddress"),
-      representativeEmail: watch("representativeEmail"),
-      representativePhone: watch("representativePhone"),
-      industry: watch("industry"),
-      targetCustomers: watch("targetCustomers"),
-      targetIndustryCategory: watch("targetIndustryCategory"),
-    });
-    console.log("Form errors:", formState.errors);
-    updateApiEntities();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watch, formState.errors]);
 
   const updateApiEntities = () => {
     const brandRequest = {
@@ -64,7 +48,7 @@ const Step1Form = ({ form }) => {
       status: 0,
       createdAt: new Date().toISOString(),
     };
-    setValue("brandRequestEntity", brandRequest);
+    setValue("brandRequestEntity", brandRequest, { shouldValidate: false });
 
     const brandRequestCustomerSegments = (watch("targetCustomers") || []).map(
       (segmentId) => ({
@@ -73,7 +57,10 @@ const Step1Form = ({ form }) => {
     );
     setValue(
       "brandRequestCustomerSegmentEntities",
-      brandRequestCustomerSegments
+      brandRequestCustomerSegments,
+      {
+        shouldValidate: false,
+      }
     );
 
     const selectedCategoryId = watch("targetIndustryCategory");
@@ -83,10 +70,17 @@ const Step1Form = ({ form }) => {
       };
       setValue(
         "brandRequestIndustryCategoryEntity",
-        brandRequestIndustryCategory
+        brandRequestIndustryCategory,
+        {
+          shouldValidate: false,
+        }
       );
     } else {
-      setValue("brandRequestIndustryCategoryEntity", null);
+      setValue(
+        "brandRequestIndustryCategoryEntity",
+        { industryCategoryId: 0 },
+        { shouldValidate: false }
+      );
     }
   };
 
@@ -138,12 +132,42 @@ const Step1Form = ({ form }) => {
     fetchBrands();
   }, []);
 
-  const handleBrandCreated = (brand) => {
-    setBrands((prev) => [...prev, brand]);
-    setValue("brand", brand.name);
-    setValue("brandId", brand.id);
-    trigger("brand");
-    updateApiEntities();
+  useEffect(() => {
+    console.log("Form errors after update:", form.formState.errors);
+  }, [form.formState.errors]);
+
+  const handleBrandCreated = async (brandData) => {
+    try {
+      // Create the brandData object that will be sent to the API
+      const brandRequestPayload = brandData.brandData;
+
+      // Store the brand data for later use in SurveyRequestsForm
+      form.setValue("createBrandPayload", brandRequestPayload);
+
+      // Set the newly created brand (virtual only, not actually created yet)
+      const virtualBrand = {
+        id: -1, // Temporary ID
+        name: brandData.name,
+        status: 0,
+      };
+
+      setNewlyCreatedBrand(virtualBrand);
+
+      // Set form values
+      form.setValue("brand", brandData.name, { shouldValidate: false });
+      form.setValue("brandId", -1, { shouldValidate: false });
+      form.setValue("industry", brandData.industry, { shouldValidate: false });
+      form.setValue("targetCustomers", brandData.customerSegments, {
+        shouldValidate: false,
+      });
+      form.setValue("targetIndustryCategory", brandData.industryCategory, {
+        shouldValidate: false,
+      });
+
+      updateApiEntities();
+    } catch (error) {
+      console.error("Error preparing brand data:", error);
+    }
   };
 
   const handleBrandSelect = (brand) => {
@@ -206,6 +230,7 @@ const Step1Form = ({ form }) => {
                     brands={brands}
                     selectedBrand={selectedBrand}
                     onSelect={handleBrandSelect}
+                    newlyCreatedBrand={newlyCreatedBrand}
                   />
                 </FormField>
                 <p className="text-sm text-gray-500">
@@ -214,7 +239,14 @@ const Step1Form = ({ form }) => {
                 </p>
               </div>
               <div className="flex items-center justify-center">
-                <CreateBrandDialog onBrandCreated={handleBrandCreated} />
+                <CreateBrandDialog
+                  onBrandCreated={handleBrandCreated}
+                  industries={industries}
+                  allCustomerSegments={allCustomerSegments}
+                  allIndustryCategories={allIndustryCategories}
+                  suggestedSegments={suggestedSegments}
+                  suggestedIndustryCategories={suggestedIndustryCategories}
+                />
               </div>
             </div>
           </CardContent>
@@ -305,7 +337,7 @@ const Step1Form = ({ form }) => {
                   setValue("industry", value);
                   updateApiEntities();
                 }}
-                defaultValue={selectedIndustry}
+                value={selectedIndustry}
               >
                 <SelectTrigger className="focus-visible:ring-orange-400 focus-visible:ring-offset-0">
                   <SelectValue placeholder="Chọn ngành nghề" />

@@ -21,12 +21,6 @@ interface BrandRequestPayload {
   brandRequestStoreProfile: {
     storeProfileId: number;
   };
-  brandRequestCustomerSegment: Array<{
-    customerSegmentId: number;
-  }>;
-  brandRequestIndustryCategory: {
-    industryCategoryId: number;
-  };
   storeProfile: {
     storeProfileCategoryId: number;
     createdAt: string;
@@ -161,6 +155,10 @@ class ClientService {
         name: brandData.name,
         status: 0,
         createdAt: new Date().toISOString(),
+        brandRequestCustomerSegment:
+          brandData.brandRequestCustomerSegment || [],
+        brandRequestIndustryCategory:
+          brandData.brandRequestIndustryCategory || null,
       };
       const response = await axios.post(
         `${API_BASE_URL}${API_ENDPOINTS.CLIENT.PUSH.CREATE_BRAND}`,
@@ -173,10 +171,8 @@ class ClientService {
         }
       );
 
-      // Log the response to see what's being returned
       console.log("Create brand response:", response.data);
-
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error("Error creating brand:", error);
       throw error;

@@ -12,122 +12,68 @@ import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form";
 import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
+
 // Định nghĩa schema validation cho form
 const formSchema = z
   .object({
-    // Step 1: Thông tin cơ bản
-    brand: z
-      .string({ required_error: "Vui lòng nhập thương hiệu" })
-      .min(2, { message: "Vui lòng nhập thương hiệu" }),
-    brandId: z.number().default(0),
-    representativeName: z
-      .string()
-      .min(1, { message: "Vui lòng nhập tên đại diện" }),
-    representativeEmail: z.string().email({ message: "Email không hợp lệ" }),
-    representativePhone: z
-      .string()
-      .min(10, { message: "Số điện thoại không hợp lệ" })
-      .max(10, "Số điện thoại không hợp lệ"),
-    representativeAddress: z
-      .string()
-      .min(1, { message: "Vui lòng nhập nơi thường trú của đại diện" }),
-    industry: z.string({ required_error: "Vui lòng chọn ngành nghề" }),
-    targetCustomers: z
-      .array(z.string())
-      .min(1, { message: "Vui lòng chọn ít nhất một đối tượng khách hàng" }),
-
-    // Thay đổi từ array sang string
-    targetIndustryCategory: z
-      .string()
-      .min(1, { message: "Vui lòng chọn một ngành nghề đang hướng tới" }),
-
-    // Step 2: Thông tin chi tiết yêu cầu
-    locationType: z.string({ required_error: "Vui lòng chọn loại mặt bằng" }),
-    storeProfile: z
-      .string({ required_error: "Vui lòng chọn loại cửa hàng" })
-      .min(1, { message: "Vui lòng chọn loại cửa hàng" }),
+    createBrandPayload: z
+      .object({
+        id: z.number(),
+        name: z.string(),
+        status: z.number(),
+        createdAt: z.string(),
+        brandRequestCustomerSegment: z.array(
+          z.object({
+            customerSegmentId: z.number(),
+          })
+        ),
+        brandRequestIndustryCategory: z.object({
+          industryCategoryId: z.number(),
+        }),
+      })
+      .optional(),
+    brand: z.string().optional(),
+    brandId: z.number().default(0).optional(),
+    representativeName: z.string().optional(),
+    representativeEmail: z.string().optional(),
+    representativePhone: z.string().optional(),
+    representativeAddress: z.string().optional(),
+    industry: z.string().optional(),
+    targetCustomers: z.array(z.string()).optional(),
+    targetIndustryCategory: z.string().optional(),
+    locationType: z.string().optional(),
+    storeProfile: z.string().optional(),
     otherStoreProfileInfo: z.string().optional(),
-
-    // Step 3: Thông tin diện tích và ngân sách
-    defaultArea: z
-      .string()
-      .min(1, { message: "Vui lòng nhập diện tích mặc định" }),
-    minArea: z
-      .string()
-      .min(1, { message: "Vui lòng nhập diện tích tối thiểu" }),
-    maxArea: z.string().min(1, { message: "Vui lòng nhập diện tích tối đa" }),
-
-    defaultBudget: z
-      .string()
-      .min(1, { message: "Vui lòng nhập ngân sách mặc định" }),
-    minBudget: z
-      .string()
-      .min(1, { message: "Vui lòng nhập ngân sách tối thiểu" }),
-    maxBudget: z.string().min(1, { message: "Vui lòng nhập ngân sách tối đa" }),
-    propertyType: z.enum(["rental", "transfer"], {
-      required_error: "Vui lòng chọn loại mặt bằng",
-    }),
-    rentalPeriod: z
-      .string()
-      .refine(
-        (value) => {
-          if (!value) return true; // Cho phép trống nếu không bắt buộc
-          const normalizedValue = removeVietnameseDiacritics(
-            value.trim().toLowerCase()
-          );
-          const regex = /^\d+\s*(thang|nam)(?:\s+\d+\s*(thang|nam))?\s*$/i;
-          return regex.test(normalizedValue);
-        },
-        {
-          message:
-            "Vui lòng nhập đúng định dạng (ví dụ: '6 tháng', '2 năm', '2 năm 3 tháng')",
-        }
-      )
-      .optional(),
-    minRentalPeriod: z
-      .string()
-      .refine(
-        (value) => {
-          if (!value) return true; // Cho phép trống nếu không bắt buộc
-          const normalizedValue = removeVietnameseDiacritics(
-            value.trim().toLowerCase()
-          );
-          const regex = /^\d+\s*(thang|nam)(?:\s+\d+\s*(thang|nam))?\s*$/i;
-          return regex.test(normalizedValue);
-        },
-        {
-          message:
-            "Vui lòng nhập đúng định dạng (ví dụ: '6 tháng', '2 năm', '2 năm 3 tháng')",
-        }
-      )
-      .optional(),
-    depositDefault: z.string().min(1, "Vui lòng nhập tiền đặt cọc mặc định"),
-    depositMax: z.string().min(1, "Vui lòng nhập tiền đặt cọc tối đa"),
-    depositMonths: z.string().min(1, "Vui lòng nhập số tháng đặt cọc"),
+    defaultArea: z.string().optional(),
+    minArea: z.string().optional(),
+    maxArea: z.string().optional(),
+    defaultBudget: z.string().optional(),
+    minBudget: z.string().optional(),
+    maxBudget: z.string().optional(),
+    propertyType: z.enum(["rental", "transfer"]).optional(),
+    rentalPeriod: z.string().optional(),
+    minRentalPeriod: z.string().optional(),
+    depositDefault: z.string().optional(),
+    depositMax: z.string().optional(),
+    depositMonths: z.string().optional(),
     areaCriteria: z.object({
       attributeId: z.number().default(9),
       defaultValue: z.string().optional(),
       minValue: z.string().optional(),
       maxValue: z.string().optional(),
     }),
-
     budgetCriteria: z.object({
       attributeId: z.number().default(10),
       defaultValue: z.string().optional(),
       minValue: z.string().optional(),
       maxValue: z.string().optional(),
     }),
-    // Step 4: Thông tin vị trí
     city: z.string().default("Thành phố Hồ Chí Minh"),
-    districts: z
-      .array(z.string())
-      .min(1, { message: "Vui lòng chọn ít nhất một quận" }),
+    districts: z.array(z.string()).optional(),
     street: z.string().optional(),
     specificAreas: z.array(z.string()).optional(),
     nearbyAreas: z.array(z.string()),
     specialRequirements: z.string().optional(),
-
-    // Thêm trường để lưu trữ các entity API
     brandRequestEntity: z
       .object({
         id: z.number().default(0),
@@ -141,35 +87,21 @@ const formSchema = z
         createdAt: z.string().default(new Date().toISOString()),
       })
       .optional(),
-
     brandRequestCustomerSegmentEntities: z
-      .array(
-        z.object({
-          customerSegmentId: z.number(),
-        })
-      )
+      .array(z.object({ customerSegmentId: z.number() }))
       .optional(),
-
-    // Thay đổi từ array sang object đơn lẻ
     brandRequestIndustryCategoryEntity: z
-      .object({
-        industryCategoryId: z.number().default(0),
-      })
+      .object({ industryCategoryId: z.number().default(0) })
       .optional(),
-
     brandRequestStoreProfileEntity: z
-      .object({
-        storeProfileId: z.number().default(0),
-      })
+      .object({ storeProfileId: z.number().default(0) })
       .optional(),
-
     storeProfileEntity: z
       .object({
         storeProfileCategoryId: z.number().default(0),
         createdAt: z.string().default(new Date().toISOString()),
       })
       .optional(),
-
     storeProfileCriteriaEntities: z
       .array(
         z.object({
@@ -188,7 +120,6 @@ const formSchema = z
       minValue: z.string().optional(),
       maxValue: z.string().optional(),
     }),
-
     specificAreaCriteria: z.object({
       attributeId: z.number().default(33),
       defaultValue: z.string().optional(),
@@ -208,7 +139,9 @@ const formSchema = z
       path: ["rentalPeriod"],
     }
   );
+
 type FormValues = z.infer<typeof formSchema>;
+
 const removeVietnameseDiacritics = (str) => {
   return str
     .normalize("NFD")
@@ -216,17 +149,7 @@ const removeVietnameseDiacritics = (str) => {
     .replace(/đ/g, "d")
     .replace(/Đ/g, "D");
 };
-// Định nghĩa kiểu cho các trường form theo từng bước
-type Step1Fields =
-  | "brand"
-  | "brandId"
-  | "representativeName"
-  | "representativeEmail"
-  | "representativePhone"
-  | "representativeAddress"
-  | "industry"
-  | "targetCustomers"
-  | "targetIndustryCategory"; // Đã thay đổi từ targetIndustryCategories
+
 type Step2Fields = "locationType" | "storeProfile" | "otherStoreProfileInfo";
 type Step3Fields =
   | "defaultArea"
@@ -242,7 +165,6 @@ type Step3Fields =
   | "depositMax"
   | "depositMonths";
 
-// Define interface that matches the API expected structure
 interface BrandRequestPayload {
   brandRequest: {
     id: number;
@@ -257,12 +179,6 @@ interface BrandRequestPayload {
   };
   brandRequestStoreProfile: {
     storeProfileId: number;
-  };
-  brandRequestCustomerSegment: Array<{
-    customerSegmentId: number;
-  }>;
-  brandRequestIndustryCategory: {
-    industryCategoryId: number;
   };
   storeProfile: {
     storeProfileCategoryId: number;
@@ -286,16 +202,16 @@ const SurveyRequestsForm: React.FC = () => {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
+    mode: "onSubmit",
     defaultValues: {
       city: "Thành phố Hồ Chí Minh",
       targetCustomers: [],
-      targetIndustryCategory: "", // Thay đổi từ array thành string
+      targetIndustryCategory: "",
       nearbyAreas: [],
       districts: [],
       specificAreas: [],
       brandId: 0,
       propertyType: "rental",
-      // Add new default values
       areaCriteria: {
         attributeId: 9,
       },
@@ -308,7 +224,6 @@ const SurveyRequestsForm: React.FC = () => {
       specificAreaCriteria: {
         attributeId: 33,
       },
-      // Thêm các entity mặc định
       brandRequestEntity: {
         id: 0,
         brandId: 0,
@@ -337,40 +252,100 @@ const SurveyRequestsForm: React.FC = () => {
 
   const { watch } = form;
 
-  // Lấy giá trị của các trường để điều khiển logic
   const storeProfile = watch("storeProfile");
 
   const handleNext = async () => {
-    let canProceed = false;
+    let canProceed = true;
+    form.clearErrors();
 
     if (step === 1) {
-      // Validate fields của Step 1
-      const step1Fields: Step1Fields[] = [
-        "brand",
-        "brandId",
-        "representativeName",
-        "representativeEmail",
-        "representativePhone",
-        "representativeAddress",
-        "industry",
-        "targetCustomers",
-        "targetIndustryCategory",
-      ];
-      const step1Valid = await form.trigger(step1Fields);
-      console.log("Step 1 validation result:", step1Valid);
+      const brand = form.getValues("brand");
+      if (!brand || brand.trim().length < 2) {
+        form.setError("brand", { message: "Vui lòng nhập thương hiệu" });
+        canProceed = false;
+      }
+
+      const brandId = form.getValues("brandId");
+      if (!brandId && brandId !== 0) {
+        form.setError("brandId", { message: "Vui lòng chọn thương hiệu" });
+        canProceed = false;
+      }
+
+      const representativeName = form.getValues("representativeName");
+      if (!representativeName || representativeName.trim().length < 1) {
+        form.setError("representativeName", {
+          message: "Vui lòng nhập tên đại diện",
+        });
+        canProceed = false;
+      }
+
+      const representativeEmail = form.getValues("representativeEmail");
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!representativeEmail || !emailRegex.test(representativeEmail)) {
+        form.setError("representativeEmail", { message: "Email không hợp lệ" });
+        canProceed = false;
+      }
+
+      const representativePhone = form.getValues("representativePhone");
+      const phoneRegex = /^(0[1-9][0-9]{8})$/;
+      if (!representativePhone || !phoneRegex.test(representativePhone)) {
+        form.setError("representativePhone", {
+          message: "Số điện thoại không hợp lệ",
+        });
+        canProceed = false;
+      }
+
+      const representativeAddress = form.getValues("representativeAddress");
+      if (!representativeAddress || representativeAddress.trim().length < 1) {
+        form.setError("representativeAddress", {
+          message: "Vui lòng nhập nơi thường trú của đại diện",
+        });
+        canProceed = false;
+      }
+
+      const industry = form.getValues("industry");
+      if (!industry) {
+        form.setError("industry", { message: "Vui lòng chọn ngành nghề" });
+        canProceed = false;
+      }
+
+      const targetCustomers = form.getValues("targetCustomers");
+      if (!targetCustomers || targetCustomers.length === 0) {
+        form.setError("targetCustomers", {
+          message: "Vui lòng chọn ít nhất một đối tượng khách hàng",
+        });
+        canProceed = false;
+      }
+
+      const targetIndustryCategory = form.getValues("targetIndustryCategory");
+      if (!targetIndustryCategory) {
+        form.setError("targetIndustryCategory", {
+          message: "Vui lòng chọn một ngành nghề đang hướng tới",
+        });
+        canProceed = false;
+      }
+
+      console.log("Step 1 validation result:", canProceed);
       console.log("Form errors:", form.formState.errors);
-      canProceed = step1Valid;
     } else if (step === 2) {
       const step2Fields: Step2Fields[] = ["locationType", "storeProfile"];
       if (storeProfile === "other") {
         step2Fields.push("otherStoreProfileInfo");
       }
-      const step2Valid = await form.trigger(step2Fields);
-      console.log("Step 2 validation result:", step2Valid);
-      console.log("locationType value:", watch("locationType"));
-      console.log("storeProfile value:", watch("storeProfile"));
-      console.log("Form errors:", form.formState.errors);
-      canProceed = step2Valid;
+      canProceed = await form.trigger(step2Fields);
+
+      if (!form.getValues("locationType")) {
+        form.setError("locationType", {
+          message: "Vui lòng chọn loại mặt bằng",
+        });
+        canProceed = false;
+      }
+      if (!form.getValues("storeProfile")) {
+        form.setError("storeProfile", {
+          message: "Vui lòng chọn loại cửa hàng",
+        });
+        canProceed = false;
+      }
     } else if (step === 3) {
       const step3Fields: Step3Fields[] = [
         "defaultArea",
@@ -386,13 +361,79 @@ const SurveyRequestsForm: React.FC = () => {
         "depositMax",
         "depositMonths",
       ];
-      const step3Valid = await form.trigger(step3Fields);
-      canProceed = step3Valid;
+      canProceed = await form.trigger(step3Fields);
+
+      if (!form.getValues("defaultArea")) {
+        form.setError("defaultArea", {
+          message: "Vui lòng nhập diện tích mặc định",
+        });
+        canProceed = false;
+      }
+      if (!form.getValues("minArea")) {
+        form.setError("minArea", {
+          message: "Vui lòng nhập diện tích tối thiểu",
+        });
+        canProceed = false;
+      }
+      if (!form.getValues("maxArea")) {
+        form.setError("maxArea", { message: "Vui lòng nhập diện tích tối đa" });
+        canProceed = false;
+      }
+      if (!form.getValues("defaultBudget")) {
+        form.setError("defaultBudget", {
+          message: "Vui lòng nhập ngân sách mặc định",
+        });
+        canProceed = false;
+      }
+      if (!form.getValues("minBudget")) {
+        form.setError("minBudget", {
+          message: "Vui lòng nhập ngân sách tối thiểu",
+        });
+        canProceed = false;
+      }
+      if (!form.getValues("maxBudget")) {
+        form.setError("maxBudget", {
+          message: "Vui lòng nhập ngân sách tối đa",
+        });
+        canProceed = false;
+      }
+      if (!form.getValues("propertyType")) {
+        form.setError("propertyType", {
+          message: "Vui lòng chọn loại mặt bằng",
+        });
+        canProceed = false;
+      }
+      if (!form.getValues("depositDefault")) {
+        form.setError("depositDefault", {
+          message: "Vui lòng nhập tiền đặt cọc mặc định",
+        });
+        canProceed = false;
+      }
+      if (!form.getValues("depositMax")) {
+        form.setError("depositMax", {
+          message: "Vui lòng nhập tiền đặt cọc tối đa",
+        });
+        canProceed = false;
+      }
+      if (!form.getValues("depositMonths")) {
+        form.setError("depositMonths", {
+          message: "Vui lòng nhập số tháng đặt cọc",
+        });
+        canProceed = false;
+      }
+    } else if (step === 4) {
+      // Validation cho Step 4
+      const districts = form.getValues("districts");
+      if (!districts || districts.length === 0) {
+        form.setError("districts", {
+          message: "Vui lòng chọn ít nhất một quận",
+        });
+        canProceed = false;
+      }
     }
 
     if (canProceed && step < totalSteps) {
       setStep(step + 1);
-      // Scroll to top of form
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -400,41 +441,78 @@ const SurveyRequestsForm: React.FC = () => {
   const handlePrevious = () => {
     if (step > 1) {
       setStep(step - 1);
-      // Scroll to top of form
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
+
   const onSubmit = async (data: FormValues) => {
+    const districts = data.districts || [];
+    if (step !== totalSteps || districts.length === 0) {
+      console.log("Form submitted prematurely or missing required Step 4 data");
+
+      // Show error if missing required data
+      if (districts.length === 0) {
+        form.setError("districts", {
+          message: "Vui lòng chọn ít nhất một quận",
+        });
+      }
+      return; // Prevent API call
+    }
+    // Chỉ gọi API khi đang ở Step 4
+    if (step !== totalSteps) {
+      console.log("Form submitted prematurely at step", step);
+      return; // Ngăn gọi API nếu không ở Step 4
+    }
+
     setIsSubmitting(true);
     setApiError(null);
     console.log("rentalPeriod:", data.rentalPeriod);
     console.log("minRentalPeriod:", data.minRentalPeriod);
     try {
+      let brandId = data.brandId;
+      if (data.createBrandPayload && brandId <= 0) {
+        try {
+          const brandResponse = await clientService.createBrand(
+            data.createBrandPayload
+          );
+          console.log("Brand creation response:", brandResponse);
+
+          if (brandResponse && brandResponse.data && brandResponse.data.id) {
+            brandId = brandResponse.data.id;
+          } else {
+            throw new Error("Failed to create brand");
+          }
+        } catch (error) {
+          console.error("Error creating brand:", error);
+          throw new Error(
+            "Failed to create brand: " + (error.message || "Unknown error")
+          );
+        }
+      }
+
       if (data.propertyType === "rental" && !data.rentalPeriod) {
         throw new Error("Vui lòng nhập thời hạn cho thuê");
       }
+
       const standardizePeriod = (period) => {
         if (!period || typeof period !== "string" || period.trim() === "") {
           return "";
         }
 
-        // Chuẩn hóa giá trị
         const normalizedValue = removeVietnameseDiacritics(
           period.toLowerCase().trim()
         );
         console.log("Normalized value in standardizePeriod:", normalizedValue);
 
-        // Tách các phần của chuỗi thành mảng các token
         const tokens = normalizedValue.split(/\s+/);
 
         let years = 0;
         let months = 0;
 
-        // Duyệt qua mảng tokens để tìm các cặp số và đơn vị
         for (let i = 0; i < tokens.length - 1; i++) {
-          // Nếu token hiện tại là số và token tiếp theo là đơn vị
           if (
             /^\d+$/.test(tokens[i]) &&
             (tokens[i + 1] === "nam" || tokens[i + 1] === "thang")
@@ -448,17 +526,15 @@ const SurveyRequestsForm: React.FC = () => {
               months += value;
             }
 
-            i++; // Bỏ qua token đơn vị vì đã xử lý
+            i++;
           }
         }
 
-        // Chuẩn hóa tháng thành năm nếu cần
         if (months >= 12) {
           years += Math.floor(months / 12);
           months = months % 12;
         }
 
-        // Tạo chuỗi đầu ra theo định dạng "năm trước tháng sau"
         let standardizedValue = "";
         if (years > 0 && months > 0) {
           standardizedValue = `${years} năm ${months} tháng`;
@@ -471,7 +547,6 @@ const SurveyRequestsForm: React.FC = () => {
         return standardizedValue;
       };
 
-      // Chuẩn hóa rentalPeriod và minRentalPeriod chỉ khi propertyType là "rental"
       const standardizedRentalPeriod =
         data.propertyType === "rental"
           ? standardizePeriod(data.rentalPeriod)
@@ -480,9 +555,8 @@ const SurveyRequestsForm: React.FC = () => {
         data.propertyType === "rental"
           ? standardizePeriod(data.minRentalPeriod)
           : "";
-      // Tạo storeProfileCriteria từ dữ liệu form
+
       const storeProfileCriteria = [
-        // Tiêu chí diện tích
         {
           storeProfileId: 0,
           attributeId: data.areaCriteria.attributeId,
@@ -491,7 +565,6 @@ const SurveyRequestsForm: React.FC = () => {
           defaultValue: data.defaultArea || "",
           createdAt: new Date().toISOString(),
         },
-        // Tiêu chí ngân sách thuê
         {
           storeProfileId: 0,
           attributeId: data.budgetCriteria.attributeId,
@@ -500,7 +573,6 @@ const SurveyRequestsForm: React.FC = () => {
           defaultValue: data.defaultBudget || "",
           createdAt: new Date().toISOString(),
         },
-        // Tiêu chí thời hạn cho thuê
         {
           storeProfileId: 0,
           attributeId: 37,
@@ -518,7 +590,6 @@ const SurveyRequestsForm: React.FC = () => {
               : "Mặt bằng chuyển nhượng",
           createdAt: new Date().toISOString(),
         },
-        // Tiêu chí tiền đặt cọc
         {
           storeProfileId: 0,
           attributeId: 38,
@@ -527,16 +598,14 @@ const SurveyRequestsForm: React.FC = () => {
           defaultValue: data.depositDefault || "",
           createdAt: new Date().toISOString(),
         },
-        // Tiêu chí số tháng đặt cọc
         {
           storeProfileId: 0,
           attributeId: 39,
           maxValue: `${data.depositMonths} tháng`,
-          minValue: "1 tháng", // Mặc định luôn là 1 tháng
+          minValue: "1 tháng",
           defaultValue: `${data.depositMonths} tháng`,
           createdAt: new Date().toISOString(),
         },
-        // Tiêu chí khu vực lân cận và đặc thù
         {
           storeProfileId: 0,
           attributeId: data.nearbyAreaCriteria.attributeId,
@@ -555,10 +624,9 @@ const SurveyRequestsForm: React.FC = () => {
         },
       ];
 
-      // Fix 3: Ensure all required properties are non-optional
       const brandRequest = {
         id: data.brandRequestEntity?.id || 0,
-        brandId: data.brandRequestEntity?.brandId || 0,
+        brandId: brandId,
         description: data.brandRequestEntity?.description || "",
         nameCustomer: data.representativeName || "",
         emailCustomer: data.representativeEmail || "",
@@ -569,19 +637,8 @@ const SurveyRequestsForm: React.FC = () => {
           data.brandRequestEntity?.createdAt || new Date().toISOString(),
       };
 
-      // Ensure all required properties for other entities
       const brandRequestStoreProfile = {
         storeProfileId: null,
-      };
-
-      // Convert customerSegment entities to required format
-      const brandRequestCustomerSegment = data.targetCustomers.map((id) => ({
-        customerSegmentId: parseInt(id),
-      }));
-
-      // Convert industryCategory entities to required format
-      const brandRequestIndustryCategory = {
-        industryCategoryId: parseInt(data.targetIndustryCategory || "0"),
       };
 
       const storeProfile = {
@@ -591,23 +648,17 @@ const SurveyRequestsForm: React.FC = () => {
           data.storeProfileEntity?.createdAt || new Date().toISOString(),
       };
 
-      // Chuẩn bị payload cho API theo định dạng yêu cầu
       const payload: BrandRequestPayload = {
         brandRequest,
         brandRequestStoreProfile,
-        brandRequestCustomerSegment,
-        brandRequestIndustryCategory,
         storeProfile,
         storeProfileCriteria,
       };
 
       console.log("API Payload:", payload);
 
-      // Fix 2: Use the imported service directly
       const response = await clientService.createBrandRequest(payload);
       console.log("API Response:", response);
-
-      // Hiển thị thông báo thành công
 
       enqueueSnackbar(
         "Đã gửi yêu cầu thành công! Yêu cầu của bạn đã được hệ thống ghi nhận",
@@ -639,7 +690,6 @@ const SurveyRequestsForm: React.FC = () => {
     }
   };
 
-  // Danh sách khu vực
   const areaTypes = [
     { id: "mall", label: "Trung tâm thương mại" },
     { id: "residential", label: "Khu dân cư" },
@@ -647,7 +697,6 @@ const SurveyRequestsForm: React.FC = () => {
     { id: "busStation", label: "Bến xe buýt" },
   ];
 
-  // Render form dựa trên step hiện tại
   const renderStepContent = () => {
     switch (step) {
       case 1:
@@ -674,16 +723,19 @@ const SurveyRequestsForm: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           {renderStepContent()}
 
           <FormStepButtons
             currentStep={step}
             totalSteps={totalSteps}
             onPrevious={handlePrevious}
-            onNext={() => {
-              console.log("Next button clicked");
-              handleNext();
+            onNext={handleNext}
+            onSubmit={() => {
+              // Only submit if we're on the last step
+              if (step === totalSteps) {
+                form.handleSubmit(onSubmit)();
+              }
             }}
             isSubmitting={isSubmitting}
           />

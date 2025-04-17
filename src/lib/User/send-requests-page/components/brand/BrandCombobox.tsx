@@ -1,4 +1,3 @@
-// BrandCombobox.jsx
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -17,8 +16,20 @@ import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
 
-const BrandCombobox = ({ brands, selectedBrand, onSelect }) => {
+const BrandCombobox = ({ brands, selectedBrand, onSelect, newlyCreatedBrand = null }) => {
   const [open, setOpen] = React.useState(false);
+  
+  // Filter brands to only show status=1 plus the newly created brand if it exists
+  const filteredBrands = React.useMemo(() => {
+    const statusOneBrands = brands.filter(brand => brand.status === 1);
+    
+    // Include newly created brand if it exists
+    if (newlyCreatedBrand) {
+      return [...statusOneBrands, newlyCreatedBrand];
+    }
+    
+    return statusOneBrands;
+  }, [brands, newlyCreatedBrand]);
 
   return (
     <div className="w-full">
@@ -34,7 +45,7 @@ const BrandCombobox = ({ brands, selectedBrand, onSelect }) => {
             )}
           >
             {selectedBrand
-              ? brands.find((brand) => brand.name === selectedBrand)?.name ||
+              ? filteredBrands.find((brand) => brand.name === selectedBrand)?.name ||
                 selectedBrand
               : "Chọn thương hiệu..."}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -49,7 +60,7 @@ const BrandCombobox = ({ brands, selectedBrand, onSelect }) => {
             <CommandList>
               <CommandEmpty>Không tìm thấy thương hiệu.</CommandEmpty>
               <CommandGroup>
-                {brands.map((brand) => (
+                {filteredBrands.map((brand) => (
                   <CommandItem
                     key={brand.id}
                     value={brand.name}

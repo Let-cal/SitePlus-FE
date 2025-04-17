@@ -56,7 +56,6 @@ const Step3Form = ({ form }) => {
 
     const normalizedValue = removeVietnameseDiacritics(value.toLowerCase());
 
-    // Kiểm tra định dạng cơ bản: Các cặp số và đơn vị (thang/nam)
     const regex = /^\d+\s*(thang|nam)(\s+\d+\s*(thang|nam))?$/i;
     if (!regex.test(normalizedValue)) {
       setError(fieldName, {
@@ -67,15 +66,12 @@ const Step3Form = ({ form }) => {
       return;
     }
 
-    // Tách các phần của chuỗi thành mảng các token
     const tokens = normalizedValue.split(/\s+/);
 
     let years = 0;
     let months = 0;
 
-    // Duyệt qua mảng tokens để tìm các cặp số và đơn vị
     for (let i = 0; i < tokens.length - 1; i++) {
-      // Nếu token hiện tại là số và token tiếp theo là đơn vị
       if (
         /^\d+$/.test(tokens[i]) &&
         (tokens[i + 1] === "nam" || tokens[i + 1] === "thang")
@@ -89,17 +85,15 @@ const Step3Form = ({ form }) => {
           months += value;
         }
 
-        i++; // Bỏ qua token đơn vị vì đã xử lý
+        i++;
       }
     }
 
-    // Chuẩn hóa tháng thành năm nếu cần
     if (months >= 12) {
       years += Math.floor(months / 12);
       months = months % 12;
     }
 
-    // Tạo chuỗi đầu ra theo định dạng "năm trước tháng sau"
     let standardizedValue = "";
     if (years > 0 && months > 0) {
       standardizedValue = `${years} năm ${months} tháng`;
@@ -111,8 +105,9 @@ const Step3Form = ({ form }) => {
 
     setValue(fieldName, standardizedValue, { shouldValidate: true });
     clearErrors(fieldName);
-    e.target.value = standardizedValue; // Cập nhật giao diện người dùng
+    e.target.value = standardizedValue;
   };
+
   const removeVietnameseDiacritics = (str) => {
     return str
       .normalize("NFD")
@@ -120,8 +115,16 @@ const Step3Form = ({ form }) => {
       .replace(/đ/g, "d")
       .replace(/Đ/g, "D");
   };
+
   const budgetSubtitle =
     watch("propertyType") === "rental" ? "(VNĐ/tháng)" : "(VNĐ)";
+
+  // Hàm ngăn chặn sự kiện Enter gây submit form
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // Ngăn hành vi mặc định của Enter (submit form)
+    }
+  };
 
   return (
     <>
@@ -140,6 +143,7 @@ const Step3Form = ({ form }) => {
                 min="0"
                 className="focus:border-orange-400"
                 onChange={(e) => handleNumberChange("defaultArea", e)}
+                onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
               />
             </FormField>
             <div className="relative py-2">
@@ -165,6 +169,7 @@ const Step3Form = ({ form }) => {
                   min="0"
                   className="focus:border-orange-400"
                   onChange={(e) => handleNumberChange("minArea", e)}
+                  onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
                 />
               </FormField>
               <FormField
@@ -179,6 +184,7 @@ const Step3Form = ({ form }) => {
                   min="0"
                   className="focus:border-orange-400"
                   onChange={(e) => handleNumberChange("maxArea", e)}
+                  onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
                 />
               </FormField>
             </FormFieldGroup>
@@ -226,7 +232,8 @@ const Step3Form = ({ form }) => {
                       className="focus:border-orange-400"
                       onBlur={(e) =>
                         handleRentalPeriodChange("rentalPeriod", e)
-                      } // Sử dụng onBlur để chuẩn hóa sau khi nhập xong
+                      }
+                      onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
                     />
                   </FormField>
                   <FormField
@@ -241,6 +248,7 @@ const Step3Form = ({ form }) => {
                       onBlur={(e) =>
                         handleRentalPeriodChange("minRentalPeriod", e)
                       }
+                      onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
                     />
                   </FormField>
                 </FormFieldGroup>
@@ -266,6 +274,7 @@ const Step3Form = ({ form }) => {
                       : ""
                   }
                   onChange={(e) => handleBudgetChange("defaultBudget", e)}
+                  onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
                 />
               </FormField>
               <div className="relative py-2">
@@ -294,6 +303,7 @@ const Step3Form = ({ form }) => {
                         : ""
                     }
                     onChange={(e) => handleBudgetChange("minBudget", e)}
+                    onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
                   />
                 </FormField>
                 <FormField
@@ -311,6 +321,7 @@ const Step3Form = ({ form }) => {
                         : ""
                     }
                     onChange={(e) => handleBudgetChange("maxBudget", e)}
+                    onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
                   />
                 </FormField>
               </FormFieldGroup>
@@ -335,6 +346,7 @@ const Step3Form = ({ form }) => {
                         : ""
                     }
                     onChange={(e) => handleDepositChange("depositDefault", e)}
+                    onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
                   />
                 </FormField>
                 <FormField label="Tối đa" error={errors.depositMax?.message}>
@@ -348,6 +360,7 @@ const Step3Form = ({ form }) => {
                         : ""
                     }
                     onChange={(e) => handleDepositChange("depositMax", e)}
+                    onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
                   />
                 </FormField>
               </FormFieldGroup>
@@ -365,6 +378,7 @@ const Step3Form = ({ form }) => {
                 min="0"
                 className="focus:border-orange-400"
                 onChange={(e) => handleNumberChange("depositMonths", e)}
+                onKeyDown={handleKeyDown} // Thêm sự kiện onKeyDown
               />
             </FormField>
           </div>

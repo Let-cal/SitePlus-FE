@@ -10,6 +10,7 @@ interface FormStepButtonsProps {
   totalSteps: number;
   onPrevious: () => void;
   onNext: () => void;
+  onSubmit?: (e?: React.FormEvent) => void;
   isSubmitting: boolean;
 }
 
@@ -18,8 +19,17 @@ const FormStepButtons: React.FC<FormStepButtonsProps> = ({
   totalSteps,
   onPrevious,
   onNext,
+  onSubmit,
   isSubmitting,
 }) => {
+  // Handle submit button click separately to prevent accidental form submission
+  const handleSubmitClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default button behavior
+    if (onSubmit) {
+      onSubmit(); // Call the provided onSubmit function
+    }
+  };
+
   return (
     <div className="flex justify-between mt-8 pt-4 border-t border-gray-200">
       <Button
@@ -35,10 +45,7 @@ const FormStepButtons: React.FC<FormStepButtonsProps> = ({
       {currentStep < totalSteps ? (
         <Button
           type="button"
-          onClick={() => {
-            console.log("Next button clicked");
-            onNext();
-          }}
+          onClick={onNext}
           disabled={isSubmitting}
           className="bg-orange-500 hover:bg-orange-600 focus-visible:ring-orange-400 focus-visible:ring-offset-0"
         >
@@ -46,7 +53,8 @@ const FormStepButtons: React.FC<FormStepButtonsProps> = ({
         </Button>
       ) : (
         <Button
-          type="submit"
+          type="button" // Changed from "submit" to "button" to have more control
+          onClick={handleSubmitClick}
           disabled={isSubmitting}
           className="bg-orange-500 hover:bg-orange-600 focus-visible:ring-orange-400 focus-visible:ring-offset-0"
         >
