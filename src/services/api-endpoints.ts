@@ -75,12 +75,15 @@ export const API_ENDPOINTS = {
     PUT: {
       UPDATE_BRAND_REQUEST_STATUS: "/api/BrandRequest/Status/:id",
       UPDATE_MATCHED_SITE: "/api/Qdrant/update-matched-site",
+      UPDATE_BRAND_STATUS: "/api/Brand/StatusBrand:id",
     },
     PATCH: {
       UPDATE_SITE_STATUS: "/api/site/status",
     },
-    POST: { // Thêm POST nếu chưa có
-      SEARCH_BY_AI: "/api/Qdrant/compare", // Thêm endpoint mới
+    POST: { 
+      SEARCH_BY_AI: "/api/Qdrant/compare", 
+      SEND_ACCEPT_EMAIL: "/api/BrandRequest/emails",
+      SEND_REJECT_EMAIL: "/api/BrandRequest/email",
     },
   },
 };
