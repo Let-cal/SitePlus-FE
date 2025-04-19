@@ -22,11 +22,11 @@ export default function ManagerPage() {
       label: "YÊU CẦU",
       href: "/manager-request",
     },
-    {
-      icon: <Briefcase size={20} />,
-      label: "CẦN KHẢO SÁT",
-      href: "/manager-task",
-    },
+    // {
+    //   icon: <Briefcase size={20} />,
+    //   label: "CẦN KHẢO SÁT",
+    //   href: "/manager-task",
+    // },
     {
       icon: <FileText size={20} />,
       label: "KHO MẶT BẰNG",

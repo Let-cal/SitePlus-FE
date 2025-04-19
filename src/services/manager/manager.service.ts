@@ -58,6 +58,10 @@ interface BrandRequest {
   description: string;
   createdAt: string;
   updatedAt: string;
+  brandStatus: number;
+  brandStatusName: string;
+  customerSegments: string[];
+  industryCategories: string[];
 }
 
 interface BrandRequestResponse {
@@ -93,7 +97,7 @@ interface SearchAIResponse {
 interface UpdateStatusResponse {
   success: boolean;
   message: string;
-  messageQdrant: string;
+  messageQdrant?: string;
   totalCount: number;
 }
 
@@ -101,6 +105,14 @@ interface UpdateStatusResponse {
 interface UpdateMatchedSiteResponse {
   success: boolean;
   message: string;
+}
+
+// Interface cho response của API send email
+interface SendEmailResponse {
+  data: string;
+  success: boolean;
+  message: string;
+  totalCount: number;
 }
 
 // Interface cho response của API fetchFavorites (danh sách quan tâm)
@@ -432,10 +444,15 @@ class ManagerService {
     }
   }
 
-  async updateBrandRequestStatus(requestId: number, status: number): Promise<boolean> {
+  async updateBrandRequestStatus(requestId: number, status: number): Promise<UpdateStatusResponse> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
-      return false;
+      return {
+        success: false,
+        message: "Không có quyền truy cập",
+        messageQdrant: "",
+        totalCount: 0,
+      };
     }
 
     try {
@@ -449,13 +466,7 @@ class ManagerService {
 
       console.log("API Response for Update Status:", response.data);
       const data: UpdateStatusResponse = response.data;
-      if (data.success) {
-        return true;
-      } else {
-        console.log("API Error: Success is false", data.message);
-        toast.error(data.message || "Lỗi khi cập nhật status", { position: "top-left", duration: 3000 });
-        return false;
-      }
+      return data;
     } catch (error) {
       console.error("API Error for Update Status:", error.response ? error.response.data : error.message);
       if (axios.isAxiosError(error) && error.response?.status === 401) {
@@ -467,7 +478,12 @@ class ManagerService {
           { position: "top-left", duration: 3000 }
         );
       }
-      return false;
+      return {
+        success: false,
+        message: axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Lỗi không xác định",
+        messageQdrant: "",
+        totalCount: 0,
+      };
     }
   }
 
@@ -711,6 +727,160 @@ class ManagerService {
         },
         success: false,
         message: "Lỗi khi tải danh sách site",
+        totalCount: 0,
+      };
+    }
+  }
+
+  async updateBrandStatus(brandId: number, status: number): Promise<UpdateStatusResponse> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return {
+        success: false,
+        message: "Không có quyền truy cập",
+        messageQdrant: "",
+        totalCount: 0,
+      };
+    }
+
+    try {
+      // Sửa cách tạo URL: Bỏ "/" trong phần thay thế
+      const baseEndpoint = API_ENDPOINTS.MANAGER.PUT.UPDATE_BRAND_STATUS; // "/api/Brand/StatusBrand/:id"
+      const endpoint = `${API_BASE_URL}${baseEndpoint.replace(":id", brandId.toString())}`;
+      console.log("Generated endpoint:", endpoint); // Log để kiểm tra URL
+
+      // Chỉ gửi status trong body
+      const body = {
+        status: status,
+      };
+
+      const response = await axios.put(endpoint, body, authHeader);
+
+      console.log("API Response for Update Brand Status:", response.data);
+      const data: UpdateStatusResponse = response.data;
+      if (data.success) {
+        // toast.success(data.message || "Cập nhật trạng thái brand thành công!", { position: "top-left", duration: 3000 });
+      } else {
+        toast.error(data.message || "Lỗi khi cập nhật trạng thái brand", { position: "top-left", duration: 3000 });
+      }
+      return data;
+    } catch (error) {
+      console.error("API Error for Update Brand Status:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-left", duration: 3000 });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-left", duration: 3000 }
+        );
+      }
+      return {
+        success: false,
+        message: axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Lỗi không xác định",
+        messageQdrant: "",
+        totalCount: 0,
+      };
+    }
+  }
+
+  async sendAcceptEmail(requestId: number, note: string): Promise<SendEmailResponse> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return {
+        data: "",
+        success: false,
+        message: "Không có quyền truy cập",
+        totalCount: 0,
+      };
+    }
+
+    try {
+      const body = {
+        id: requestId,
+        note: note,
+      };
+
+      const response = await axios.post(
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.POST.SEND_ACCEPT_EMAIL}`,
+        body,
+        authHeader
+      );
+
+      console.log("API Response for Send Accept Email:", response.data);
+      const data: SendEmailResponse = response.data;
+      if (data.success) {
+        // toast.success(data.message || "Gửi email chấp nhận thành công!", { position: "top-left", duration: 3000 });
+      } else {
+        toast.error(data.message || "Lỗi khi gửi email chấp nhận", { position: "top-left", duration: 3000 });
+      }
+      return data;
+    } catch (error) {
+      console.error("API Error for Send Accept Email:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-left", duration: 3000 });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-left", duration: 3000 }
+        );
+      }
+      return {
+        data: "",
+        success: false,
+        message: axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Lỗi không xác định",
+        totalCount: 0,
+      };
+    }
+  }
+
+  async sendRejectEmail(requestId: number, note: string): Promise<SendEmailResponse> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return {
+        data: "",
+        success: false,
+        message: "Không có quyền truy cập",
+        totalCount: 0,
+      };
+    }
+
+    try {
+      const body = {
+        id: requestId,
+        note: note,
+      };
+
+      const response = await axios.post(
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.POST.SEND_REJECT_EMAIL}`,
+        body,
+        authHeader
+      );
+
+      console.log("API Response for Send Reject Email:", response.data);
+      const data: SendEmailResponse = response.data;
+      if (data.success) {
+        // toast.success(data.message || "Gửi email từ chối thành công!", { position: "top-left", duration: 3000 });
+      } else {
+        toast.error(data.message || "Lỗi khi gửi email từ chối", { position: "top-left", duration: 3000 });
+      }
+      return data;
+    } catch (error) {
+      console.error("API Error for Send Reject Email:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-left", duration: 3000 });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-left", duration: 3000 }
+        );
+      }
+      return {
+        data: "",
+        success: false,
+        message: axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Lỗi không xác định",
         totalCount: 0,
       };
     }
