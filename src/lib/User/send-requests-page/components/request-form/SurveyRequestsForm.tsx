@@ -536,7 +536,7 @@ const SurveyRequestsForm: React.FC = () => {
     }
 
     const brandStatus = data.brandStatus;
-    let changesDescription = "";
+    let changesDescription = ""; // Khai báo ban đầu là chuỗi rỗng
     if (brandStatus === 1) {
       const originalIndustry = data.originalIndustry || "";
       const originalTargetIndustryCategory =
@@ -547,31 +547,49 @@ const SurveyRequestsForm: React.FC = () => {
       const currentTargetIndustryCategory = data.targetIndustryCategory || "";
       const currentTargetCustomers = data.targetCustomers || [];
 
+      const changesParts: string[] = [];
+
+      // Compare industry (only add if changed)
       if (currentIndustry !== originalIndustry) {
-        changesDescription += `Ngành nghề muốn thay đổi: ${currentIndustry} - `;
+        changesParts.push(`Ngành nghề muốn thay đổi: ${currentIndustry}`);
       }
+
+      // Compare industry category (only add if changed)
       if (currentTargetIndustryCategory !== originalTargetIndustryCategory) {
         const categoryName =
           allIndustryCategories.find(
             (cat) => cat.id === Number(currentTargetIndustryCategory)
           )?.name || "";
-        changesDescription += `Loại ngành nghề đang muốn hướng tới: ${categoryName} - `;
+
+        changesParts.push(
+          `Loại ngành nghề đang muốn hướng tới: ${categoryName}`
+        );
       }
-      if (
-        JSON.stringify(currentTargetCustomers.sort()) !==
-        JSON.stringify(originalTargetCustomers.sort())
-      ) {
+
+      // Compare customer segments (only add if changed)
+      // Sort arrays before comparison to handle order differences
+      const originalSorted = [...originalTargetCustomers].sort();
+      const currentSorted = [...currentTargetCustomers].sort();
+
+      if (JSON.stringify(currentSorted) !== JSON.stringify(originalSorted)) {
         const segmentNames = currentTargetCustomers
           .map(
             (id) =>
               allCustomerSegments.find((s) => s.id === Number(id))?.name || ""
           )
           .filter(Boolean);
-        changesDescription += `Nhu cầu khách hàng mong muốn: ${segmentNames.join(
-          ", "
-        )} - `;
+
+        changesParts.push(
+          `Nhu cầu khách hàng mong muốn: ${segmentNames.join(", ")}`
+        );
+      }
+
+      // Only create a description if there are actually changes
+      if (changesParts.length > 0) {
+        changesDescription = changesParts.join(" - ");
       }
     }
+
     const descriptionParts = [];
     if (changesDescription) {
       descriptionParts.push(changesDescription); // Thay đổi từ Step 1

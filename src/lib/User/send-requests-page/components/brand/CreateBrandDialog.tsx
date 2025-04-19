@@ -159,7 +159,7 @@ const CreateBrandDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="ml-2 text-sm bg-theme-orange-500 hover:bg-theme-orange-600">
-          Tạo thông tin cho mặt bằng của bạn
+          Tạo thông tin cho thương hiệu của bạn
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">

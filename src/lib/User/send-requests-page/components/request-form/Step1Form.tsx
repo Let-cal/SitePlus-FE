@@ -253,9 +253,16 @@ const Step1Form = ({ form, onDataFetched }: Step1FormProps) => {
 
     // Xử lý theo brandStatus
     if (brand.status === 1) {
+      // Store original values for later comparison
+      setValue("originalIndustry", industry);
+      setValue("originalTargetIndustryCategory", String(industryCategoryId));
+      setValue("originalTargetCustomers", customerSegmentIds.map(String));
+
+      // Update local state variables to keep track of originals
       setOriginalIndustry(industry);
       setOriginalIndustryCategory(String(industryCategoryId));
       setOriginalCustomerSegments(customerSegmentIds.map(String));
+
       setIsBrandFieldsEditable(false);
     } else {
       setIsBrandFieldsEditable(true);
