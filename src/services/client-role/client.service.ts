@@ -155,11 +155,33 @@ class ClientService {
         name: brandData.name,
         status: 0,
         createdAt: new Date().toISOString(),
-        brandRequestCustomerSegment:
-          brandData.brandRequestCustomerSegment || [],
-        brandRequestIndustryCategory:
-          brandData.brandRequestIndustryCategory || null,
+        brandCustomerSegment: brandData.brandCustomerSegment || [],
+        brandIndustryCategory: brandData.brandIndustryCategory || {
+          industryCategoryId: 0,
+        },
       };
+
+      console.log(
+        "Payload gửi tới API createBrand:",
+        JSON.stringify(payload, null, 2)
+      );
+
+      if (!brandData.name || typeof brandData.name !== "string") {
+        throw new Error("Brand name is required and must be a string");
+      }
+
+      if (!Array.isArray(brandData.brandCustomerSegment)) {
+        throw new Error("brandCustomerSegment must be an array");
+      }
+
+      if (
+        !brandData.brandIndustryCategory ||
+        typeof brandData.brandIndustryCategory !== "object" ||
+        !brandData.brandIndustryCategory.industryCategoryId
+      ) {
+        throw new Error("brandIndustryCategory.industryCategoryId is required");
+      }
+
       const response = await axios.post(
         `${API_BASE_URL}${API_ENDPOINTS.CLIENT.PUSH.CREATE_BRAND}`,
         payload,
@@ -175,9 +197,15 @@ class ClientService {
       return response.data;
     } catch (error) {
       console.error("Error creating brand:", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        console.error("Response headers:", error.response.headers);
+      }
       throw error;
     }
   }
+
   // ... các method khác
 }
 

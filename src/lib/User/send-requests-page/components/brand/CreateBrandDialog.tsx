@@ -51,26 +51,6 @@ const CreateBrandDialog = ({
     formState: { errors },
   } = useForm();
 
-  // Log dữ liệu khi mở dialog
-  useEffect(() => {
-    if (open) {
-      console.log("CreateBrandDialog opened with data:", {
-        industries,
-        allCustomerSegments,
-        allIndustryCategories,
-        suggestedSegments: localSuggestedSegments,
-        suggestedIndustryCategories: localSuggestedIndustryCategories,
-      });
-    }
-  }, [
-    open,
-    industries,
-    allCustomerSegments,
-    allIndustryCategories,
-    localSuggestedSegments,
-    localSuggestedIndustryCategories,
-  ]);
-
   // Reset selections khi đóng dialog
   useEffect(() => {
     if (!open) {
@@ -92,9 +72,17 @@ const CreateBrandDialog = ({
         );
         if (industry) {
           try {
-            const segments = await ClientService.getCustomerSegmentsByIndustry(
-              industry.id
-            );
+            let segments = [];
+
+            if (industry.id === 7) {
+              segments = allCustomerSegments.filter((segment) =>
+                [1, 2, 4].includes(segment.id)
+              );
+            } else {
+              segments = await ClientService.getCustomerSegmentsByIndustry(
+                industry.id
+              );
+            }
             setLocalSuggestedSegments(segments);
             const categories =
               await ClientService.getIndustryCategoriesByIndustry(industry.id);
@@ -119,15 +107,22 @@ const CreateBrandDialog = ({
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      if (!selectedCustomerSegments.length) {
+        throw new Error("Vui lòng chọn ít nhất một customer segment");
+      }
+      if (!selectedIndustryCategory || Number(selectedIndustryCategory) <= 0) {
+        throw new Error("Vui lòng chọn một industry category hợp lệ");
+      }
+
       const brandData = {
         id: 0,
         name: data.name,
         status: 0,
         createdAt: new Date().toISOString(),
-        brandRequestCustomerSegment: selectedCustomerSegments.map((id) => ({
+        brandCustomerSegment: selectedCustomerSegments.map((id) => ({
           customerSegmentId: Number(id),
         })),
-        brandRequestIndustryCategory: {
+        brandIndustryCategory: {
           industryCategoryId: Number(selectedIndustryCategory),
         },
       };
@@ -141,7 +136,8 @@ const CreateBrandDialog = ({
         industryCategory: selectedIndustryCategory,
         brandData: brandData,
       });
-
+      console.log("Selected Customer Segments:", selectedCustomerSegments);
+      console.log("Selected Industry Category:", selectedIndustryCategory);
       setOpen(false);
       reset();
     } catch (error) {

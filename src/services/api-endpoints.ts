@@ -17,6 +17,7 @@ export const API_ENDPOINTS = {
       GET_BRAND: "/api/Brand",
     },
     PUSH: {
+      UPDATE_BRAND: "/api/Brand",
       CREATE_BRAND: "/api/Brand",
       CREATE_BRAND_REQUEST: "/api/BrandRequest",
     },

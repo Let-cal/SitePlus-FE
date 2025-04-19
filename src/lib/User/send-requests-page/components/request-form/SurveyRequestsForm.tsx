@@ -1,4 +1,5 @@
 import clientService from "@/services/client-role/client.service";
+import { CustomerSegment, IndustryCategory } from "@/services/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSnackbar } from "notistack";
 import * as React from "react";
@@ -12,9 +13,11 @@ import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form";
 import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
+import SuccessDialog from "./SuccessDialog";
 
 // Định nghĩa schema validation cho form
 const formSchema = z
+  // step 1
   .object({
     createBrandPayload: z
       .object({
@@ -22,18 +25,19 @@ const formSchema = z
         name: z.string(),
         status: z.number(),
         createdAt: z.string(),
-        brandRequestCustomerSegment: z.array(
+        brandCustomerSegment: z.array(
           z.object({
             customerSegmentId: z.number(),
           })
         ),
-        brandRequestIndustryCategory: z.object({
+        brandIndustryCategory: z.object({
           industryCategoryId: z.number(),
         }),
       })
       .optional(),
     brand: z.string().optional(),
     brandId: z.number().default(0).optional(),
+    brandStatus: z.number().default(0).optional(),
     representativeName: z.string().optional(),
     representativeEmail: z.string().optional(),
     representativePhone: z.string().optional(),
@@ -41,9 +45,16 @@ const formSchema = z
     industry: z.string().optional(),
     targetCustomers: z.array(z.string()).optional(),
     targetIndustryCategory: z.string().optional(),
+    originalIndustry: z.string().optional(),
+    originalTargetIndustryCategory: z.string().optional(),
+    originalTargetCustomers: z.array(z.string()).optional(),
+    // step 2
     locationType: z.string().optional(),
     storeProfile: z.string().optional(),
     otherStoreProfileInfo: z.string().optional(),
+    storeProfileDescription: z.string().optional(),
+
+    // step 3
     defaultArea: z.string().optional(),
     minArea: z.string().optional(),
     maxArea: z.string().optional(),
@@ -68,6 +79,7 @@ const formSchema = z
       minValue: z.string().optional(),
       maxValue: z.string().optional(),
     }),
+    // step 4
     city: z.string().default("Thành phố Hồ Chí Minh"),
     districts: z.array(z.string()).optional(),
     street: z.string().optional(),
@@ -87,10 +99,10 @@ const formSchema = z
         createdAt: z.string().default(new Date().toISOString()),
       })
       .optional(),
-    brandRequestCustomerSegmentEntities: z
+    brandCustomerSegmentEntities: z
       .array(z.object({ customerSegmentId: z.number() }))
       .optional(),
-    brandRequestIndustryCategoryEntity: z
+    brandIndustryCategoryEntity: z
       .object({ industryCategoryId: z.number().default(0) })
       .optional(),
     brandRequestStoreProfileEntity: z
@@ -126,6 +138,7 @@ const formSchema = z
       minValue: z.string().optional(),
       maxValue: z.string().optional(),
     }),
+    locationDescription: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -140,7 +153,7 @@ const formSchema = z
     }
   );
 
-type FormValues = z.infer<typeof formSchema>;
+export type FormValues = z.infer<typeof formSchema>;
 
 const removeVietnameseDiacritics = (str) => {
   return str
@@ -151,19 +164,6 @@ const removeVietnameseDiacritics = (str) => {
 };
 
 type Step2Fields = "locationType" | "storeProfile" | "otherStoreProfileInfo";
-type Step3Fields =
-  | "defaultArea"
-  | "minArea"
-  | "maxArea"
-  | "defaultBudget"
-  | "minBudget"
-  | "maxBudget"
-  | "propertyType"
-  | "rentalPeriod"
-  | "minRentalPeriod"
-  | "depositDefault"
-  | "depositMax"
-  | "depositMonths";
 
 interface BrandRequestPayload {
   brandRequest: {
@@ -199,6 +199,22 @@ const SurveyRequestsForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const totalSteps = 4;
+  const [allIndustryCategories, setAllIndustryCategories] = useState<
+    IndustryCategory[]
+  >([]);
+  const [allCustomerSegments, setAllCustomerSegments] = useState<
+    CustomerSegment[]
+  >([]);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+
+  const handleDataFetched = (data: {
+    allIndustryCategories: IndustryCategory[];
+    allCustomerSegments: CustomerSegment[];
+  }) => {
+    setAllIndustryCategories(data.allIndustryCategories);
+    setAllCustomerSegments(data.allCustomerSegments);
+  };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -235,8 +251,8 @@ const SurveyRequestsForm: React.FC = () => {
         status: 0,
         createdAt: new Date().toISOString(),
       },
-      brandRequestCustomerSegmentEntities: [],
-      brandRequestIndustryCategoryEntity: {
+      brandCustomerSegmentEntities: [],
+      brandIndustryCategoryEntity: {
         industryCategoryId: 0,
       },
       brandRequestStoreProfileEntity: {
@@ -249,10 +265,6 @@ const SurveyRequestsForm: React.FC = () => {
       storeProfileCriteriaEntities: [],
     },
   });
-
-  const { watch } = form;
-
-  const storeProfile = watch("storeProfile");
 
   const handleNext = async () => {
     let canProceed = true;
@@ -329,7 +341,8 @@ const SurveyRequestsForm: React.FC = () => {
       console.log("Form errors:", form.formState.errors);
     } else if (step === 2) {
       const step2Fields: Step2Fields[] = ["locationType", "storeProfile"];
-      if (storeProfile === "other") {
+      const storeProfile = form.getValues("storeProfile");
+      if (storeProfile === "14" || storeProfile === "15") {
         step2Fields.push("otherStoreProfileInfo");
       }
       canProceed = await form.trigger(step2Fields);
@@ -346,83 +359,137 @@ const SurveyRequestsForm: React.FC = () => {
         });
         canProceed = false;
       }
+      if (storeProfile === "14" || storeProfile === "15") {
+        const otherStoreProfileInfo = form.getValues("otherStoreProfileInfo");
+        if (!otherStoreProfileInfo || otherStoreProfileInfo.trim().length < 1) {
+          form.setError("otherStoreProfileInfo", {
+            message: "Vui lòng nhập thông tin chi tiết loại cửa hàng",
+          });
+          canProceed = false;
+        }
+      }
     } else if (step === 3) {
-      const step3Fields: Step3Fields[] = [
-        "defaultArea",
-        "minArea",
-        "maxArea",
-        "defaultBudget",
-        "minBudget",
-        "maxBudget",
-        "propertyType",
-        "rentalPeriod",
-        "minRentalPeriod",
-        "depositDefault",
-        "depositMax",
-        "depositMonths",
-      ];
-      canProceed = await form.trigger(step3Fields);
+      // Clear previous errors
+      form.clearErrors();
 
-      if (!form.getValues("defaultArea")) {
-        form.setError("defaultArea", {
-          message: "Vui lòng nhập diện tích mặc định",
-        });
-        canProceed = false;
-      }
-      if (!form.getValues("minArea")) {
-        form.setError("minArea", {
-          message: "Vui lòng nhập diện tích tối thiểu",
-        });
-        canProceed = false;
-      }
-      if (!form.getValues("maxArea")) {
-        form.setError("maxArea", { message: "Vui lòng nhập diện tích tối đa" });
-        canProceed = false;
-      }
-      if (!form.getValues("defaultBudget")) {
-        form.setError("defaultBudget", {
-          message: "Vui lòng nhập ngân sách mặc định",
-        });
-        canProceed = false;
-      }
-      if (!form.getValues("minBudget")) {
-        form.setError("minBudget", {
-          message: "Vui lòng nhập ngân sách tối thiểu",
-        });
-        canProceed = false;
-      }
-      if (!form.getValues("maxBudget")) {
-        form.setError("maxBudget", {
-          message: "Vui lòng nhập ngân sách tối đa",
-        });
-        canProceed = false;
-      }
-      if (!form.getValues("propertyType")) {
+      // Validate propertyType
+      const propertyType = form.getValues("propertyType");
+      if (!propertyType) {
         form.setError("propertyType", {
           message: "Vui lòng chọn loại mặt bằng",
         });
         canProceed = false;
       }
-      if (!form.getValues("depositDefault")) {
+
+      // Validate rentalPeriod và minRentalPeriod nếu propertyType là 'rental'
+      if (propertyType === "rental") {
+        const rentalPeriod = form.getValues("rentalPeriod");
+        const minRentalPeriod = form.getValues("minRentalPeriod");
+
+        const isValidRentalFormat = (value) => {
+          if (!value || value.trim() === "") return false;
+          const normalizedValue = removeVietnameseDiacritics(
+            value.toLowerCase().trim()
+          );
+          const regex = /^\d+\s*(thang|nam)(\s+\d+\s*(thang|nam))?$/i;
+          return regex.test(normalizedValue);
+        };
+
+        if (!rentalPeriod || !isValidRentalFormat(rentalPeriod)) {
+          form.setError("rentalPeriod", {
+            message:
+              "Vui lòng nhập đúng định dạng (ví dụ: '6 tháng', '2 năm', '2 năm 3 tháng')",
+          });
+          canProceed = false;
+          console.log("Invalid rental period format");
+        }
+
+        if (!minRentalPeriod || !isValidRentalFormat(minRentalPeriod)) {
+          form.setError("minRentalPeriod", {
+            message:
+              "Vui lòng nhập đúng định dạng (ví dụ: '6 tháng', '2 năm', '2 năm 3 tháng')",
+          });
+          canProceed = false;
+          console.log("Invalid min rental period format");
+        }
+      }
+
+      // Validate các field khác
+      const defaultArea = form.getValues("defaultArea");
+      if (!defaultArea) {
+        form.setError("defaultArea", {
+          message: "Vui lòng nhập diện tích mặc định",
+        });
+        canProceed = false;
+      }
+
+      const minArea = form.getValues("minArea");
+      if (!minArea) {
+        form.setError("minArea", {
+          message: "Vui lòng nhập diện tích tối thiểu",
+        });
+        canProceed = false;
+      }
+
+      const maxArea = form.getValues("maxArea");
+      if (!maxArea) {
+        form.setError("maxArea", { message: "Vui lòng nhập diện tích tối đa" });
+        canProceed = false;
+      }
+
+      // Validate budget fields
+      const defaultBudget = form.getValues("defaultBudget");
+      if (!defaultBudget) {
+        form.setError("defaultBudget", {
+          message: "Vui lòng nhập ngân sách mặc định",
+        });
+        canProceed = false;
+      }
+
+      const minBudget = form.getValues("minBudget");
+      if (!minBudget) {
+        form.setError("minBudget", {
+          message: "Vui lòng nhập ngân sách tối thiểu",
+        });
+        canProceed = false;
+      }
+
+      const maxBudget = form.getValues("maxBudget");
+      if (!maxBudget) {
+        form.setError("maxBudget", {
+          message: "Vui lòng nhập ngân sách tối đa",
+        });
+        canProceed = false;
+      }
+
+      // Validate deposit fields
+      const depositDefault = form.getValues("depositDefault");
+      if (!depositDefault) {
         form.setError("depositDefault", {
           message: "Vui lòng nhập tiền đặt cọc mặc định",
         });
         canProceed = false;
       }
-      if (!form.getValues("depositMax")) {
+
+      const depositMax = form.getValues("depositMax");
+      if (!depositMax) {
         form.setError("depositMax", {
           message: "Vui lòng nhập tiền đặt cọc tối đa",
         });
         canProceed = false;
       }
-      if (!form.getValues("depositMonths")) {
+
+      const depositMonths = form.getValues("depositMonths");
+      if (!depositMonths) {
         form.setError("depositMonths", {
           message: "Vui lòng nhập số tháng đặt cọc",
         });
         canProceed = false;
       }
+
+      console.log("Validation results for step 3:", canProceed);
+      console.log("Form errors:", form.formState.errors);
     } else if (step === 4) {
-      // Validation cho Step 4
       const districts = form.getValues("districts");
       if (!districts || districts.length === 0) {
         form.setError("districts", {
@@ -431,7 +498,7 @@ const SurveyRequestsForm: React.FC = () => {
         canProceed = false;
       }
     }
-
+    console.log("canProceed before step change:", canProceed);
     if (canProceed && step < totalSteps) {
       setStep(step + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -461,20 +528,86 @@ const SurveyRequestsForm: React.FC = () => {
       }
       return; // Prevent API call
     }
+
     // Chỉ gọi API khi đang ở Step 4
     if (step !== totalSteps) {
       console.log("Form submitted prematurely at step", step);
       return; // Ngăn gọi API nếu không ở Step 4
     }
 
+    const brandStatus = data.brandStatus;
+    let changesDescription = "";
+    if (brandStatus === 1) {
+      const originalIndustry = data.originalIndustry || "";
+      const originalTargetIndustryCategory =
+        data.originalTargetIndustryCategory || "";
+      const originalTargetCustomers = data.originalTargetCustomers || [];
+
+      const currentIndustry = data.industry || "";
+      const currentTargetIndustryCategory = data.targetIndustryCategory || "";
+      const currentTargetCustomers = data.targetCustomers || [];
+
+      if (currentIndustry !== originalIndustry) {
+        changesDescription += `Ngành nghề muốn thay đổi: ${currentIndustry} - `;
+      }
+      if (currentTargetIndustryCategory !== originalTargetIndustryCategory) {
+        const categoryName =
+          allIndustryCategories.find(
+            (cat) => cat.id === Number(currentTargetIndustryCategory)
+          )?.name || "";
+        changesDescription += `Loại ngành nghề đang muốn hướng tới: ${categoryName} - `;
+      }
+      if (
+        JSON.stringify(currentTargetCustomers.sort()) !==
+        JSON.stringify(originalTargetCustomers.sort())
+      ) {
+        const segmentNames = currentTargetCustomers
+          .map(
+            (id) =>
+              allCustomerSegments.find((s) => s.id === Number(id))?.name || ""
+          )
+          .filter(Boolean);
+        changesDescription += `Nhu cầu khách hàng mong muốn: ${segmentNames.join(
+          ", "
+        )} - `;
+      }
+    }
+    const descriptionParts = [];
+    if (changesDescription) {
+      descriptionParts.push(changesDescription); // Thay đổi từ Step 1
+    }
+    if (data.storeProfileDescription) {
+      descriptionParts.push(data.storeProfileDescription); // Từ Step 2
+    }
+    if (data.locationDescription) {
+      descriptionParts.push(data.locationDescription); // Từ Step 4
+    }
+
+    const finalDescription = descriptionParts.join(" - ");
+
     setIsSubmitting(true);
     setApiError(null);
+
     console.log("rentalPeriod:", data.rentalPeriod);
     console.log("minRentalPeriod:", data.minRentalPeriod);
+    console.log("Selected Customer Segments:", data.targetCustomers);
+    console.log("Selected Industry Category:", data.targetIndustryCategory);
     try {
       let brandId = data.brandId;
       if (data.createBrandPayload && brandId <= 0) {
         try {
+          data.createBrandPayload.brandCustomerSegment = (
+            data.targetCustomers || []
+          ).map((id) => ({
+            customerSegmentId: Number(id),
+          }));
+          data.createBrandPayload.brandIndustryCategory = {
+            industryCategoryId: Number(data.targetIndustryCategory || 0),
+          };
+          console.log(
+            "Updated createBrandPayload before API call:",
+            data.createBrandPayload
+          );
           const brandResponse = await clientService.createBrand(
             data.createBrandPayload
           );
@@ -627,7 +760,7 @@ const SurveyRequestsForm: React.FC = () => {
       const brandRequest = {
         id: data.brandRequestEntity?.id || 0,
         brandId: brandId,
-        description: data.brandRequestEntity?.description || "",
+        description: finalDescription,
         nameCustomer: data.representativeName || "",
         emailCustomer: data.representativeEmail || "",
         phoneCustomer: data.representativePhone || "",
@@ -660,19 +793,8 @@ const SurveyRequestsForm: React.FC = () => {
       const response = await clientService.createBrandRequest(payload);
       console.log("API Response:", response);
 
-      enqueueSnackbar(
-        "Đã gửi yêu cầu thành công! Yêu cầu của bạn đã được hệ thống ghi nhận",
-        {
-          variant: "success",
-          preventDuplicate: true,
-          anchorOrigin: {
-            horizontal: "left",
-            vertical: "bottom",
-          },
-        }
-      );
-      form.reset();
-      navigate("/home-page");
+      setSubmittedEmail(data.representativeEmail || "");
+      setSuccessDialogOpen(true);
     } catch (error) {
       console.error("Error submitting form:", error);
       const errorMessage = error.message || "Có lỗi xảy ra khi gửi yêu cầu.";
@@ -690,6 +812,12 @@ const SurveyRequestsForm: React.FC = () => {
     }
   };
 
+  const handleCloseSuccessDialog = () => {
+    setSuccessDialogOpen(false);
+    // Sau khi đóng dialog, reset form và chuyển hướng
+    form.reset();
+    navigate("/home-page");
+  };
   const areaTypes = [
     { id: "mall", label: "Trung tâm thương mại" },
     { id: "residential", label: "Khu dân cư" },
@@ -700,7 +828,7 @@ const SurveyRequestsForm: React.FC = () => {
   const renderStepContent = () => {
     switch (step) {
       case 1:
-        return <Step1Form form={form} />;
+        return <Step1Form form={form} onDataFetched={handleDataFetched} />;
       case 2:
         return <Step2Form form={form} />;
       case 3:
@@ -741,6 +869,11 @@ const SurveyRequestsForm: React.FC = () => {
           />
         </form>
       </div>
+      <SuccessDialog
+        open={successDialogOpen}
+        onClose={handleCloseSuccessDialog}
+        email={submittedEmail}
+      />
     </div>
   );
 };
