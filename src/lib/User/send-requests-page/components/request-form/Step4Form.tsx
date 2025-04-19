@@ -54,7 +54,6 @@ const Step4Form = ({ form, areaTypes }) => {
     const fetchAreasForSelectedDistricts = async () => {
       const newAreasByDistrict = { ...areasByDistrict };
 
-      // Only fetch areas for selected districts that don't have data yet
       for (const district of selectedDistricts) {
         const districtId = districts.find((d) => d.name === district)?.id;
 
@@ -95,7 +94,6 @@ const Step4Form = ({ form, areaTypes }) => {
 
   // Update form values when selections change
   useEffect(() => {
-    // Get values from form
     const city = watch("city") || "Thành phố Hồ Chí Minh";
     const selectedDistricts = watch("districts") || [];
     const street = watch("street") || "";
@@ -103,7 +101,6 @@ const Step4Form = ({ form, areaTypes }) => {
     const nearbyAreaIds = watch("nearbyAreas") || [];
     const specialRequirements = watch("specialRequirements") || "";
 
-    // Create list of selected area names
     const allAreas = getAllAreas();
     const specificAreaNames = specificAreaIds
       .map((id) => {
@@ -112,7 +109,6 @@ const Step4Form = ({ form, areaTypes }) => {
       })
       .filter((name) => name !== "");
 
-    // Get names of selected nearby areas
     const nearbyAreaNames = nearbyAreaIds
       .map((id) => {
         const area = areaTypes.find((a) => a.id === id);
@@ -120,7 +116,6 @@ const Step4Form = ({ form, areaTypes }) => {
       })
       .filter((name) => name !== "");
 
-    // Update value for specificAreaCriteria (attributeId: 33)
     if (specificAreaNames.length > 0) {
       setValue(
         "specificAreaCriteria.defaultValue",
@@ -130,14 +125,12 @@ const Step4Form = ({ form, areaTypes }) => {
       setValue("specificAreaCriteria.defaultValue", "");
     }
 
-    // Update value for nearbyAreaCriteria (attributeId: 32)
     if (nearbyAreaNames.length > 0) {
       setValue("nearbyAreaCriteria.defaultValue", nearbyAreaNames.join(", "));
     } else {
       setValue("nearbyAreaCriteria.defaultValue", "");
     }
 
-    // Create description string with components separated by " - "
     let locationDescription = `Tỉnh/Thành phố: ${city}`;
 
     if (selectedDistricts.length > 0) {
@@ -162,7 +155,6 @@ const Step4Form = ({ form, areaTypes }) => {
       locationDescription += ` - Yêu cầu đặc biệt: ${specialRequirements}`;
     }
 
-    // Lưu vào locationDescription thay vì brandRequestEntity.description
     setValue("locationDescription", locationDescription);
   }, [areaTypes, getAllAreas, setValue, watch]);
 
@@ -318,81 +310,85 @@ const Step4Form = ({ form, areaTypes }) => {
                         Khu vực mong muốn
                       </h3>
                     </div>
-
-                    {watch("districts")?.length > 0 ? (
-                      <div className="border border-gray-200 rounded-md p-3 max-h-60 overflow-y-auto bg-white">
-                        {allAreas.length > 0 ? (
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {allAreas.map((area) => (
-                              <motion.div
-                                key={area.id}
-                                className="flex items-center space-x-2 p-2 rounded hover:bg-orange-50 transition-colors"
-                                whileHover={{ scale: 1.02 }}
-                              >
-                                <Checkbox
-                                  id={`specific-area-${area.id}`}
-                                  onCheckedChange={(checked) => {
-                                    const currentSpecificAreas =
-                                      watch("specificAreas") || [];
-                                    if (checked) {
-                                      setValue("specificAreas", [
-                                        ...currentSpecificAreas,
-                                        area.id.toString(),
-                                      ]);
-                                    } else {
-                                      setValue(
-                                        "specificAreas",
-                                        currentSpecificAreas.filter(
-                                          (a) => a !== area.id.toString()
-                                        )
-                                      );
-                                    }
-                                  }}
-                                  checked={(
-                                    watch("specificAreas") || []
-                                  )?.includes(area.id.toString())}
-                                  className="text-orange-500 border-orange-300 focus:ring-orange-500 data-[state=checked]:bg-orange-500"
-                                />
-                                <Label
-                                  htmlFor={`specific-area-${area.id}`}
-                                  className="text-sm cursor-pointer"
+                    <FormField
+                      required
+                      error={errors.specificAreaCriteria?.defaultValue?.message}
+                    >
+                      {watch("districts")?.length > 0 ? (
+                        <div className="border border-gray-200 rounded-md p-3 max-h-60 overflow-y-auto bg-white">
+                          {allAreas.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                              {allAreas.map((area) => (
+                                <motion.div
+                                  key={area.id}
+                                  className="flex items-center space-x-2 p-2 rounded hover:bg-orange-50 transition-colors"
+                                  whileHover={{ scale: 1.02 }}
                                 >
-                                  {area.name}
-                                </Label>
-                              </motion.div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="py-4 text-center text-gray-500">
-                            <AnimatePresence>
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="flex flex-col items-center"
-                              >
-                                <Map className="h-10 w-10 mb-2 text-gray-400" />
-                                {Object.keys(areasByDistrict).length > 0
-                                  ? "Không có khu vực được tìm thấy cho các quận đã chọn"
-                                  : "Đang tải khu vực..."}
-                              </motion.div>
-                            </AnimatePresence>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-6 border border-gray-200 rounded-md bg-gray-50">
-                        <AnimatePresence>
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex flex-col items-center"
-                          >
-                            <MapPin className="h-10 w-10 mb-2 text-gray-400" />
-                            <p>Vui lòng chọn quận trước để xem các khu vực</p>
-                          </motion.div>
-                        </AnimatePresence>
-                      </div>
-                    )}
+                                  <Checkbox
+                                    id={`specific-area-${area.id}`}
+                                    onCheckedChange={(checked) => {
+                                      const currentSpecificAreas =
+                                        watch("specificAreas") || [];
+                                      if (checked) {
+                                        setValue("specificAreas", [
+                                          ...currentSpecificAreas,
+                                          area.id.toString(),
+                                        ]);
+                                      } else {
+                                        setValue(
+                                          "specificAreas",
+                                          currentSpecificAreas.filter(
+                                            (a) => a !== area.id.toString()
+                                          )
+                                        );
+                                      }
+                                    }}
+                                    checked={(
+                                      watch("specificAreas") || []
+                                    )?.includes(area.id.toString())}
+                                    className="text-orange-500 border-orange-300 focus:ring-orange-500 data-[state=checked]:bg-orange-500"
+                                  />
+                                  <Label
+                                    htmlFor={`specific-area-${area.id}`}
+                                    className="text-sm cursor-pointer"
+                                  >
+                                    {area.name}
+                                  </Label>
+                                </motion.div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="py-4 text-center text-gray-500">
+                              <AnimatePresence>
+                                <motion.div
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  className="flex flex-col items-center"
+                                >
+                                  <Map className="h-10 w-10 mb-2 text-gray-400" />
+                                  {Object.keys(areasByDistrict).length > 0
+                                    ? "Không có khu vực được tìm thấy cho các quận đã chọn"
+                                    : "Đang tải khu vực..."}
+                                </motion.div>
+                              </AnimatePresence>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 border border-gray-200 rounded-md bg-gray-50">
+                          <AnimatePresence>
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="flex flex-col items-center"
+                            >
+                              <MapPin className="h-10 w-10 mb-2 text-gray-400" />
+                              <p>Vui lòng chọn quận trước để xem các khu vực</p>
+                            </motion.div>
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </FormField>
                   </div>
 
                   <div className="mb-6">
@@ -400,48 +396,56 @@ const Step4Form = ({ form, areaTypes }) => {
                       <Map className="h-5 w-5 mr-2 text-orange-500" />
                       <h3 className="text-base font-medium">Gần khu vực</h3>
                     </div>
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      transition={{ duration: 0.3, delay: 0.1 }}
-                      className="border border-gray-200 rounded-md p-3 bg-white"
+                    <FormField
+                      required
+                      error={errors.nearbyAreaCriteria?.defaultValue?.message}
                     >
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {areaTypes.map((area) => (
-                          <motion.div
-                            key={area.id}
-                            className="flex items-center space-x-2 p-2 rounded hover:bg-orange-50 transition-colors"
-                            whileHover={{ scale: 1.02 }}
-                          >
-                            <Checkbox
-                              id={`area-${area.id}`}
-                              onCheckedChange={(checked) => {
-                                const currentAreas = watch("nearbyAreas") || [];
-                                if (checked) {
-                                  setValue("nearbyAreas", [
-                                    ...currentAreas,
-                                    area.id,
-                                  ]);
-                                } else {
-                                  setValue(
-                                    "nearbyAreas",
-                                    currentAreas.filter((a) => a !== area.id)
-                                  );
-                                }
-                              }}
-                              checked={watch("nearbyAreas")?.includes(area.id)}
-                              className="text-orange-500 border-orange-300 focus:ring-orange-500 data-[state=checked]:bg-orange-500"
-                            />
-                            <Label
-                              htmlFor={`area-${area.id}`}
-                              className="text-sm cursor-pointer"
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        transition={{ duration: 0.3, delay: 0.1 }}
+                        className="border border-gray-200 rounded-md p-3 bg-white"
+                      >
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {areaTypes.map((area) => (
+                            <motion.div
+                              key={area.id}
+                              className="flex items-center space-x-2 p-2 rounded hover:bg-orange-50 transition-colors"
+                              whileHover={{ scale: 1.02 }}
                             >
-                              {area.label}
-                            </Label>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </motion.div>
+                              <Checkbox
+                                id={`area-${area.id}`}
+                                onCheckedChange={(checked) => {
+                                  const currentAreas =
+                                    watch("nearbyAreas") || [];
+                                  if (checked) {
+                                    setValue("nearbyAreas", [
+                                      ...currentAreas,
+                                      area.id,
+                                    ]);
+                                  } else {
+                                    setValue(
+                                      "nearbyAreas",
+                                      currentAreas.filter((a) => a !== area.id)
+                                    );
+                                  }
+                                }}
+                                checked={watch("nearbyAreas")?.includes(
+                                  area.id
+                                )}
+                                className="text-orange-500 border-orange-300 focus:ring-orange-500 data-[state=checked]:bg-orange-500"
+                              />
+                              <Label
+                                htmlFor={`area-${area.id}`}
+                                className="text-sm cursor-pointer"
+                              >
+                                {area.label}
+                              </Label>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </FormField>
                   </div>
 
                   <motion.div
@@ -492,7 +496,6 @@ const Step4Form = ({ form, areaTypes }) => {
           </CardContent>
         </Card>
 
-        {/* Location summary card */}
         <AnimatePresence>
           {watch("districts")?.length > 0 ||
           watch("specificAreas")?.length > 0 ||
@@ -586,7 +589,6 @@ const Step4Form = ({ form, areaTypes }) => {
           ) : null}
         </AnimatePresence>
 
-        {/* Progression indicator at bottom */}
         <div className="flex justify-center mt-8">
           <div className="flex items-center space-x-2">
             <div

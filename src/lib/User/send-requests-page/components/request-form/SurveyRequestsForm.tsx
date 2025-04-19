@@ -491,9 +491,31 @@ const SurveyRequestsForm: React.FC = () => {
       console.log("Form errors:", form.formState.errors);
     } else if (step === 4) {
       const districts = form.getValues("districts");
+      const nearbyAreaDefaultValue = form.getValues(
+        "nearbyAreaCriteria.defaultValue"
+      );
+      const specificAreaDefaultValue = form.getValues(
+        "specificAreaCriteria.defaultValue"
+      );
+
       if (!districts || districts.length === 0) {
         form.setError("districts", {
           message: "Vui lòng chọn ít nhất một quận",
+        });
+        canProceed = false;
+      }
+      // Kiểm tra nearbyAreaCriteria.defaultValue
+      if (!nearbyAreaDefaultValue || nearbyAreaDefaultValue.trim() === "") {
+        form.setError("nearbyAreaCriteria.defaultValue", {
+          message: "Vui lòng chọn ít nhất một khu vực lân cận",
+        });
+        canProceed = false;
+      }
+
+      // Kiểm tra specificAreaCriteria.defaultValue
+      if (!specificAreaDefaultValue || specificAreaDefaultValue.trim() === "") {
+        form.setError("specificAreaCriteria.defaultValue", {
+          message: "Vui lòng chọn ít nhất một khu vực cụ thể",
         });
         canProceed = false;
       }
@@ -517,18 +539,37 @@ const SurveyRequestsForm: React.FC = () => {
 
   const onSubmit = async (data: FormValues) => {
     const districts = data.districts || [];
-    if (step !== totalSteps || districts.length === 0) {
-      console.log("Form submitted prematurely or missing required Step 4 data");
+    const nearbyAreaDefaultValue = data.nearbyAreaCriteria?.defaultValue || "";
+    const specificAreaDefaultValue =
+      data.specificAreaCriteria?.defaultValue || "";
+    let hasError = false;
 
-      // Show error if missing required data
+    if (step !== totalSteps || districts.length === 0) {
       if (districts.length === 0) {
         form.setError("districts", {
           message: "Vui lòng chọn ít nhất một quận",
         });
+        hasError = true;
       }
-      return; // Prevent API call
     }
 
+    if (!nearbyAreaDefaultValue || nearbyAreaDefaultValue.trim() === "") {
+      form.setError("nearbyAreaCriteria.defaultValue", {
+        message: "Vui lòng chọn ít nhất một khu vực lân cận",
+      });
+      hasError = true;
+    }
+
+    if (!specificAreaDefaultValue || specificAreaDefaultValue.trim() === "") {
+      form.setError("specificAreaCriteria.defaultValue", {
+        message: "Vui lòng chọn ít nhất một khu vực cụ thể",
+      });
+      hasError = true;
+    }
+
+    if (hasError) {
+      return; // Ngăn gọi API nếu có lỗi
+    }
     // Chỉ gọi API khi đang ở Step 4
     if (step !== totalSteps) {
       console.log("Form submitted prematurely at step", step);

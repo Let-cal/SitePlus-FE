@@ -43,13 +43,73 @@ const CreateBrandDialog = ({
     localSuggestedIndustryCategories,
     setLocalSuggestedIndustryCategories,
   ] = useState(suggestedIndustryCategories);
+  const [brandNameError, setBrandNameError] = useState("");
+  const [existingBrands, setExistingBrands] = useState([]);
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm();
+
+  const brandName = watch("name");
+
+  // Fetch tất cả thương hiệu hiện có khi dialog mở
+  useEffect(() => {
+    if (open) {
+      const fetchAllBrands = async () => {
+        try {
+          const brands = await ClientService.getAllBrands();
+          console.log("Fetched all brands:", brands);
+          setExistingBrands(brands);
+        } catch (error) {
+          console.error("Error fetching all brands:", error);
+          setExistingBrands([]);
+        }
+      };
+      fetchAllBrands();
+    }
+  }, [open]);
+
+  // Kiểm tra trùng tên brand khi người dùng nhập
+  useEffect(() => {
+    if (brandName && existingBrands.length > 0) {
+      // Chuyển đổi tên brand người dùng nhập sang lowercase và loại bỏ khoảng trắng thừa
+      const normalizedInput = brandName.trim().toLowerCase();
+
+      // Kiểm tra các trường hợp trùng lặp
+      const isDuplicate = existingBrands.some((brand) => {
+        // Trường hợp 1: Trùng chính xác (không phân biệt hoa thường)
+        if (brand.name.trim().toLowerCase() === normalizedInput) {
+          return true;
+        }
+
+        // Trường hợp 2: Tên brand hiện tại là một phần của tên brand đang nhập
+        // hoặc tên brand đang nhập là một phần của tên brand hiện tại
+        const existingBrandName = brand.name.trim().toLowerCase();
+        if (
+          existingBrandName.includes(normalizedInput) ||
+          normalizedInput.includes(existingBrandName)
+        ) {
+          return true;
+        }
+
+        return false;
+      });
+
+      if (isDuplicate) {
+        setBrandNameError(
+          "Đã tồn tại thương hiệu với tên tương tự trong hệ thống. Vui lòng chọn tên khác."
+        );
+      } else {
+        setBrandNameError("");
+      }
+    } else {
+      setBrandNameError("");
+    }
+  }, [brandName, existingBrands]);
 
   // Reset selections khi đóng dialog
   useEffect(() => {
@@ -59,6 +119,7 @@ const CreateBrandDialog = ({
       setSelectedIndustryCategory("");
       setLocalSuggestedSegments([]);
       setLocalSuggestedIndustryCategories([]);
+      setBrandNameError("");
       reset();
     }
   }, [open, reset]);
@@ -107,6 +168,11 @@ const CreateBrandDialog = ({
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      // Kiểm tra lại một lần nữa trước khi submit
+      if (brandNameError) {
+        throw new Error(brandNameError);
+      }
+
       if (!selectedCustomerSegments.length) {
         throw new Error("Vui lòng chọn ít nhất một customer segment");
       }
@@ -159,7 +225,7 @@ const CreateBrandDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="ml-2 text-sm bg-theme-orange-500 hover:bg-theme-orange-600">
-          Tạo thông tin cho thương hiệu của bạn
+          Tạo thông tin cho thương hiệu của bạn
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
@@ -167,7 +233,7 @@ const CreateBrandDialog = ({
           <DialogTitle>Tạo Thương Hiệu Mới</DialogTitle>
           <DialogDescription>
             Nhập thông tin thương hiệu mới của bạn. Lưu ý, tên thương hiệu không
-            được trùng lặp.
+            được trùng lặp với các thương hiệu đã tồn tại trong hệ thống.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -177,12 +243,17 @@ const CreateBrandDialog = ({
               id="name"
               placeholder="Nhập tên thương hiệu"
               {...register("name", { required: "Tên thương hiệu là bắt buộc" })}
-              className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
+              className={`focus-visible:ring-orange-400 focus-visible:ring-offset-0 ${
+                brandNameError ? "border-red-500" : ""
+              }`}
             />
             {errors.name?.message && (
-              <p className="text-red-500 text-sm">
+              <p className="text-red-500 text-sm mt-1">
                 {String(errors.name.message)}
               </p>
+            )}
+            {brandNameError && (
+              <p className="text-red-500 text-sm mt-1">{brandNameError}</p>
             )}
           </div>
 
@@ -325,6 +396,7 @@ const CreateBrandDialog = ({
               type="submit"
               disabled={
                 loading ||
+                !!brandNameError ||
                 !selectedIndustry ||
                 !selectedIndustryCategory ||
                 selectedCustomerSegments.length === 0
