@@ -18,12 +18,12 @@ export default function ManagerTask() {
       label: "YÊU CẦU",
       href: "/manager-request",
     },
-    {
-      icon: <Briefcase size={20} />,
-      label: "CẦN KHẢO SÁT",
-      href: "/manager-task",
-      isActive: true,
-    },
+    // {
+    //   icon: <Briefcase size={20} />,
+    //   label: "CẦN KHẢO SÁT",
+    //   href: "/manager-task",
+    //   isActive: true,
+    // },
     {
       icon: <FileText size={20} />,
       label: "KHO MẶT BẰNG",
@@ -48,9 +48,7 @@ export default function ManagerTask() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          defaultLocation="Quận 7 - TPHCM"
           title="CẦN KHẢO SÁT" // Truyền title vào đây
-          onNotificationClick={() => { }}
         />
 
         {/* Content area */}
