@@ -39,6 +39,7 @@ export const API_ENDPOINTS = {
     },
     POST: {
       UPDATE_USRES: "/api/update-from-admin",
+      CREATE_USER: "/api/user/register",
     },
   },
   AREA_MANAGER: {
@@ -81,8 +82,8 @@ export const API_ENDPOINTS = {
     PATCH: {
       UPDATE_SITE_STATUS: "/api/site/status",
     },
-    POST: { 
-      SEARCH_BY_AI: "/api/Qdrant/compare", 
+    POST: {
+      SEARCH_BY_AI: "/api/Qdrant/compare",
       SEND_ACCEPT_EMAIL: "/api/BrandRequest/emails",
       SEND_REJECT_EMAIL: "/api/BrandRequest/email",
     },

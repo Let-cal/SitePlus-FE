@@ -3,6 +3,7 @@ import Header from "@/lib/all-site/HeaderOtherRole";
 import Sidebar from "@/lib/all-site/SideBar";
 import { Home, User } from "lucide-react";
 import * as React from "react";
+import { UserProvider } from "../../../services/admin/UserContext";
 import { useAuth } from "../../../services/AuthContext";
 import UsersChart from "../components/user-management/ChartUsers";
 import CreateUserDialog from "../components/user-management/CreateUserForm";
@@ -40,25 +41,27 @@ export default function AdminUserPage() {
         <Header
           title="Quản Lý Người Dùng" // Truyền title vào đây
         />
+        <UserProvider>
+          {" "}
+          <div className="flex-grow p-6 space-y-6">
+            <div className="flex flex-row justify-between">
+              <Button
+                className="lg:w-[15%] items-center"
+                onClick={() => setIsDialogOpen(true)}
+              >
+                Tạo Người Dùng
+              </Button>
+            </div>
 
-        <div className="flex-grow p-6 space-y-6">
-          <div className="flex flex-row justify-between">
-            <Button
-              className="lg:w-[15%] items-center"
-              onClick={() => setIsDialogOpen(true)}
-            >
-              Tạo Người Dùng
-            </Button>
+            <CreateUserDialog
+              open={isDialogOpen}
+              onOpenChange={setIsDialogOpen}
+            />
+
+            <UsersChart />
+            <UserTable />
           </div>
-
-          <CreateUserDialog
-            open={isDialogOpen}
-            onOpenChange={setIsDialogOpen}
-          />
-
-          <UsersChart />
-          <UserTable />
-        </div>
+        </UserProvider>
       </div>
     </div>
   );
