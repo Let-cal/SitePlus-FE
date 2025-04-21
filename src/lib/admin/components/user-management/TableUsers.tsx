@@ -203,15 +203,15 @@ const UserTable = () => {
 
   const getStatusBadge = (statusName: string) => {
     const statusStyles = {
-      Available: "bg-green-500 hover:bg-green-600", // Đang hoạt động
-      Unavailable: "bg-gray-500 hover:bg-gray-600", // Không hoạt động
+      "Hoạt động": "bg-green-500 hover:bg-green-600", // Đang hoạt động
+      "Vô hiệu": "bg-gray-500 hover:bg-gray-600", // Không hoạt động
     };
 
     return (
       <Badge
         className={`${statusStyles[statusName] || "bg-gray-500"} text-white`}
       >
-        {statusName === "Available" ? "Đang hoạt động" : "Không hoạt động"}
+        {statusName === "Hoạt động" ? "Đang hoạt động" : "Vô hiệu"}
       </Badge>
     );
   };
@@ -257,8 +257,8 @@ const UserTable = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="active">Đang hoạt động</SelectItem>
-              <SelectItem value="inactive">Không hoạt động</SelectItem>
+              <SelectItem value="Hoạt động">Đang hoạt động</SelectItem>
+              <SelectItem value="Vô hiệu">Vô hiệu</SelectItem>
             </SelectContent>
           </Select>
 

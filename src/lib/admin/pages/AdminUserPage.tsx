@@ -38,9 +38,7 @@ export default function AdminUserPage() {
 
       <div className="flex-grow flex flex-col">
         <Header
-          defaultLocation="Quận 7 - TPHCM"
           title="Quản Lý Người Dùng" // Truyền title vào đây
-          onNotificationClick={() => {}}
         />
 
         <div className="flex-grow p-6 space-y-6">

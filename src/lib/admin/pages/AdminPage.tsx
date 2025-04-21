@@ -126,7 +126,7 @@ export default function AdminPage() {
 
       {/* Main content area */}
       <div className="flex-grow flex flex-col">
-        <Header defaultLocation="Quận 7 - TPHCM" title="Tổng Quan" />
+        <Header title="Tổng Quan" />
         <div className="flex-grow p-6 space-y-6">
           <StatCardGrid cards={cards} />
           <UsageChart />
