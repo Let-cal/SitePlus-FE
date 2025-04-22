@@ -1,12 +1,11 @@
 import Sidebar from "@/lib/all-site/SideBar";
-import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck, Mail } from "lucide-react";
+import { FileText, Handshake, Home, Mail } from "lucide-react";
 import * as React from "react";
-import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
 import BarChart from "../components/request-manager/BarChart";
 import RequestTable from "../components/request-manager/RequestTable";
-
+import LogoSitePlus from "/icons/logo-SitePlus.svg";
 
 export default function ManagerRequest() {
   const managerItems = [
@@ -31,6 +30,11 @@ export default function ManagerRequest() {
       label: "KHO MẶT BẰNG",
       href: "/manager-site",
     },
+    {
+      icon: <Handshake size={20} />,
+      label: "ĐỐI TÁC",
+      href: "/manager-brand",
+    },
   ];
 
   const { handleLogout } = useAuth();
@@ -49,9 +53,7 @@ export default function ManagerRequest() {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <Header
-          title="YÊU CẦU" 
-        />
+        <Header title="YÊU CẦU" />
 
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">

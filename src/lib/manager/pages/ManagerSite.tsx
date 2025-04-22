@@ -1,11 +1,10 @@
 import Sidebar from "@/lib/all-site/SideBar";
-import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck, Mail } from "lucide-react";
+import { FileText, Handshake, Home, Mail } from "lucide-react";
 import * as React from "react";
-import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
 import SiteManagement from "../components/site-manager/SiteManagement";
-
+import LogoSitePlus from "/icons/logo-SitePlus.svg";
 
 export default function ManagerSite() {
   const managerItems = [
@@ -29,6 +28,11 @@ export default function ManagerSite() {
       label: "KHO MẶT BẰNG",
       href: "/manager-site",
       isActive: true,
+    },
+    {
+      icon: <Handshake size={20} />,
+      label: "ĐỐI TÁC",
+      href: "/manager-brand",
     },
   ];
 
@@ -57,7 +61,7 @@ export default function ManagerSite() {
           <div className="space-y-12 max-w-full">
             {/* <h2 className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">RECEIVE SURVEY</h2> */}
             {/* <ReceiveSurvey /> */}
-            <SiteManagement/>
+            <SiteManagement />
           </div>
         </div>
       </div>

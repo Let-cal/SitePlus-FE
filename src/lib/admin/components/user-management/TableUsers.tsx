@@ -25,13 +25,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Pagination from "@/lib/all-site/pagination";
-import { Role, User } from "@/services/admin/admin.service";
+import { adminService, Role, User } from "@/services/admin/admin.service";
+import { useUserContext } from "@/services/admin/UserContext";
 import { Eye, MoreVertical, Plus, Search, Trash } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import UpdateUserDialog from "./UpdateUserDialog";
-import { adminService } from "@/services/admin/admin.service";
-import { useUserContext } from "@/services/admin/UserContext";
 
 interface ProcessedUser extends User {
   formattedBranch?: string;
@@ -39,17 +38,14 @@ interface ProcessedUser extends User {
 }
 
 const UserTable = () => {
-  const { 
-    usersData, 
-    isLoading, 
-    currentParams, 
-    updateParams,
-    refreshData 
-  } = useUserContext();
-  
+  const { usersData, isLoading, currentParams, updateParams, refreshData } =
+    useUserContext();
+
   const [roles, setRoles] = useState<Role[]>([]);
   const [processedUsers, setProcessedUsers] = useState<ProcessedUser[]>([]);
-  const [searchQueryInput, setSearchQueryInput] = useState(currentParams.search || "");
+  const [searchQueryInput, setSearchQueryInput] = useState(
+    currentParams.search || ""
+  );
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Lấy danh sách vai trò khi component được mount
@@ -128,22 +124,20 @@ const UserTable = () => {
 
   const handleStatusFilterChange = (newStatus: string) => {
     // Chuyển đổi giá trị trạng thái
-    const statusValue = newStatus === "all" 
-      ? null 
-      : newStatus === "Hoạt động";
-    
+    const statusValue = newStatus === "all" ? null : newStatus === "Hoạt động";
+
     updateParams({ status: statusValue });
   };
 
   const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQueryInput(value);
-    
+
     // Debounce search to avoid too many requests
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
-    
+
     searchTimeoutRef.current = setTimeout(() => {
       updateParams({ search: value });
     }, 500);
@@ -214,11 +208,12 @@ const UserTable = () => {
   };
 
   // Xác định trạng thái hiện tại cho các bộ lọc
-  const currentStatus = currentParams.status === null
-    ? "all"
-    : currentParams.status
-    ? "Hoạt động"
-    : "Vô hiệu";
+  const currentStatus =
+    currentParams.status === null
+      ? "all"
+      : currentParams.status
+      ? "Hoạt động"
+      : "Vô hiệu";
 
   return (
     <div className="space-y-4">
@@ -234,7 +229,10 @@ const UserTable = () => {
               onChange={handleSearchQueryChange}
             />
           </div>
-          <Select value={currentStatus} onValueChange={handleStatusFilterChange}>
+          <Select
+            value={currentStatus}
+            onValueChange={handleStatusFilterChange}
+          >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Lọc theo trạng thái" />
             </SelectTrigger>
@@ -245,8 +243,8 @@ const UserTable = () => {
             </SelectContent>
           </Select>
 
-          <Select 
-            value={currentParams.roleId?.toString() || ""} 
+          <Select
+            value={currentParams.roleId?.toString() || ""}
             onValueChange={handleRoleChange}
           >
             <SelectTrigger className="w-[170px]">
@@ -280,28 +278,34 @@ const UserTable = () => {
               <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
-            {isLoading
-              ? Array.from({ length: currentParams.pageSize || 10 }).map((_, index) => (
-                  <TableRow key={`skeleton-${index}`}>
-                    {Array.from({
-                      length:
-                        currentParams.roleId === 7 ||
-                        currentParams.roleId === 8 ||
-                        currentParams.roleId === 9
-                          ? 7
-                          : 6,
-                    }).map((_, cellIndex) => (
-                      <TableCell key={`cell-${index}-${cellIndex}`}>
-                        <Skeleton className="h-4 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
+            {isLoading && !processedUsers.length
+              ? Array.from({ length: currentParams.pageSize || 10 }).map(
+                  (_, index) => (
+                    <TableRow key={`skeleton-${index}`}>
+                      {Array.from({
+                        length:
+                          currentParams.roleId === 7 ||
+                          currentParams.roleId === 8 ||
+                          currentParams.roleId === 9
+                            ? 7
+                            : 6,
+                      }).map((_, cellIndex) => (
+                        <TableCell key={`cell-${index}-${cellIndex}`}>
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  )
+                )
               : processedUsers.map((user, index) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
-                      {((currentParams.page || 1) - 1) * (currentParams.pageSize || 10) + index + 1}
+                      {((currentParams.page || 1) - 1) *
+                        (currentParams.pageSize || 10) +
+                        index +
+                        1}
                     </TableCell>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>

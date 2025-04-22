@@ -1,29 +1,3 @@
-import * as React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, CheckCircle, XCircle, Trash2 } from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,8 +8,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { CheckCircle, ChevronDown, Trash2, XCircle } from "lucide-react";
+import * as React from "react";
 import toast, { Toaster } from "react-hot-toast";
 import managerService from "../../../../services/manager/manager.service";
 import RequestDetail from "./RequestDetail";
@@ -55,19 +54,30 @@ interface Request {
 }
 
 export default function RequestTableWithTabs() {
-  const [activeTab, setActiveTab] = React.useState<"new" | "processed" | "closed">("new"); // Thêm "closed"
+  const [activeTab, setActiveTab] = React.useState<
+    "new" | "processed" | "closed"
+  >("new"); // Thêm "closed"
   const [currentPage, setCurrentPage] = React.useState(1);
   const [requests, setRequests] = React.useState<Request[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
-  const [selectedRequestId, setSelectedRequestId] = React.useState<string | null>(null);
+  const [selectedRequestId, setSelectedRequestId] = React.useState<
+    string | null
+  >(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const itemsPerPage = 10;
 
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
-  const [isRejectReasonDialogOpen, setIsRejectReasonDialogOpen] = React.useState(false);
-  const [dialogAction, setDialogAction] = React.useState<"accepted" | "rejected" | "deleted" | null>(null);
-  const [dialogRequestId, setDialogRequestId] = React.useState<string | null>(null);
-  const [rejectReason, setRejectReason] = React.useState("Rất tiếc, yêu cầu của bạn không đáp ứng được các tiêu chí hiện tại của chúng tôi.");
+  const [isRejectReasonDialogOpen, setIsRejectReasonDialogOpen] =
+    React.useState(false);
+  const [dialogAction, setDialogAction] = React.useState<
+    "accepted" | "rejected" | "deleted" | null
+  >(null);
+  const [dialogRequestId, setDialogRequestId] = React.useState<string | null>(
+    null
+  );
+  const [rejectReason, setRejectReason] = React.useState(
+    "Rất tiếc, yêu cầu của bạn không đáp ứng được các tiêu chí hiện tại của chúng tôi."
+  );
 
   React.useEffect(() => {
     const loadBrandRequests = async () => {
@@ -81,7 +91,8 @@ export default function RequestTableWithTabs() {
         statusName: item.brandRequest.statusName,
         createdAt: item.brandRequest.createdAt,
         updatedAt: item.brandRequest.updatedAt,
-        storeProfileCategoryName: item.storeProfile?.storeProfileCategoryName || "Không xác định",
+        storeProfileCategoryName:
+          item.storeProfile?.storeProfileCategoryName || "Không xác định",
         brandStatus: item.brandRequest.brandStatus,
         brandId: item.brandRequest.brandId,
       }));
@@ -92,21 +103,30 @@ export default function RequestTableWithTabs() {
   }, []);
 
   const getFilteredData = () => {
-    let data = requests;
+    const data = requests;
 
     if (activeTab === "new") {
       return data
         .filter((item) => item.status === 0)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
     } else if (activeTab === "processed") {
       return data
         .filter((item) => item.status === 1 || item.status === 3)
-        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        .sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
     } else {
       // Tab "ĐÃ ĐÓNG": lọc status === 9 và sắp xếp theo updatedAt giảm dần
       return data
         .filter((item) => item.status === 9)
-        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        .sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
     }
   };
 
@@ -121,7 +141,10 @@ export default function RequestTableWithTabs() {
     currentPage * itemsPerPage
   );
 
-  const handleAction = (id: string, action: "accepted" | "rejected" | "deleted") => {
+  const handleAction = (
+    id: string,
+    action: "accepted" | "rejected" | "deleted"
+  ) => {
     setDialogRequestId(id);
     setDialogAction(action);
     setIsConfirmDialogOpen(true);
@@ -138,7 +161,11 @@ export default function RequestTableWithTabs() {
     }
   };
 
-  const processAction = async (requestIdStr: string, action: "accepted" | "rejected" | "deleted", note?: string) => {
+  const processAction = async (
+    requestIdStr: string,
+    action: "accepted" | "rejected" | "deleted",
+    note?: string
+  ) => {
     setIsLoading(true);
     const requestId = parseInt(requestIdStr);
     const newStatus = action === "accepted" ? 1 : 2;
@@ -146,32 +173,67 @@ export default function RequestTableWithTabs() {
     try {
       const request = requests.find((req) => req.id === requestIdStr);
       if (!request) {
-        toast.error("Không tìm thấy yêu cầu", { position: "top-right", duration: 3000 });
+        toast.error("Không tìm thấy yêu cầu", {
+          position: "top-right",
+          duration: 3000,
+        });
         return;
       }
 
       if (action === "accepted") {
         console.log("Sending accept email for requestId:", requestId);
-        const acceptEmailResult = await managerService.sendAcceptEmail(requestId, "Chúng tôi sẽ sớm liên hệ để hỗ trợ bạn với các bước tiếp theo.");
+        const acceptEmailResult = await managerService.sendAcceptEmail(
+          requestId,
+          "Chúng tôi sẽ sớm liên hệ để hỗ trợ bạn với các bước tiếp theo."
+        );
         if (!acceptEmailResult.success) {
-          console.error("Lỗi khi gửi email chấp nhận:", acceptEmailResult.message);
-          toast.error("Lỗi khi gửi email chấp nhận: " + (acceptEmailResult.message || "Không xác định"), { position: "top-right", duration: 3000 });
+          console.error(
+            "Lỗi khi gửi email chấp nhận:",
+            acceptEmailResult.message
+          );
+          toast.error(
+            "Lỗi khi gửi email chấp nhận: " +
+              (acceptEmailResult.message || "Không xác định"),
+            { position: "top-right", duration: 3000 }
+          );
           return;
         }
 
-        console.log("Calling updateBrandRequestStatus with requestId:", requestId, "newStatus:", newStatus);
-        const updateRequestResult = await managerService.updateBrandRequestStatus(requestId, newStatus);
+        console.log(
+          "Calling updateBrandRequestStatus with requestId:",
+          requestId,
+          "newStatus:",
+          newStatus
+        );
+        const updateRequestResult =
+          await managerService.updateBrandRequestStatus(requestId, newStatus);
         if (!updateRequestResult.success) {
-          console.error("Lỗi khi cập nhật trạng thái yêu cầu:", updateRequestResult.message);
-          toast.error("Lỗi khi cập nhật trạng thái yêu cầu: " + (updateRequestResult.message || "Không xác định"), { position: "top-right", duration: 3000 });
+          console.error(
+            "Lỗi khi cập nhật trạng thái yêu cầu:",
+            updateRequestResult.message
+          );
+          toast.error(
+            "Lỗi khi cập nhật trạng thái yêu cầu: " +
+              (updateRequestResult.message || "Không xác định"),
+            { position: "top-right", duration: 3000 }
+          );
           return;
         }
 
         if (request.brandStatus === 0) {
-          console.log("Calling updateBrandStatus with brandId:", request.brandId);
-          const updateBrandResult = await managerService.updateBrandStatus(request.brandId, 1);
+          console.log(
+            "Calling updateBrandStatus with brandId:",
+            request.brandId
+          );
+          const updateBrandResult = await managerService.updateBrandStatus(
+            request.brandId,
+            1
+          );
           if (!updateBrandResult.success) {
-            console.warn("Lỗi khi cập nhật trạng thái thương hiệu:", updateBrandResult.message);
+            console.warn(
+              "Lỗi khi cập nhật trạng thái thương hiệu:",
+              updateBrandResult.message
+            );
           }
         }
 
@@ -187,21 +249,47 @@ export default function RequestTableWithTabs() {
               : req
           )
         );
-        toast.success("Đã chấp nhận yêu cầu ID: " + requestIdStr, { position: "top-right", duration: 3000 });
+        toast.success("Đã chấp nhận yêu cầu ID: " + requestIdStr, {
+          position: "top-right",
+          duration: 3000,
+        });
       } else if (action === "rejected") {
         console.log("Sending reject email for requestId:", requestId);
-        const rejectEmailResult = await managerService.sendRejectEmail(requestId, note!);
+        const rejectEmailResult = await managerService.sendRejectEmail(
+          requestId,
+          note!
+        );
         if (!rejectEmailResult.success) {
-          console.error("Lỗi khi gửi email từ chối:", rejectEmailResult.message);
-          toast.error("Lỗi khi gửi email từ chối: " + (rejectEmailResult.message || "Không xác định"), { position: "top-right", duration: 3000 });
+          console.error(
+            "Lỗi khi gửi email từ chối:",
+            rejectEmailResult.message
+          );
+          toast.error(
+            "Lỗi khi gửi email từ chối: " +
+              (rejectEmailResult.message || "Không xác định"),
+            { position: "top-right", duration: 3000 }
+          );
           return;
         }
 
-        console.log("Calling updateBrandRequestStatus with requestId:", requestId, "newStatus:", newStatus);
-        const updateRequestResult = await managerService.updateBrandRequestStatus(requestId, newStatus);
+        console.log(
+          "Calling updateBrandRequestStatus with requestId:",
+          requestId,
+          "newStatus:",
+          newStatus
+        );
+        const updateRequestResult =
+          await managerService.updateBrandRequestStatus(requestId, newStatus);
         if (!updateRequestResult.success) {
-          console.error("Lỗi khi cập nhật trạng thái yêu cầu:", updateRequestResult.message);
-          toast.error("Lỗi khi cập nhật trạng thái yêu cầu: " + (updateRequestResult.message || "Không xác định"), { position: "top-right", duration: 3000 });
+          console.error(
+            "Lỗi khi cập nhật trạng thái yêu cầu:",
+            updateRequestResult.message
+          );
+          toast.error(
+            "Lỗi khi cập nhật trạng thái yêu cầu: " +
+              (updateRequestResult.message || "Không xác định"),
+            { position: "top-right", duration: 3000 }
+          );
           return;
         }
 
@@ -216,13 +304,27 @@ export default function RequestTableWithTabs() {
               : req
           )
         );
-        toast.success("Đã từ chối yêu cầu ID: " + requestIdStr, { position: "top-right", duration: 3000 });
+        toast.success("Đã từ chối yêu cầu ID: " + requestIdStr, {
+          position: "top-right",
+          duration: 3000,
+        });
       } else if (action === "deleted") {
-        console.log("Calling updateBrandRequestStatus with requestId:", requestId, "newStatus:", newStatus);
-        const result = await managerService.updateBrandRequestStatus(requestId, newStatus);
+        console.log(
+          "Calling updateBrandRequestStatus with requestId:",
+          requestId,
+          "newStatus:",
+          newStatus
+        );
+        const result = await managerService.updateBrandRequestStatus(
+          requestId,
+          newStatus
+        );
         if (!result.success) {
           console.error("Lỗi khi xóa yêu cầu:", result.message);
-          toast.error("Lỗi khi xóa yêu cầu: " + (result.message || "Không xác định"), { position: "top-right", duration: 3000 });
+          toast.error(
+            "Lỗi khi xóa yêu cầu: " + (result.message || "Không xác định"),
+            { position: "top-right", duration: 3000 }
+          );
           return;
         }
 
@@ -237,24 +339,35 @@ export default function RequestTableWithTabs() {
               : req
           )
         );
-        toast.success("Đã xóa yêu cầu ID: " + requestIdStr, { position: "top-right", duration: 3000 });
+        toast.success("Đã xóa yêu cầu ID: " + requestIdStr, {
+          position: "top-right",
+          duration: 3000,
+        });
       }
     } catch (error) {
       console.error("Error handling action:", error);
-      toast.error("Lỗi khi xử lý hành động", { position: "top-right", duration: 3000 });
+      toast.error("Lỗi khi xử lý hành động", {
+        position: "top-right",
+        duration: 3000,
+      });
     } finally {
       setIsLoading(false);
       setIsConfirmDialogOpen(false);
       setIsRejectReasonDialogOpen(false);
       setDialogRequestId(null);
       setDialogAction(null);
-      setRejectReason("Rất tiếc, yêu cầu của bạn không đáp ứng được các tiêu chí hiện tại của chúng tôi.");
+      setRejectReason(
+        "Rất tiếc, yêu cầu của bạn không đáp ứng được các tiêu chí hiện tại của chúng tôi."
+      );
     }
   };
 
   const handleSubmitRejectReason = () => {
     if (!rejectReason.trim()) {
-      toast.error("Lý do từ chối không được để trống", { position: "top-right", duration: 3000 });
+      toast.error("Lý do từ chối không được để trống", {
+        position: "top-right",
+        duration: 3000,
+      });
       return;
     }
 
@@ -274,7 +387,8 @@ export default function RequestTableWithTabs() {
   };
 
   const ActionButton = ({ request }: { request: Request }) => {
-    if (activeTab === "processed" || activeTab === "closed") { // Áp dụng cho cả tab "ĐÃ ĐÓNG"
+    if (activeTab === "processed" || activeTab === "closed") {
+      // Áp dụng cho cả tab "ĐÃ ĐÓNG"
       return (
         <div className="flex gap-2">
           <Badge
@@ -299,13 +413,22 @@ export default function RequestTableWithTabs() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => handleAction(request.id, "accepted")} className="flex items-center gap-2">
+          <DropdownMenuItem
+            onClick={() => handleAction(request.id, "accepted")}
+            className="flex items-center gap-2"
+          >
             <CheckCircle className="h-4 w-4" /> Chấp nhận
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleAction(request.id, "rejected")} className="flex items-center gap-2">
+          <DropdownMenuItem
+            onClick={() => handleAction(request.id, "rejected")}
+            className="flex items-center gap-2"
+          >
             <XCircle className="h-4 w-4" /> Từ chối
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleAction(request.id, "deleted")} className="flex items-center gap-2">
+          <DropdownMenuItem
+            onClick={() => handleAction(request.id, "deleted")}
+            className="flex items-center gap-2"
+          >
             <Trash2 className="h-4 w-4" /> Xóa
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -352,7 +475,9 @@ export default function RequestTableWithTabs() {
             <TableHead className="w-[20%]">Email khách hàng</TableHead>
             <TableHead className="w-[20%]">Loại cửa hàng</TableHead>
             <TableHead className="w-[12%]">Xem chi tiết</TableHead>
-            <TableHead className="w-[8%]">{activeTab === "new" ? "Hành động" : "Trạng thái"}</TableHead>
+            <TableHead className="w-[8%]">
+              {activeTab === "new" ? "Hành động" : "Trạng thái"}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -362,11 +487,15 @@ export default function RequestTableWithTabs() {
               <TableCell>
                 {request.brand}
                 {request.brandStatus === 0 && (
-                  <Badge className="ml-2 bg-red-100 text-red-800 text-xs hover:bg-red-100">new</Badge>
+                  <Badge className="ml-2 bg-red-100 text-red-800 dark:bg-red-300 hover:bg-red-200 dark:hover:bg-red-400 text-xs">
+                    new
+                  </Badge>
                 )}
               </TableCell>
               <TableCell>{request.email}</TableCell>
-              <TableCell>{request.storeProfileCategoryName || "Không xác định"}</TableCell>
+              <TableCell>
+                {request.storeProfileCategoryName || "Không xác định"}
+              </TableCell>
               <TableCell>
                 <Button
                   variant="link"
@@ -390,7 +519,9 @@ export default function RequestTableWithTabs() {
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                className={
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                }
               />
             </PaginationItem>
             {Array.from({ length: totalPages }).map((_, i) => (
@@ -405,8 +536,14 @@ export default function RequestTableWithTabs() {
             ))}
             <PaginationItem>
               <PaginationNext
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }
               />
             </PaginationItem>
           </PaginationContent>
@@ -421,26 +558,38 @@ export default function RequestTableWithTabs() {
         />
       )}
 
-      <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+      <AlertDialog
+        open={isConfirmDialogOpen}
+        onOpenChange={setIsConfirmDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận hành động</AlertDialogTitle>
             <AlertDialogDescription>
               Bạn có chắc chắn muốn{" "}
               <strong>
-                {dialogAction === "accepted" ? "chấp nhận" : dialogAction === "rejected" ? "từ chối" : "xóa"}
+                {dialogAction === "accepted"
+                  ? "chấp nhận"
+                  : dialogAction === "rejected"
+                  ? "từ chối"
+                  : "xóa"}
               </strong>{" "}
               yêu cầu ID: {dialogRequestId} không?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmAction}>Xác nhận</AlertDialogAction>
+            <AlertDialogAction onClick={confirmAction}>
+              Xác nhận
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={isRejectReasonDialogOpen} onOpenChange={setIsRejectReasonDialogOpen}>
+      <AlertDialog
+        open={isRejectReasonDialogOpen}
+        onOpenChange={setIsRejectReasonDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Lý do từ chối</AlertDialogTitle>
@@ -457,7 +606,9 @@ export default function RequestTableWithTabs() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleSubmitRejectReason}>Gửi</AlertDialogAction>
+            <AlertDialogAction onClick={handleSubmitRejectReason}>
+              Gửi
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

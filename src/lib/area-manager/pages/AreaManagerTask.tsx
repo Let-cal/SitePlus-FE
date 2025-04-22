@@ -3,7 +3,6 @@ import { Briefcase, Home, CheckCircle } from "lucide-react";
 import * as React from "react";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
-import AreaMap from "../components/home-am/Map";
 import AssignToStaff from "../components/task-am/AssignToStaff";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import TaskChart from "../components/task-am/TaskChart";

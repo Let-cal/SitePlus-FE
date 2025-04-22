@@ -9,8 +9,10 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
+
 interface UserContextType {
   usersData: UsersResponse | null;
   isLoading: boolean;
@@ -41,10 +43,36 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const [currentParams, setCurrentParams] =
     useState<GetUsersParams>(initialParams);
 
+  // Cache để lưu trữ dữ liệu đã tải theo tham số
+  const dataCache = useRef<Record<string, UsersResponse>>({});
+
+  // Hàm để tạo khóa cache từ tham số
+  const getCacheKey = (params: GetUsersParams): string => {
+    return JSON.stringify({
+      page: params.page,
+      pageSize: params.pageSize,
+      search: params.search || "",
+      sort: params.sort || "",
+      roleId: params.roleId,
+      status: params.status,
+    });
+  };
+
   const fetchUsers = async (params: GetUsersParams) => {
+    const cacheKey = getCacheKey(params);
+
+    // Nếu dữ liệu đã có trong cache, sử dụng ngay
+    if (dataCache.current[cacheKey]) {
+      setUsersData(dataCache.current[cacheKey]);
+      return;
+    }
+
+    // Nếu chưa có dữ liệu trong cache, tải mới
     setIsLoading(true);
     try {
       const response = await adminService.getAllUsers(params);
+      // Lưu vào cache và cập nhật state
+      dataCache.current[cacheKey] = response.data;
       setUsersData(response.data);
       setError(null);
     } catch (err) {
@@ -57,7 +85,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
 
   const updateParams = (newParams: Partial<GetUsersParams>) => {
     setCurrentParams((prev) => {
-      // If changing filters that should reset pagination
+      // Nếu thay đổi bộ lọc thì reset về trang 1
       if (
         newParams.roleId !== undefined ||
         newParams.status !== undefined ||
@@ -69,10 +97,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  // Hàm xóa cache và tải lại dữ liệu
   const refreshData = async () => {
+    // Xóa cache khi cần refresh
+    dataCache.current = {};
     await fetchUsers(currentParams);
   };
 
+  // Chỉ tải dữ liệu khi tham số thay đổi và có roleId
   useEffect(() => {
     if (currentParams.roleId) {
       fetchUsers(currentParams);
