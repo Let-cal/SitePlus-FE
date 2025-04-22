@@ -61,6 +61,7 @@ export const API_ENDPOINTS = {
     },
     PUT: {
       UPDATE_SITE_DEAL_STATUS: "/api/SiteDeal/:id/status",
+      UPDATE_TASK: "/api/Task/:taskId",
     },
   },
   MANAGER: {

@@ -6,11 +6,10 @@ import { X, Heart } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import managerService, { SearchAIProject, FavoriteSiteResponse } from "../../../../services/manager/manager.service";
 import WishList from "./WishList";
-import SiteDetail from "../site-manager/SiteDetail";
 import SiteDetailDrawer from "./SiteDetailDrawer";
 import * as Dialog from "@radix-ui/react-dialog";
 
-// Interface cho BrandRequestResponse (lấy từ ManagerService)
+// Interface cho BrandRequestResponse
 interface StoreProfileCriteria {
   id: number;
   storeProfileId: number;
@@ -51,6 +50,8 @@ interface BrandRequest {
   description: string;
   createdAt: string;
   updatedAt: string;
+  customerSegments: { name: string }[];
+  industryCategories: { name: string }[];
 }
 
 interface BrandRequestResponse {
@@ -60,7 +61,7 @@ interface BrandRequestResponse {
   storeProfileCriteria: StoreProfileCriteria[];
 }
 
-// Interface cho kết quả tìm kiếm bằng AI (đồng bộ với SearchAIProject trong managerService.ts)
+// Interface cho kết quả tìm kiếm bằng AI
 interface Project {
   siteId: number;
   siteDealId: number;
@@ -81,7 +82,7 @@ interface RequestDetailProps {
   brandRequestId: number;
 }
 
-// CSS tùy chỉnh cho drawer
+// CSS tùy chỉnh
 const customStyles = `
   .request-detail-drawer {
     position: fixed;
@@ -113,35 +114,50 @@ const customStyles = `
   .request-form {
     padding: 0.5rem 0;
   }
-  .request-form-card {
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 1rem;
+  .request-form-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  .request-form-tab {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: border-bottom 0.3s ease;
+  }
+  .request-form-tab.active {
+    border-bottom: 2px solid hsl(var(--primary));
+    font-weight: 600;
   }
   .request-form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
     margin-bottom: 1rem;
+    align-items: stretch;
   }
   .request-form-field {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    flex: 1;
   }
   .request-form-label {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    color: #6b7280;
+    color: hsl(var(--muted-foreground));
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
   .request-form-value {
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 500;
-    color: #1f2937;
+    color: hsl(var(--foreground));
     line-height: 1.5;
-    background-color: #f9fafb;
+    background-color: hsl(var(--muted));
     padding: 0.5rem 0.75rem;
     border-radius: 6px;
   }
@@ -153,16 +169,17 @@ const customStyles = `
     flex-direction: column;
     gap: 0.75rem;
     padding: 1rem;
-    background-color: #f9fafb;
+    background-color: hsl(var(--muted));
     border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid hsl(var(--border));
+    min-height: 350px;
   }
   .request-form-group-label {
-    font-size: 1.125rem;
+    font-size: 0.955rem;
     font-weight: 600;
-    color: #111827;
+    color: hsl(var(--foreground));
     margin-bottom: 0.5rem;
-    border-bottom: 2px solid #e5e7eb;
+    border-bottom: 2px solid hsl(var(--border));
     padding-bottom: 0.5rem;
   }
   .request-form-buttons {
@@ -171,11 +188,10 @@ const customStyles = `
     gap: 1rem;
     margin-top: 1rem;
   }
-  /* Style cho card kết quả tìm kiếm */
   .search-result-card {
     position: relative;
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
     border-radius: 8px;
     padding: 1rem;
     transition: all 0.3s ease;
@@ -198,12 +214,12 @@ const customStyles = `
   .search-result-id {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #6b7280;
+    color: hsl(var(--muted-foreground));
   }
   .search-result-address {
     font-size: 1rem;
     font-weight: 600;
-    color: #1f2937;
+    color: hsl(var(--foreground));
     line-height: 1.5;
     min-height: 3rem;
     display: -webkit-box;
@@ -222,7 +238,7 @@ const customStyles = `
   .search-result-placeholder {
     width: 100%;
     height: 150px;
-    background-color: #f3f4f6;
+    background-color: hsl(var(--muted));
     border-radius: 6px;
     display: flex;
     align-items: center;
@@ -238,23 +254,23 @@ const customStyles = `
     display: flex;
     align-items: center;
     font-size: 0.875rem;
-    color: #4b5563;
+    color: hsl(var(--foreground));
     gap: 0.25rem;
   }
   .search-result-info-item-label {
     font-weight: 500;
-    color: #6b7280;
+    color: hsl(var(--muted-foreground));
   }
   .search-result-info-item-value {
     font-weight: 500;
-    color: #1f2937;
+    color: hsl(var(--foreground));
   }
   .search-result-score {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
-    background-color: #fee2e2;
-    color: #dc2626;
+    background-color: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
     font-size: 0.75rem;
     font-weight: 600;
     padding: 0.25rem 0.5rem;
@@ -275,6 +291,7 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
   const [isWishListOpen, setIsWishListOpen] = useState(false);
   const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"space-budget" | "business-characteristics">("space-budget");
 
   const fetchFavoritesData = async () => {
     try {
@@ -337,6 +354,7 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
       setIsWishListOpen(false);
       setSelectedSiteId(null);
       setError(null);
+      setActiveTab("space-budget");
     }
   }, [isOpen]);
 
@@ -351,6 +369,58 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
 
   const getCriteriaByAttributeId = (attributeId: number) => {
     return request?.storeProfileCriteria.find((criteria) => criteria.attributeId === attributeId);
+  };
+
+  const parseDescription = (description: string): { result: { [key: string]: string }; specialRequests: { [key: string]: string } } => {
+    const parts = description.split(" - ").map(part => part.trim());
+    const result: { [key: string]: string } = {};
+    const specialRequests: { [key: string]: string } = {};
+
+    parts.forEach(part => {
+      const [key, ...valueParts] = part.split(": ");
+      const value = valueParts.join(": ").trim();
+      if (key && value) {
+        if (["Ngành nghề muốn thay đổi", "Loại ngành nghề đang muốn hướng tới", "Nhu cầu khách hàng mong muốn", "Loại cửa hàng mong muốn"].includes(key)) {
+          specialRequests[key] = value;
+        } else {
+          result[key] = value;
+        }
+      }
+    });
+
+    return { result, specialRequests };
+  };
+
+  const getDesiredLocation = () => {
+    if (!request) return "-";
+    const { result } = parseDescription(request.brandRequest.description);
+    const district = result["Quận/Huyện"] || "";
+    const street = result["Đường"] || "";
+    const ward = getCriteriaByAttributeId(33)?.defaultValue || "";
+
+    const locationParts = [district, street, ward].filter(part => part).join(", ");
+    return locationParts || "-";
+  };
+
+  const formatLeaseTerm = (value: string) => {
+    if (value === "-") return "-";
+    if (value.includes("Mặt bằng cho thuê")) {
+      return value.replace("Mặt bằng cho thuê - Thời hạn ", "");
+    } else if (value.includes("Mặt bằng chuyển nhượng")) {
+      return value.replace("Mặt bằng chuyển nhượng", "").trim();
+    }
+    return value;
+  };
+
+  const getLeaseTermPrefix = (criteria: StoreProfileCriteria | undefined) => {
+    if (!criteria) return "Thời hạn cho thuê";
+    const value = criteria.maxValue || criteria.minValue || criteria.defaultValue;
+    if (value?.includes("Mặt bằng cho thuê")) {
+      return "Thời hạn cho thuê (Mặt bằng cho thuê)";
+    } else if (value?.includes("Mặt bằng chuyển nhượng")) {
+      return "Thời hạn cho thuê (Mặt bằng chuyển nhượng)";
+    }
+    return "Thời hạn cho thuê";
   };
 
   const handleSearchByAI = async () => {
@@ -457,7 +527,6 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
   const areaCriteria = getCriteriaByAttributeId(9);
   const budgetCriteria = getCriteriaByAttributeId(31);
   const nearbyCriteria = getCriteriaByAttributeId(32);
-  const locationCriteria = getCriteriaByAttributeId(33);
   const leaseTermCriteria = getCriteriaByAttributeId(37);
   const depositCriteria = getCriteriaByAttributeId(38);
   const depositConditionCriteria = getCriteriaByAttributeId(39);
@@ -468,14 +537,7 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
     ? `ID ${request.brandRequest.id} - ${request.brandRequest.brandName}`
     : "Chi tiết yêu cầu thương hiệu";
 
-  const getSpecialRequest = (description: string) => {
-    const specialRequestIndex = description.indexOf("Yêu cầu đặc biệt:");
-    if (specialRequestIndex === -1) {
-      return "-";
-    }
-    const specialRequestContent = description.substring(specialRequestIndex + "Yêu cầu đặc biệt:".length).trim();
-    return specialRequestContent || "-";
-  };
+  const { specialRequests } = request ? parseDescription(request.brandRequest.description) : { specialRequests: {} };
 
   const formatValue = (value: string | undefined) => {
     return value || "-";
@@ -530,16 +592,29 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
 
               {request && (
                 <div className="request-form">
-                  <div className="request-form-card">
+                  <div className="request-form-tabs">
+                    <div
+                      className={`request-form-tab ${activeTab === "space-budget" ? "active" : ""}`}
+                      onClick={() => setActiveTab("space-budget")}
+                    >
+                      Yêu cầu mặt bằng
+                    </div>
+                    <div
+                      className={`request-form-tab ${activeTab === "business-characteristics" ? "active" : ""}`}
+                      onClick={() => setActiveTab("business-characteristics")}
+                    >
+                      Thông tin kinh doanh
+                    </div>
+                  </div>
+
+                  {activeTab === "space-budget" && (
                     <div className="request-form-grid">
                       <div className="request-form-field">
                         <div className="request-form-group">
                           <div className="request-form-group-label">Thông tin cửa hàng</div>
                           <div className="request-form-field">
                             <Label className="request-form-label">Loại cửa hàng</Label>
-                            <div className="request-form-value">
-                              {formatValue(request.storeProfile.storeProfileCategoryName)}
-                            </div>
+                            <div className="request-form-value">{formatValue(request.storeProfile.storeProfileCategoryName)}</div>
                           </div>
                           <div className="request-form-field">
                             <Label className="request-form-label">Gần khu vực</Label>
@@ -547,7 +622,7 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
                           </div>
                           <div className="request-form-field">
                             <Label className="request-form-label">Vị trí mong muốn</Label>
-                            <div className="request-form-value">{formatValue(locationCriteria?.defaultValue)}</div>
+                            <div className="request-form-value">{getDesiredLocation()}</div>
                           </div>
                         </div>
                       </div>
@@ -557,15 +632,15 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
                           <div className="request-form-group-label">Diện tích mặt bằng (m²)</div>
                           <div className="request-form-field">
                             <Label className="request-form-label">Tối đa</Label>
-                            <div className="request-form-value">{formatValue(areaCriteria?.maxValue)}</div>
+                            <div className="request-form-value">{formatValue(areaCriteria?.maxValue)} m²</div>
                           </div>
                           <div className="request-form-field">
                             <Label className="request-form-label">Tối thiểu</Label>
-                            <div className="request-form-value">{formatValue(areaCriteria?.minValue)}</div>
+                            <div className="request-form-value">{formatValue(areaCriteria?.minValue)} m²</div>
                           </div>
                           <div className="request-form-field">
                             <Label className="request-form-label">Mong muốn</Label>
-                            <div className="request-form-value">{formatValue(areaCriteria?.defaultValue)}</div>
+                            <div className="request-form-value">{formatValue(areaCriteria?.defaultValue)} m²</div>
                           </div>
                         </div>
                       </div>
@@ -590,18 +665,18 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
 
                       <div className="request-form-field">
                         <div className="request-form-group">
-                          <div className="request-form-group-label">Thời hạn cho thuê</div>
+                          <div className="request-form-group-label">{getLeaseTermPrefix(leaseTermCriteria)}</div>
                           <div className="request-form-field">
                             <Label className="request-form-label">Tối đa</Label>
-                            <div className="request-form-value">{formatValue(leaseTermCriteria?.maxValue)}</div>
+                            <div className="request-form-value">{formatLeaseTerm(formatValue(leaseTermCriteria?.maxValue))}</div>
                           </div>
                           <div className="request-form-field">
                             <Label className="request-form-label">Tối thiểu</Label>
-                            <div className="request-form-value">{formatValue(leaseTermCriteria?.minValue)}</div>
+                            <div className="request-form-value">{formatLeaseTerm(formatValue(leaseTermCriteria?.minValue))}</div>
                           </div>
                           <div className="request-form-field">
                             <Label className="request-form-label">Mong muốn</Label>
-                            <div className="request-form-value">{formatValue(leaseTermCriteria?.defaultValue)}</div>
+                            <div className="request-form-value">{formatLeaseTerm(formatValue(leaseTermCriteria?.defaultValue))}</div>
                           </div>
                         </div>
                       </div>
@@ -641,39 +716,86 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
                           </div>
                         </div>
                       </div>
-
-                      <div className="request-form-field request-form-value-full">
-                        <Label className="request-form-label">Yêu cầu đặc biệt</Label>
-                        <div className="request-form-value">{getSpecialRequest(request.brandRequest.description)}</div>
-                      </div>
                     </div>
+                  )}
 
-                    {showSearchByAIButton && (
-                      <div className="request-form-buttons">
-                        {request?.brandRequest.status === 1 && (
-                          <Button
-                            variant="outline"
-                            onClick={handleViewFavorites}
-                            className="text-sm h-10 px-4 border-gray-300 hover:bg-gray-100"
-                          >
-                            <Heart className="h-4 w-4 mr-1" />
-                            Xem danh sách quan tâm ({favorites.length})
-                          </Button>
-                        )}
-                        <Button
-                          onClick={handleSearchByAI}
-                          className="text-sm h-10 px-4"
-                          disabled={isLoading}
-                        >
-                          {isLoading ? "Đang tìm kiếm..." : "Tìm kiếm bằng AI"}
-                        </Button>
+                  {activeTab === "business-characteristics" && (
+                    <div className="request-form-grid">
+                      <div className="request-form-field">
+                        <div className="request-form-group">
+                          <div className="request-form-group-label">Ngành nghề</div>
+                          {request.brandRequest.industryCategories.length > 0 ? (
+                            request.brandRequest.industryCategories.map((category, index) => (
+                              <div key={index} className="request-form-field">
+                                <div className="request-form-value">{category.name}</div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="request-form-field">
+                              <div className="request-form-value">-</div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
-                  </div>
+
+                      <div className="request-form-field">
+                        <div className="request-form-group">
+                          <div className="request-form-group-label">Khách hàng mục tiêu</div>
+                          {request.brandRequest.customerSegments.length > 0 ? (
+                            request.brandRequest.customerSegments.map((segment, index) => (
+                              <div key={index} className="request-form-field">
+                                <div className="request-form-value">{segment.name}</div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="request-form-field">
+                              <div className="request-form-value">-</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {Object.keys(specialRequests).length > 0 && (
+                        <div className="request-form-field request-form-value-full">
+                          <div className="request-form-group">
+                            <div className="request-form-group-label">Yêu cầu đặc biệt</div>
+                            {(Object.entries(specialRequests) as [string, string][]).map(([key, value]) => (
+                              <div key={key} className="request-form-field">
+                                <Label className="request-form-label">{key}</Label>
+                                <div className="request-form-value">{value}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {showSearchByAIButton && (
+                    <div className="request-form-buttons">
+                      {request?.brandRequest.status === 1 && (
+                        <Button
+                          variant="outline"
+                          onClick={handleViewFavorites}
+                          className="text-sm h-10 px-4"
+                        >
+                          <Heart className="h-4 w-4 mr-1" />
+                          Xem danh sách quan tâm ({favorites.length})
+                        </Button>
+                      )}
+                      <Button
+                        onClick={handleSearchByAI}
+                        className="text-sm h-10 px-4"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Đang tìm kiếm..." : "Tìm kiếm bằng AI"}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {searchResults.length > 0 ? (
+              {searchResults.length > 0 && (
                 <div className="mt-6">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold">Kết quả tìm kiếm</h3>
@@ -697,7 +819,7 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
                             {project.imageUrl && project.imageUrl !== "Chưa có ảnh" ? (
                               <img
                                 src={project.imageUrl}
-                                alt={project.nameSite}
+                                alt={project.nameSite || "Hình ảnh mặt bằng"}
                                 className="search-result-image"
                               />
                             ) : (
@@ -769,7 +891,8 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
                     })}
                   </div>
                 </div>
-              ) : null}
+              )}
+
               {!request && !error && <p className="text-center">Đang tải...</p>}
             </>
           )}

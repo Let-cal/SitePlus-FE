@@ -8,7 +8,7 @@ import { CalendarIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast"; // Bỏ Toaster import
 import areaManagerService from "../../../../services/area-manager/area-manager.service";
 
 interface AssignTaskSheetProps {
@@ -47,6 +47,7 @@ interface User {
   email: string;
   name: string;
   roleName: string;
+  areaId: number;
   areaName: string;
   districtName: string;
   cityName: string;
@@ -97,7 +98,9 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
   const [description, setDescription] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [wards, setWards] = useState<Ward[]>([]);
+  const [filteredWards, setFilteredWards] = useState<Ward[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loadingWards, setLoadingWards] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
@@ -131,15 +134,18 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
           const wardsData = await areaManagerService.fetchWardsByDistrictId(districtId);
           console.log("Wards data received:", wardsData);
           setWards(wardsData);
+          setFilteredWards(wardsData);
         } catch (error) {
           console.error("Error fetching wards:", error);
           toast.error("Lỗi khi tải danh sách phường", { position: "top-right", duration: 3000 });
           setWards([]);
+          setFilteredWards([]);
         } finally {
           setLoadingWards(false);
         }
       } else {
         setWards([]);
+        setFilteredWards([]);
         setWard("");
         setLoadingWards(false);
       }
@@ -153,17 +159,66 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
       try {
         const usersData = await areaManagerService.fetchUsers({});
         console.log("Users Data in AssignTaskSheet:", usersData);
-        setUsers(usersData);
+        const activeUsers = usersData.filter(user => user.status === 1);
+        setUsers(activeUsers);
+        setFilteredUsers(activeUsers);
       } catch (error) {
         console.error("Fetch Users Error in AssignTaskSheet:", error);
         toast.error("Lỗi khi tải danh sách nhân viên", { position: "top-right", duration: 3000 });
         setUsers([]);
+        setFilteredUsers([]);
       } finally {
         setLoadingUsers(false);
       }
     };
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    if (selectedEmployee && selectedEmployee !== "none") {
+      const selectedUser = users.find(user => user.id.toString() === selectedEmployee);
+      if (selectedUser && selectedUser.areaId) {
+        const matchingWard = wards.find(ward => ward.id === selectedUser.areaId);
+        if (matchingWard) {
+          setFilteredWards([matchingWard]);
+          setWard(matchingWard.name);
+        } else {
+          setFilteredWards([]);
+          setWard("");
+        }
+      } else {
+        setFilteredWards(wards);
+        setWard("");
+      }
+    } else {
+      setFilteredWards(wards);
+      setWard("");
+    }
+  }, [selectedEmployee, wards, users]);
+
+  useEffect(() => {
+    if (ward && ward !== "none") {
+      const selectedWard = wards.find(w => w.name === ward);
+      if (selectedWard) {
+        const matchingUsers = users.filter(user => user.areaId === selectedWard.id);
+        setFilteredUsers(matchingUsers);
+        if (matchingUsers.length > 0) {
+          const currentEmployeeStillValid = matchingUsers.some(user => user.id.toString() === selectedEmployee);
+          if (!currentEmployeeStillValid) {
+            setSelectedEmployee("");
+          }
+        } else {
+          setSelectedEmployee("");
+        }
+      } else {
+        setFilteredUsers(users);
+        setSelectedEmployee("");
+      }
+    } else {
+      setFilteredUsers(users);
+      setSelectedEmployee("");
+    }
+  }, [ward, wards, users]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,17 +238,17 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
       return;
     }
 
-    if (!ward) {
+    if (!ward || ward === "none") {
       toast.error("Vui lòng chọn phường", { position: "top-right", duration: 3000 });
       return;
     }
 
-    if (!selectedEmployee) {
+    if (!selectedEmployee || selectedEmployee === "none") {
       toast.error("Vui lòng chọn nhân viên", { position: "top-right", duration: 3000 });
       return;
     }
 
-    const selectedUser = users.find(user => user.id.toString() === selectedEmployee);
+    const selectedUser = filteredUsers.find(user => user.id.toString() === selectedEmployee);
     const employeeName = selectedUser ? selectedUser.name : "";
     const selectedWard = wards.find(w => w.name === ward);
     const areaId = selectedWard ? selectedWard.id : 0;
@@ -224,8 +279,6 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
     try {
       const createResponse = await areaManagerService.createTask(taskData);
       if (createResponse.success) {
-        toast.success("Tạo công việc thành công!", { position: "top-right", duration: 3000 });
-
         const taskId = createResponse.data.id;
 
         const updateTaskResponse = await areaManagerService.updateTaskStatus({
@@ -247,7 +300,6 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
         }
 
         toast.success("Giao việc thành công!", { position: "top-right", duration: 3000 });
-
         onSubmit(newTask);
         onClose();
 
@@ -365,13 +417,16 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
                         ? "Đang tải..." 
                         : !districtId 
                           ? "Không có quận được chọn" 
-                          : wards.length === 0 
+                          : filteredWards.length === 0 
                             ? "Không có phường" 
                             : "Chọn phường"
                     } />
                   </SelectTrigger>
                   <SelectContent className="max-h-[250px] overflow-y-auto no-scrollbar">
-                    {wards.map((wardOption) => (
+                    <SelectItem value="none" className="text-sm">
+                      Chọn phường
+                    </SelectItem>
+                    {filteredWards.map((wardOption) => (
                       <SelectItem key={wardOption.id} value={wardOption.name} className="text-sm">
                         {wardOption.name}
                       </SelectItem>
@@ -389,7 +444,10 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
                     <SelectValue placeholder={loadingUsers ? "Đang tải..." : "Chọn nhân viên"} />
                   </SelectTrigger>
                   <SelectContent className="max-h-[250px] overflow-y-auto no-scrollbar">
-                    {users.map((user) => (
+                    <SelectItem value="none" className="text-sm">
+                      Chọn nhân viên
+                    </SelectItem>
+                    {filteredUsers.map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()} className="text-sm">
                         {user.name}
                       </SelectItem>
@@ -438,7 +496,7 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
           </form>
         </DialogContent>
       </Dialog>
-      <Toaster />
+      {/* Bỏ <Toaster /> vì sẽ đặt ở SiteCheck.tsx */}
     </>
   );
 };

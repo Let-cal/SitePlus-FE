@@ -211,7 +211,7 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                     <div className="flex-1 overflow-y-auto">
                         <TabsContent
                             value="info"
-                            className="mt-4 !px-4 overflow-y-auto max-h-[calc(85vh-120px)]"
+                            className="mt-4 !px-4 overflow-y-auto max-h-[calc(90vh-120px)]"
                         >
                             {isLoading ? (
                                 <div className="text-center py-4">Đang tải...</div>
@@ -313,7 +313,7 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
 
                         <TabsContent
                             value="attributes"
-                            className="mt-4 px-4 overflow-y-auto max-h-[calc(85vh-120px)]"
+                            className="mt-4 px-4 overflow-y-auto max-h-[calc(90vh-120px)]"
                         >
                             {isLoading ? (
                                 <div className="text-center py-4">Đang tải...</div>

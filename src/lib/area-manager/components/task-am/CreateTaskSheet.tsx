@@ -46,6 +46,7 @@ interface User {
   email: string;
   name: string;
   roleName: string;
+  areaId: number;
   areaName: string;
   districtName: string;
   cityName: string;
@@ -96,8 +97,10 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
   const [description, setDescription] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
-  const [wards, setWards] = useState<Ward[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [wards, setWards] = useState<Ward[]>([]); // Danh sách phường gốc
+  const [filteredWards, setFilteredWards] = useState<Ward[]>([]); // Danh sách phường đã lọc
+  const [users, setUsers] = useState<User[]>([]); // Danh sách nhân viên gốc
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]); // Danh sách nhân viên đã lọc
   const [loadingWards, setLoadingWards] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
@@ -133,15 +136,18 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
           const wardsData = await areaManagerService.fetchWardsByDistrictId(districtId);
           console.log("Wards data received:", wardsData);
           setWards(wardsData);
+          setFilteredWards(wardsData); // Ban đầu hiển thị tất cả phường
         } catch (error) {
           console.error("Error fetching wards:", error);
           toast.error("Lỗi khi tải danh sách phường", { position: "top-right", duration: 3000 });
           setWards([]);
+          setFilteredWards([]);
         } finally {
           setLoadingWards(false);
         }
       } else {
         setWards([]);
+        setFilteredWards([]);
         setWard("");
         setLoadingWards(false);
       }
@@ -149,24 +155,76 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
     fetchWards();
   }, [districtId]);
 
-  // Fetch users khi component mount
+  // Fetch users khi component mount và lọc theo status: 1
   useEffect(() => {
     const fetchUsers = async () => {
       setLoadingUsers(true);
       try {
         const usersData = await areaManagerService.fetchUsers({});
         console.log("Users Data in CreateTaskSheet:", usersData);
-        setUsers(usersData);
+        const activeUsers = usersData.filter(user => user.status === 1); // Lọc chỉ lấy nhân viên có status: 1
+        setUsers(activeUsers);
+        setFilteredUsers(activeUsers); // Ban đầu hiển thị tất cả nhân viên active
       } catch (error) {
         console.error("Fetch Users Error in CreateTaskSheet:", error);
         toast.error("Lỗi khi tải danh sách nhân viên", { position: "top-right", duration: 3000 });
         setUsers([]);
+        setFilteredUsers([]);
       } finally {
         setLoadingUsers(false);
       }
     };
     fetchUsers();
   }, []);
+
+  // Logic lọc phường khi chọn nhân viên
+  useEffect(() => {
+    if (selectedEmployee && selectedEmployee !== "none") {
+      const selectedUser = users.find(user => user.id.toString() === selectedEmployee);
+      if (selectedUser && selectedUser.areaId) {
+        const matchingWard = wards.find(ward => ward.id === selectedUser.areaId);
+        if (matchingWard) {
+          setFilteredWards([matchingWard]); // Chỉ hiển thị phường khớp với areaId của nhân viên
+          setWard(matchingWard.name); // Tự động chọn phường đó
+        } else {
+          setFilteredWards([]); // Nếu không tìm thấy phường khớp, không hiển thị phường nào
+          setWard("");
+        }
+      } else {
+        setFilteredWards(wards); // Nếu không có nhân viên được chọn, hiển thị tất cả phường
+        setWard("");
+      }
+    } else {
+      setFilteredWards(wards); // Khi hủy chọn nhân viên, hiển thị tất cả phường
+      setWard(""); // Reset phường
+    }
+  }, [selectedEmployee, wards, users]);
+
+  // Logic lọc nhân viên khi chọn phường
+  useEffect(() => {
+    if (ward && ward !== "none") {
+      const selectedWard = wards.find(w => w.name === ward);
+      if (selectedWard) {
+        const matchingUsers = users.filter(user => user.areaId === selectedWard.id);
+        setFilteredUsers(matchingUsers); // Chỉ hiển thị nhân viên có areaId khớp với id của phường
+        if (matchingUsers.length > 0) {
+          // Nếu danh sách nhân viên thay đổi, kiểm tra xem nhân viên hiện tại có còn trong danh sách không
+          const currentEmployeeStillValid = matchingUsers.some(user => user.id.toString() === selectedEmployee);
+          if (!currentEmployeeStillValid) {
+            setSelectedEmployee(""); // Reset nhân viên nếu không còn trong danh sách
+          }
+        } else {
+          setSelectedEmployee(""); // Reset nhân viên nếu không có nhân viên nào khớp
+        }
+      } else {
+        setFilteredUsers(users); // Nếu không có phường được chọn, hiển thị tất cả nhân viên active
+        setSelectedEmployee("");
+      }
+    } else {
+      setFilteredUsers(users); // Khi hủy chọn phường, hiển thị tất cả nhân viên active
+      setSelectedEmployee(""); // Reset nhân viên
+    }
+  }, [ward, wards, users]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,17 +244,17 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
       return;
     }
 
-    if (!ward) {
+    if (!ward || ward === "none") {
       toast.error("Vui lòng chọn phường", { position: "top-right", duration: 3000 });
       return;
     }
 
-    if (!selectedEmployee) {
+    if (!selectedEmployee || selectedEmployee === "none") {
       toast.error("Vui lòng chọn nhân viên", { position: "top-right", duration: 3000 });
       return;
     }
 
-    const selectedUser = users.find(user => user.id.toString() === selectedEmployee);
+    const selectedUser = filteredUsers.find(user => user.id.toString() === selectedEmployee);
     const employeeName = selectedUser ? selectedUser.name : "";
     const selectedWard = wards.find(w => w.name === ward);
     const areaId = selectedWard ? selectedWard.id : 0;
@@ -345,13 +403,16 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
                         ? "Đang tải..." 
                         : !districtId 
                           ? "Không có quận được chọn" 
-                          : wards.length === 0 
+                          : filteredWards.length === 0 
                             ? "Không có phường" 
                             : "Chọn phường"
                     } />
                   </SelectTrigger>
                   <SelectContent className="max-h-[250px] overflow-y-auto no-scrollbar">
-                    {wards.map((wardOption) => (
+                    <SelectItem value="none" className="text-sm">
+                      Chọn phường
+                    </SelectItem>
+                    {filteredWards.map((wardOption) => (
                       <SelectItem key={wardOption.id} value={wardOption.name} className="text-sm">
                         {wardOption.name}
                       </SelectItem>
@@ -369,7 +430,10 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onSu
                     <SelectValue placeholder={loadingUsers ? "Đang tải..." : "Chọn nhân viên"} />
                   </SelectTrigger>
                   <SelectContent className="max-h-[250px] overflow-y-auto no-scrollbar">
-                    {users.map((user) => (
+                    <SelectItem value="none" className="text-sm">
+                      Chọn nhân viên
+                    </SelectItem>
+                    {filteredUsers.map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()} className="text-sm">
                         {user.name}
                       </SelectItem>

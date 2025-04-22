@@ -30,12 +30,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { MoreVertical, Check, XCircle, Plus } from "lucide-react";
 import managerService from "../../../../services/manager/manager.service";
 import areaManagerService from "../../../../services/area-manager/area-manager.service";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import SiteDetail from "../../../manager/components/site-manager/SiteDetail";
-import AssignTaskSheet from "./AssignTaskSheet"; // Import AssignTaskSheet
+import AssignTaskSheet from "./AssignTaskSheet";
 
 // Interface cho site
 interface Site {
@@ -71,8 +81,12 @@ export default function SiteCheck() {
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
   const [activeTab, setActiveTab] = React.useState<"status9" | "status8">("status9");
   const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(null);
-  const [isAssignTaskOpen, setIsAssignTaskOpen] = React.useState(false); // State để mở AssignTaskSheet
-  const [assignSiteId, setAssignSiteId] = React.useState<number | null>(null); // State để lưu siteId khi giao việc
+  const [isAssignTaskOpen, setIsAssignTaskOpen] = React.useState(false);
+  const [assignSiteId, setAssignSiteId] = React.useState<number | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = React.useState(0);
+  const [isAlertOpen, setIsAlertOpen] = React.useState(false);
+  const [alertAction, setAlertAction] = React.useState<"accept" | "reject" | null>(null);
+  const [alertSiteId, setAlertSiteId] = React.useState<number | null>(null);
   const itemsPerPage = 10;
 
   const categories = [
@@ -81,72 +95,96 @@ export default function SiteCheck() {
     { id: "2", name: "Mặt bằng độc lập" },
   ];
 
-  const handleAccept = async (siteId: number) => {
+  const loadSites = async () => {
+    setIsLoading(true);
+    try {
+      const status = activeTab === "status9" ? 9 : 8;
+      const response: SitesApiResponse = await managerService.fetchSites(currentPage, itemsPerPage, status);
+      console.log("Sites loaded:", response);
+      if (response.success) {
+        const filteredSites =
+          selectedCategory === "all"
+            ? response.data.listData
+            : response.data.listData.filter(
+                (site) => site.siteCategoryId.toString() === selectedCategory
+              );
+        setSites(filteredSites);
+        setTotalPages(response.data.totalPage || 1);
+      } else {
+        setSites([]);
+        setTotalPages(1);
+      }
+    } catch (error) {
+      console.error("Error loading sites:", error);
+      setSites([]);
+      setTotalPages(1);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAccept = async () => {
+    if (!alertSiteId) return;
     try {
       const success = await areaManagerService.updateSiteStatus({
-        siteId,
+        siteId: alertSiteId,
         status: 8,
       });
 
       if (success) {
-        const status = activeTab === "status9" ? 9 : 8;
-        const response: SitesApiResponse = await managerService.fetchSites(currentPage, itemsPerPage, status);
-        if (response.success) {
-          const filteredSites =
-            selectedCategory === "all"
-              ? response.data.listData
-              : response.data.listData.filter(
-                  (site) => site.siteCategoryId.toString() === selectedCategory
-                );
-          setSites(filteredSites);
-          setTotalPages(response.data.totalPage || 1);
-        }
+        toast.success("Đã chấp nhận site thành công!", { position: "top-right", duration: 3000 });
+        setRefreshTrigger((prev) => prev + 1);
       } else {
         toast.error("Không thể cập nhật trạng thái Site", { position: "top-right", duration: 3000 });
       }
     } catch (error) {
       console.error("Lỗi khi chấp nhận site:", error);
       toast.error("Lỗi khi cập nhật trạng thái Site", { position: "top-right", duration: 3000 });
+    } finally {
+      setIsAlertOpen(false);
+      setAlertSiteId(null);
+      setAlertAction(null);
     }
   };
 
-  const handleReject = async (siteId: number) => {
+  const handleReject = async () => {
+    if (!alertSiteId) return;
     try {
       const success = await areaManagerService.updateSiteStatus({
-        siteId,
+        siteId: alertSiteId,
         status: 4,
       });
 
       if (success) {
-        const status = activeTab === "status9" ? 9 : 8;
-        const response: SitesApiResponse = await managerService.fetchSites(currentPage, itemsPerPage, status);
-        if (response.success) {
-          const filteredSites =
-            selectedCategory === "all"
-              ? response.data.listData
-              : response.data.listData.filter(
-                  (site) => site.siteCategoryId.toString() === selectedCategory
-                );
-          setSites(filteredSites);
-          setTotalPages(response.data.totalPage || 1);
-        }
+        toast.success("Đã từ chối site thành công!", { position: "top-right", duration: 3000 });
+        setRefreshTrigger((prev) => prev + 1);
       } else {
         toast.error("Không thể cập nhật trạng thái Site", { position: "top-right", duration: 3000 });
       }
     } catch (error) {
       console.error("Lỗi khi từ chối site:", error);
       toast.error("Lỗi khi cập nhật trạng thái Site", { position: "top-right", duration: 3000 });
+    } finally {
+      setIsAlertOpen(false);
+      setAlertSiteId(null);
+      setAlertAction(null);
     }
   };
 
+  const openAlertDialog = (action: "accept" | "reject", siteId: number) => {
+    setAlertAction(action);
+    setAlertSiteId(siteId);
+    setIsAlertOpen(true);
+  };
+
   const handleAssignTask = (siteId: number) => {
-    setAssignSiteId(siteId); // Lưu siteId để truyền vào AssignTaskSheet
-    setIsAssignTaskOpen(true); // Mở dialog AssignTaskSheet
+    setAssignSiteId(siteId);
+    setIsAssignTaskOpen(true);
   };
 
   const handleCloseAssignTask = () => {
-    setIsAssignTaskOpen(false); // Đóng dialog
-    setAssignSiteId(null); // Reset siteId
+    setIsAssignTaskOpen(false);
+    setAssignSiteId(null);
   };
 
   const handleSubmitTask = async (newTask: {
@@ -158,19 +196,8 @@ export default function SiteCheck() {
     staff: string;
     description: string;
   }) => {
-    // Sau khi giao việc thành công, tải lại danh sách site
-    const status = activeTab === "status9" ? 9 : 8;
-    const response: SitesApiResponse = await managerService.fetchSites(currentPage, itemsPerPage, status);
-    if (response.success) {
-      const filteredSites =
-        selectedCategory === "all"
-          ? response.data.listData
-          : response.data.listData.filter(
-              (site) => site.siteCategoryId.toString() === selectedCategory
-            );
-      setSites(filteredSites);
-      setTotalPages(response.data.totalPage || 1);
-    }
+    // Không fetch danh sách trực tiếp, chỉ trigger useEffect để làm mới
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const handleViewDetail = (siteId: number) => {
@@ -182,35 +209,8 @@ export default function SiteCheck() {
   };
 
   React.useEffect(() => {
-    const loadSites = async () => {
-      setIsLoading(true);
-      try {
-        const status = activeTab === "status9" ? 9 : 8;
-        const response: SitesApiResponse = await managerService.fetchSites(currentPage, itemsPerPage, status);
-        console.log("Sites loaded:", response);
-        if (response.success) {
-          const filteredSites =
-            selectedCategory === "all"
-              ? response.data.listData
-              : response.data.listData.filter(
-                  (site) => site.siteCategoryId.toString() === selectedCategory
-                );
-          setSites(filteredSites);
-          setTotalPages(response.data.totalPage || 1);
-        } else {
-          setSites([]);
-          setTotalPages(1);
-        }
-      } catch (error) {
-        console.error("Error loading sites:", error);
-        setSites([]);
-        setTotalPages(1);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     loadSites();
-  }, [currentPage, selectedCategory, activeTab]);
+  }, [currentPage, selectedCategory, activeTab, refreshTrigger]);
 
   return (
     <div className="space-y-4">
@@ -315,13 +315,13 @@ export default function SiteCheck() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="border border-gray-300 rounded-md shadow-sm">
                           <DropdownMenuItem
-                            onClick={() => handleAccept(site.id)}
+                            onClick={() => openAlertDialog("accept", site.id)}
                             className="hover:bg-gray-100 flex items-center"
                           >
                             <Check className="h-4 w-4 mr-2" /> Chấp nhận
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleReject(site.id)}
+                            onClick={() => openAlertDialog("reject", site.id)}
                             className="hover:bg-gray-100 flex items-center"
                           >
                             <XCircle className="h-4 w-4 mr-2" /> Từ chối
@@ -374,6 +374,30 @@ export default function SiteCheck() {
         </>
       )}
 
+      {/* AlertDialog để xác nhận hành động */}
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {alertAction === "accept" ? "Xác nhận chấp nhận" : "Xác nhận từ chối"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertAction === "accept"
+                ? "Bạn có chắc muốn chấp nhận site này không?"
+                : "Bạn có chắc muốn từ chối site này không?"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsAlertOpen(false)}>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={alertAction === "accept" ? handleAccept : handleReject}
+            >
+              {alertAction === "accept" ? "Chấp nhận" : "Từ chối"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Hiển thị SiteDetail khi có siteId được chọn */}
       {selectedSiteId !== null && (
         <SiteDetail siteId={selectedSiteId} onClose={handleCloseDetail} />
@@ -388,6 +412,8 @@ export default function SiteCheck() {
           onSubmit={handleSubmitTask}
         />
       )}
+
+      <Toaster />
     </div>
   );
 }

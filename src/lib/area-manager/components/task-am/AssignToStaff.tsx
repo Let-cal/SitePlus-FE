@@ -126,7 +126,7 @@ const AssignToStaff = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
-  const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null); // Thêm state cho SiteDetail
+  const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 10;
 
@@ -140,9 +140,15 @@ const AssignToStaff = () => {
           status: filterStatus !== "all" ? parseInt(filterStatus) : undefined,
           priority: filterPriority !== "all" ? parseInt(filterPriority) : undefined,
         });
-        const filteredTasks = filterStatus !== "all"
-          ? tasksData.filter(task => task.status === parseInt(filterStatus))
-          : tasksData;
+        let filteredTasks = tasksData;
+        // Lọc theo status nếu không phải "all"
+        if (filterStatus !== "all") {
+          filteredTasks = filteredTasks.filter(task => task.status === parseInt(filterStatus));
+        }
+        // Lọc theo priority nếu không phải "all"
+        if (filterPriority !== "all") {
+          filteredTasks = filteredTasks.filter(task => task.priority === parseInt(filterPriority));
+        }
         setTasks(filteredTasks);
       } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -193,17 +199,14 @@ const AssignToStaff = () => {
   };
 
   const handleViewSiteDetail = (siteId: number | undefined) => {
-    // Đóng dropdown menu trước
-    document.body.click(); // Cách đơn giản để đóng tất cả các dropdown đang mở
-    
-    // Sau đó mới mở dialog với timeout nhỏ
+    document.body.click();
     setTimeout(() => {
       if (siteId) {
         setSelectedSiteId(siteId);
       } else {
         toast.error("Task này không liên quan đến site", { position: "top-right", duration: 3000 });
       }
-    }, 50); // Timeout nhỏ để đảm bảo dropdown đã đóng hoàn toàn
+    }, 50);
   };
 
   const handleCloseSiteDetail = () => {
@@ -212,7 +215,6 @@ const AssignToStaff = () => {
 
   const handleDelete = (taskId: number) => {
     console.log(`Xóa task ID: ${taskId}`);
-    // Thêm logic để xóa task (ví dụ: gọi API xóa và reload danh sách)
   };
 
   const handleAccept = async (task: Task) => {
@@ -251,9 +253,13 @@ const AssignToStaff = () => {
         status: filterStatus !== "all" ? parseInt(filterStatus) : undefined,
         priority: filterPriority !== "all" ? parseInt(filterPriority) : undefined,
       });
-      const filteredTasks = filterStatus !== "all"
-        ? tasksData.filter(task => task.status === parseInt(filterStatus))
-        : tasksData;
+      let filteredTasks = tasksData;
+      if (filterStatus !== "all") {
+        filteredTasks = filteredTasks.filter(task => task.status === parseInt(filterStatus));
+      }
+      if (filterPriority !== "all") {
+        filteredTasks = filteredTasks.filter(task => task.priority === parseInt(filterPriority));
+      }
       setTasks(filteredTasks);
     } catch (error) {
       console.error("Error accepting task:", error);
@@ -283,9 +289,13 @@ const AssignToStaff = () => {
         status: filterStatus !== "all" ? parseInt(filterStatus) : undefined,
         priority: filterPriority !== "all" ? parseInt(filterPriority) : undefined,
       });
-      const filteredTasks = filterStatus !== "all"
-        ? tasksData.filter(task => task.status === parseInt(filterStatus))
-        : tasksData;
+      let filteredTasks = tasksData;
+      if (filterStatus !== "all") {
+        filteredTasks = filteredTasks.filter(task => task.status === parseInt(filterStatus));
+      }
+      if (filterPriority !== "all") {
+        filteredTasks = filteredTasks.filter(task => task.priority === parseInt(filterPriority));
+      }
       setTasks(filteredTasks);
     } catch (error) {
       console.error("Error rejecting task:", error);
@@ -403,7 +413,7 @@ const AssignToStaff = () => {
                     currentItems.map((task) => (
                       <TableRow key={task.id}>
                         <TableCell>{task.id}</TableCell>
-                        <TableCell>{truncateName(task.name)}</TableCell>
+                        <TableCell title={task.name}>{truncateName(task.name)}</TableCell>
                         <TableCell>{task.staffName || "Chưa giao"}</TableCell>
                         <TableCell className={`font-medium ${priorityTextColors[task.priority] || 'text-gray-600'}`}>
                           {task.priorityName}
@@ -429,12 +439,6 @@ const AssignToStaff = () => {
                                 <Eye size={16} className="mr-2" />
                                 Xem chi tiết
                               </DropdownMenuItem>
-                              {/* {(task.status === 1 || task.status === 2) && (
-                                <DropdownMenuItem onClick={() => handleDelete(task.id)}>
-                                  <Trash size={16} className="mr-2" />
-                                  Xóa
-                                </DropdownMenuItem>
-                              )} */}
                               {(task.status === 3 || task.status === 4) && (
                                 <DropdownMenuItem onClick={() => handleViewSiteDetail(task.location.siteId)}>
                                   <FileBarChart size={16} className="mr-2" />
