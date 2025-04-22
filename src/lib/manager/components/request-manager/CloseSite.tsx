@@ -39,7 +39,7 @@ const customStyles = `
     background-color: hsl(var(--background));
     border-top: 1px solid hsl(var(--border));
     box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1002;
+    z-index: 1001;
     display: flex;
     flex-direction: column;
   }
@@ -250,11 +250,25 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
                 const url = window.URL.createObjectURL(pdfBlob);
                 const link = document.createElement("a");
                 link.href = url;
-                link.setAttribute("download", `Summary_${brandRequestId}.pdf`);
+                link.setAttribute("download", `Summary_${String(brandRequestId)}.pdf`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
+
+                const updateResult = await managerService.updateBrandRequestStatus(brandRequestId, 9);
+                if (updateResult.success) {
+                    toast.success("Đã cập nhật trạng thái yêu cầu thành Đã Đóng!", {
+                        position: "top-left",
+                        duration: 3000,
+                    });
+                } else {
+                    console.error("Lỗi khi cập nhật trạng thái yêu cầu:", updateResult.message);
+                    toast.error("Lỗi khi cập nhật trạng thái yêu cầu", {
+                        position: "top-left",
+                        duration: 3000,
+                    });
+                }
 
                 toast.success("Xuất PDF thành công!", {
                     position: "top-left",
@@ -296,6 +310,7 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
                             onClick={onClose}
                             className="absolute top-1 right-0 p-5"
                             aria-label="Đóng"
+                            disabled={isExporting}
                         >
                             <X className="h-6 w-6" />
                         </Button>
@@ -397,6 +412,7 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
                                                 variant="outline"
                                                 onClick={() => handleViewDetails(project.siteId)}
                                                 className="flex-1 text-sm"
+                                                disabled={isExporting}
                                             >
                                                 Xem chi tiết
                                             </Button>
@@ -404,6 +420,7 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
                                                 variant="outline"
                                                 onClick={() => handleUncloseSite(project)}
                                                 className="flex-1 text-sm"
+                                                disabled={isExporting}
                                             >
                                                 Bỏ chốt
                                             </Button>
@@ -421,7 +438,7 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
             <Dialog.Root open={selectedSiteId !== null} onOpenChange={(open) => !open && setSelectedSiteId(null)}>
                 <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[1001]" />
-                    <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg z-[1002] w-[90vw] max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+                    <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg z-[1002] w-[90vw] max-w-5xl h-[90vh] flex flex-col overflow-y-auto">
                         {selectedSiteId !== null && (
                             <SiteDetailDrawer
                                 siteId={selectedSiteId}

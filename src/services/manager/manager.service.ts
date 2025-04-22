@@ -60,8 +60,8 @@ interface BrandRequest {
   updatedAt: string;
   brandStatus: number;
   brandStatusName: string;
-  customerSegments: string[];
-  industryCategories: string[];
+  customerSegments: { name: string }[];
+  industryCategories: { name: string }[];
 }
 
 interface BrandRequestResponse {

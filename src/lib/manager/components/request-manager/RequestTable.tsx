@@ -48,18 +48,19 @@ interface Request {
   status?: number;
   statusName?: string;
   createdAt: string;
+  updatedAt: string;
   storeProfileCategoryName?: string;
   brandStatus?: number;
   brandId: number;
 }
 
 export default function RequestTableWithTabs() {
-  const [activeTab, setActiveTab] = React.useState<"new" | "processed">("new");
+  const [activeTab, setActiveTab] = React.useState<"new" | "processed" | "closed">("new"); // Thêm "closed"
   const [currentPage, setCurrentPage] = React.useState(1);
   const [requests, setRequests] = React.useState<Request[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [selectedRequestId, setSelectedRequestId] = React.useState<string | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false); // Thêm state loading
+  const [isLoading, setIsLoading] = React.useState(false);
   const itemsPerPage = 10;
 
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
@@ -79,16 +80,13 @@ export default function RequestTableWithTabs() {
         status: item.brandRequest.status,
         statusName: item.brandRequest.statusName,
         createdAt: item.brandRequest.createdAt,
+        updatedAt: item.brandRequest.updatedAt,
         storeProfileCategoryName: item.storeProfile?.storeProfileCategoryName || "Không xác định",
         brandStatus: item.brandRequest.brandStatus,
         brandId: item.brandRequest.brandId,
       }));
 
-      const sortedData = [...mappedData].sort((a, b) => {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-
-      setRequests(sortedData);
+      setRequests(mappedData);
     };
     loadBrandRequests();
   }, []);
@@ -97,10 +95,19 @@ export default function RequestTableWithTabs() {
     let data = requests;
 
     if (activeTab === "new") {
-      return data.filter((item) => item.status === 0);
+      return data
+        .filter((item) => item.status === 0)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (activeTab === "processed") {
+      return data
+        .filter((item) => item.status === 1 || item.status === 3)
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    } else {
+      // Tab "ĐÃ ĐÓNG": lọc status === 9 và sắp xếp theo updatedAt giảm dần
+      return data
+        .filter((item) => item.status === 9)
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     }
-
-    return data.filter((item) => item.status === 1 || item.status === 3);
   };
 
   React.useEffect(() => {
@@ -132,7 +139,7 @@ export default function RequestTableWithTabs() {
   };
 
   const processAction = async (requestIdStr: string, action: "accepted" | "rejected" | "deleted", note?: string) => {
-    setIsLoading(true); // Bật loading
+    setIsLoading(true);
     const requestId = parseInt(requestIdStr);
     const newStatus = action === "accepted" ? 1 : 2;
 
@@ -144,7 +151,6 @@ export default function RequestTableWithTabs() {
       }
 
       if (action === "accepted") {
-        // Bước 1: Gửi email chấp nhận
         console.log("Sending accept email for requestId:", requestId);
         const acceptEmailResult = await managerService.sendAcceptEmail(requestId, "Chúng tôi sẽ sớm liên hệ để hỗ trợ bạn với các bước tiếp theo.");
         if (!acceptEmailResult.success) {
@@ -153,7 +159,6 @@ export default function RequestTableWithTabs() {
           return;
         }
 
-        // Bước 2: Cập nhật status của brand request
         console.log("Calling updateBrandRequestStatus with requestId:", requestId, "newStatus:", newStatus);
         const updateRequestResult = await managerService.updateBrandRequestStatus(requestId, newStatus);
         if (!updateRequestResult.success) {
@@ -162,17 +167,14 @@ export default function RequestTableWithTabs() {
           return;
         }
 
-        // Bước 3: Nếu brandStatus === 0, cập nhật brandStatus thành 1
         if (request.brandStatus === 0) {
           console.log("Calling updateBrandStatus with brandId:", request.brandId);
           const updateBrandResult = await managerService.updateBrandStatus(request.brandId, 1);
           if (!updateBrandResult.success) {
             console.warn("Lỗi khi cập nhật trạng thái thương hiệu:", updateBrandResult.message);
-            // Tiếp tục dù lỗi
           }
         }
 
-        // Cập nhật state
         setRequests((prevRequests) =>
           prevRequests.map((req) =>
             req.id === requestIdStr
@@ -187,7 +189,6 @@ export default function RequestTableWithTabs() {
         );
         toast.success("Đã chấp nhận yêu cầu ID: " + requestIdStr, { position: "top-right", duration: 3000 });
       } else if (action === "rejected") {
-        // Bước 1: Gửi email từ chối
         console.log("Sending reject email for requestId:", requestId);
         const rejectEmailResult = await managerService.sendRejectEmail(requestId, note!);
         if (!rejectEmailResult.success) {
@@ -196,7 +197,6 @@ export default function RequestTableWithTabs() {
           return;
         }
 
-        // Bước 2: Cập nhật status của brand request
         console.log("Calling updateBrandRequestStatus with requestId:", requestId, "newStatus:", newStatus);
         const updateRequestResult = await managerService.updateBrandRequestStatus(requestId, newStatus);
         if (!updateRequestResult.success) {
@@ -205,7 +205,6 @@ export default function RequestTableWithTabs() {
           return;
         }
 
-        // Cập nhật state
         setRequests((prevRequests) =>
           prevRequests.map((req) =>
             req.id === requestIdStr
@@ -244,7 +243,7 @@ export default function RequestTableWithTabs() {
       console.error("Error handling action:", error);
       toast.error("Lỗi khi xử lý hành động", { position: "top-right", duration: 3000 });
     } finally {
-      setIsLoading(false); // Tắt loading
+      setIsLoading(false);
       setIsConfirmDialogOpen(false);
       setIsRejectReasonDialogOpen(false);
       setDialogRequestId(null);
@@ -275,7 +274,7 @@ export default function RequestTableWithTabs() {
   };
 
   const ActionButton = ({ request }: { request: Request }) => {
-    if (activeTab === "processed") {
+    if (activeTab === "processed" || activeTab === "closed") { // Áp dụng cho cả tab "ĐÃ ĐÓNG"
       return (
         <div className="flex gap-2">
           <Badge
@@ -316,7 +315,6 @@ export default function RequestTableWithTabs() {
 
   return (
     <div className="space-y-4 relative">
-      {/* Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
@@ -336,6 +334,12 @@ export default function RequestTableWithTabs() {
             onClick={() => setActiveTab("processed")}
           >
             ĐÃ XỬ LÝ
+          </Button>
+          <Button
+            variant={activeTab === "closed" ? "default" : "outline"}
+            onClick={() => setActiveTab("closed")}
+          >
+            ĐÃ ĐÓNG
           </Button>
         </div>
       </div>

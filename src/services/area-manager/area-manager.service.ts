@@ -27,6 +27,7 @@ interface User {
   email: string;
   name: string;
   roleName: string;
+  areaId: number;
   areaName: string;
   districtName: string;
   cityName: string;
@@ -63,6 +64,8 @@ interface Task {
   deadline: string;
   createdAt: string;
   updatedAt: string;
+  isDeadlineWarning: boolean;
+  daysToDeadline: number;
 }
 
 // Định nghĩa interface cho dữ liệu gửi lên khi tạo task
@@ -124,6 +127,16 @@ interface BrandRequestResponse {
   brandRequestStoreProfile: BrandRequestStoreProfile;
   storeProfile: StoreProfile;
   storeProfileCriteria: StoreProfileCriteria[];
+}
+
+interface UpdateTaskRequest {
+  name: string;
+  description: string;
+  staffId: number;
+  deadline: string;
+  priority: number;
+  status: number;
+  areaId: number;
 }
 
 // Interface cho tham số của updateSiteDealStatus
@@ -638,7 +651,7 @@ class AreaManagerService {
         localStorage.removeItem("token");
       } else {
         toast.error(
-          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
           { position: "top-right", duration: 3000 }
         );
       }
@@ -869,6 +882,49 @@ class AreaManagerService {
         );
       }
       return false;
+    }
+  }
+
+  // Update Task (PUT)
+  async updateTask(taskId: number, taskData: UpdateTaskRequest): Promise<Task | null> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return null;
+    }
+
+    try {
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.PUT.UPDATE_TASK}`.replace(":taskId", taskId.toString());
+      const response = await axios.put(endpoint, taskData, authHeader);
+
+      const data: TaskResponse = response.data;
+      if (data.success) {
+        // toast.success(data.message || "Cập nhật task thành công!", {
+        //   position: "top-right",
+        //   duration: 3000,
+        // });
+        return data.data;
+      } else {
+        toast.error(data.message || "Lỗi khi cập nhật task", {
+          position: "top-right",
+          duration: 3000,
+        });
+        return null;
+      }
+    } catch (error) {
+      console.error("API Error for Update Task:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+          position: "top-right",
+          duration: 3000,
+        });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-right", duration: 3000 }
+        );
+      }
+      return null;
     }
   }
 }

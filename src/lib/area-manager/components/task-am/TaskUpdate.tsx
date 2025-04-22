@@ -34,6 +34,8 @@ interface Task {
   deadline: string;
   createdAt: string;
   updatedAt: string;
+  isDeadlineWarning: boolean;
+  daysToDeadline: number;
 }
 
 interface Ward {
@@ -49,6 +51,7 @@ interface User {
   email: string;
   name: string;
   roleName: string;
+  areaId: number;
   areaName: string;
   districtName: string;
   cityName: string;
@@ -102,17 +105,20 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
   const [districtId, setDistrictId] = useState<number | null>(null);
   const [districtName, setDistrictName] = useState<string>("Chưa có thông tin");
   const [ward, setWard] = useState<string>("");
+  const [displayedWard, setDisplayedWard] = useState<string>(""); // Giá trị hiển thị cho phường
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
+  const [displayedStaff, setDisplayedStaff] = useState<string>(""); // Giá trị hiển thị cho nhân viên
   const [description, setDescription] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [wards, setWards] = useState<Ward[]>([]);
+  const [filteredWards, setFilteredWards] = useState<Ward[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loadingWards, setLoadingWards] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [hasDistrictError, setHasDistrictError] = useState(false);
 
-  // Fetch wards và set ward một cách đồng bộ
   const fetchAndSetWards = useCallback(async (currentDistrictId: number) => {
     try {
       setLoadingWards(true);
@@ -122,32 +128,26 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
       console.log("Wards data received:", wardsData);
       
       setWards(wardsData);
+      setFilteredWards(wardsData);
 
-      // Ưu tiên set ward từ task
       if (task?.location?.areaName) {
         const matchingWard = wardsData.find(w => w.name === task.location.areaName);
         if (matchingWard) {
           setWard(matchingWard.name);
+          setDisplayedWard(matchingWard.name);
           console.log("Ward set from task:", matchingWard.name);
-        } else if (wardsData.length > 0) {
-          // Nếu không tìm thấy, chọn ward đầu tiên
-          setWard(wardsData[0].name);
-          console.log("Ward set to first ward:", wardsData[0].name);
         }
-      } else if (wardsData.length > 0) {
-        // Nếu không có task, chọn ward đầu tiên
-        setWard(wardsData[0].name);
-        console.log("Ward set to first ward:", wardsData[0].name);
       }
     } catch (error) {
       console.error("Error fetching wards:", error);
       toast.error("Lỗi khi tải danh sách phường", { position: "top-right", duration: 3000 });
+      setWards([]);
+      setFilteredWards([]);
     } finally {
       setLoadingWards(false);
     }
   }, [task]);
 
-  // Fetch districts
   const fetchDistricts = useCallback(async () => {
     try {
       const districts: District[] = await areaManagerService.fetchDistricts();
@@ -167,18 +167,38 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
     }
   }, [districtId]);
 
-  // Khởi tạo state từ task
   useEffect(() => {
     if (task) {
       setName(task.name);
       setDescription(task.description);
       setPriority(getPriorityString(task.priority));
-      setDeadline(new Date(task.deadline));
+      if (task.deadline) {
+        try {
+          const datePart = task.deadline.split('T')[0];
+          const [year, month, day] = datePart.split('-').map(Number);
+          const parsedDeadline = new Date(year, month - 1, day);
+          if (!isNaN(parsedDeadline.getTime())) {
+            setDeadline(parsedDeadline);
+          } else {
+            throw new Error("Invalid date");
+          }
+        } catch (error) {
+          console.error("Error parsing deadline:", error);
+          setDeadline(undefined);
+          toast.error("Thời hạn không hợp lệ", { position: "top-right", duration: 3000 });
+        }
+      } else {
+        setDeadline(undefined);
+      }
+      // Set giá trị ban đầu cho nhân viên và phường
+      setDisplayedStaff(task.staffName || "");
+      setDisplayedWard(task.location?.areaName || "");
+      setWard(task.location?.areaName || "");
+      setSelectedEmployee(task.staffId.toString());
       console.log("Initial task data set:", task);
     }
   }, [task]);
 
-  // Lấy districtId từ localStorage
   useEffect(() => {
     const storedDistrictId = localStorage.getItem("districtId");
     const storedDistrict = localStorage.getItem("district");
@@ -191,8 +211,6 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
       if (!isNaN(parsedDistrictId)) {
         setDistrictId(parsedDistrictId);
         setHasDistrictError(false);
-
-        // Fetch wards và districts ngay khi có districtId
         fetchAndSetWards(parsedDistrictId);
         fetchDistricts();
       } else {
@@ -207,25 +225,28 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
     }
   }, [fetchAndSetWards, fetchDistricts]);
 
-  // Fetch users
   useEffect(() => {
     const fetchUsers = async () => {
       setLoadingUsers(true);
       try {
         const usersData = await areaManagerService.fetchUsers({});
         console.log("Users Data in TaskUpdate:", usersData);
-        setUsers(usersData);
-        
-        if (task && usersData.length > 0) {
-          const matchingUser = usersData.find(u => u.id === task.staffId);
+        const activeUsers = usersData.filter(user => user.status === 1);
+        setUsers(activeUsers);
+        setFilteredUsers(activeUsers);
+
+        if (task && activeUsers.length > 0) {
+          const matchingUser = activeUsers.find(u => u.id === task.staffId);
           if (matchingUser) {
             setSelectedEmployee(matchingUser.id.toString());
+            setDisplayedStaff(matchingUser.name);
           }
         }
       } catch (error) {
         console.error("Fetch Users Error in TaskUpdate:", error);
         toast.error("Lỗi khi tải danh sách nhân viên", { position: "top-right", duration: 3000 });
         setUsers([]);
+        setFilteredUsers([]);
       } finally {
         setLoadingUsers(false);
       }
@@ -233,7 +254,64 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
     fetchUsers();
   }, [task]);
 
-  // Thêm custom styles để tăng z-index của SelectContent
+  useEffect(() => {
+    if (selectedEmployee && selectedEmployee !== "none") {
+      const selectedUser = users.find(user => user.id.toString() === selectedEmployee);
+      if (selectedUser) {
+        setDisplayedStaff(selectedUser.name); // Cập nhật tên hiển thị khi chọn nhân viên
+        if (selectedUser.areaId) {
+          const matchingWard = wards.find(ward => ward.id === selectedUser.areaId);
+          if (matchingWard) {
+            setFilteredWards([matchingWard]);
+            setWard(matchingWard.name);
+            setDisplayedWard(matchingWard.name);
+          } else {
+            setFilteredWards([]);
+            setWard("");
+            setDisplayedWard("");
+          }
+        } else {
+          setFilteredWards(wards);
+          setWard("");
+          setDisplayedWard("");
+        }
+      }
+    } else {
+      setFilteredWards(wards);
+      setWard(task?.location?.areaName || "");
+      setDisplayedWard(task?.location?.areaName || "");
+    }
+  }, [selectedEmployee, wards, users, task]);
+
+  useEffect(() => {
+    if (ward && ward !== "none") {
+      const selectedWard = wards.find(w => w.name === ward);
+      if (selectedWard) {
+        setDisplayedWard(selectedWard.name); // Cập nhật tên hiển thị khi chọn phường
+        const matchingUsers = users.filter(user => user.areaId === selectedWard.id);
+        setFilteredUsers(matchingUsers);
+        if (matchingUsers.length > 0) {
+          const currentEmployeeStillValid = matchingUsers.some(user => user.id.toString() === selectedEmployee);
+          if (!currentEmployeeStillValid) {
+            setSelectedEmployee("");
+            setDisplayedStaff("");
+          }
+        } else {
+          setSelectedEmployee("");
+          setDisplayedStaff("");
+        }
+      } else {
+        setFilteredUsers(users);
+        setSelectedEmployee(task?.staffId.toString() || "");
+        setDisplayedStaff(task?.staffName || "");
+      }
+    } else {
+      setFilteredUsers(users);
+      setSelectedEmployee(task?.staffId.toString() || "");
+      setDisplayedStaff(task?.staffName || "");
+    }
+  }, [ward, wards, users, task]);
+
   useEffect(() => {
     const styleElement = document.createElement('style');
     styleElement.innerHTML = customStyles;
@@ -245,6 +323,11 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!task) {
+      toast.error("Không tìm thấy thông tin task để cập nhật", { position: "top-right", duration: 3000 });
+      return;
+    }
 
     if (!deadline) {
       toast.error("Vui lòng chọn thời hạn", { position: "top-right", duration: 3000 });
@@ -261,12 +344,12 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
       return;
     }
 
-    if (!ward) {
+    if (!ward || ward === "none") {
       toast.error("Vui lòng chọn phường", { position: "top-right", duration: 3000 });
       return;
     }
 
-    if (!selectedEmployee) {
+    if (!selectedEmployee || selectedEmployee === "none") {
       toast.error("Vui lòng chọn nhân viên", { position: "top-right", duration: 3000 });
       return;
     }
@@ -283,15 +366,18 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
       staffId: Number(selectedEmployee),
       deadline: formattedDeadline,
       priority: priorityValue,
+      status: task.status,
     };
 
     try {
-      // Gọi API cập nhật task (chưa có API, tạm thời bỏ qua)
-      // await areaManagerService.updateTask(task.id, updatedTask);
-      toast.success("Cập nhật công việc thành công!", { position: "top-right", duration: 3000 });
-
-      onUpdate();
-      onClose();
+      const result = await areaManagerService.updateTask(task.id, updatedTask);
+      if (result) {
+        toast.success("Cập nhật công việc thành công!", { position: "top-right", duration: 3000 });
+        onUpdate();
+        onClose();
+      } else {
+        toast.error("Cập nhật công việc thất bại", { position: "top-right", duration: 3000 });
+      }
     } catch (error) {
       console.error("Error updating task:", error);
       toast.error("Lỗi khi cập nhật công việc", { position: "top-right", duration: 3000 });
@@ -359,10 +445,19 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
             disabled={loadingWards}
           >
             <SelectTrigger id="ward" className="text-sm h-10">
-              <SelectValue placeholder={loadingWards ? "Đang tải..." : "Chọn phường"} />
+              <SelectValue placeholder={
+                loadingWards 
+                  ? "Đang tải..." 
+                  : filteredWards.length === 0 
+                    ? "Không có phường" 
+                    : displayedWard || "Chọn phường"
+              } />
             </SelectTrigger>
             <SelectContent className="max-h-[250px] overflow-y-auto select-content-high-zindex">
-              {wards.map((wardOption) => (
+              <SelectItem value="none" className="text-sm">
+                Chọn phường
+              </SelectItem>
+              {filteredWards.map((wardOption) => (
                 <SelectItem key={wardOption.id} value={wardOption.name} className="text-sm">
                   {wardOption.name}
                 </SelectItem>
@@ -381,10 +476,13 @@ const TaskUpdate: React.FC<TaskUpdateProps> = ({ task, onCancel, onUpdate, onClo
             disabled={loadingUsers}
           >
             <SelectTrigger id="employee" className="text-sm h-10">
-              <SelectValue placeholder={loadingUsers ? "Đang tải..." : "Chọn nhân viên"} />
+              <SelectValue placeholder={loadingUsers ? "Đang tải..." : displayedStaff || "Chọn nhân viên"} />
             </SelectTrigger>
             <SelectContent className="max-h-[250px] overflow-y-auto select-content-high-zindex">
-              {users.map((user) => (
+              <SelectItem value="none" className="text-sm">
+                Chọn nhân viên
+              </SelectItem>
+              {filteredUsers.map((user) => (
                 <SelectItem key={user.id} value={user.id.toString()} className="text-sm">
                   {user.name}
                 </SelectItem>
