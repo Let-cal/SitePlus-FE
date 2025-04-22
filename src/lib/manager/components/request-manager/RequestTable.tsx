@@ -55,7 +55,7 @@ interface Request {
 }
 
 export default function RequestTableWithTabs() {
-  const [activeTab, setActiveTab] = React.useState<"new" | "processed" | "closed">("new"); // Thêm "closed"
+  const [activeTab, setActiveTab] = React.useState<"new" | "processed" | "closed">("new");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [requests, setRequests] = React.useState<Request[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
@@ -103,7 +103,6 @@ export default function RequestTableWithTabs() {
         .filter((item) => item.status === 1 || item.status === 3)
         .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     } else {
-      // Tab "ĐÃ ĐÓNG": lọc status === 9 và sắp xếp theo updatedAt giảm dần
       return data
         .filter((item) => item.status === 9)
         .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
@@ -179,11 +178,11 @@ export default function RequestTableWithTabs() {
           prevRequests.map((req) =>
             req.id === requestIdStr
               ? {
-                  ...req,
-                  status: newStatus,
-                  statusName: "Chấp nhận",
-                  brandStatus: request.brandStatus === 0 ? 1 : req.brandStatus,
-                }
+                ...req,
+                status: newStatus,
+                statusName: "Chấp nhận",
+                brandStatus: request.brandStatus === 0 ? 1 : req.brandStatus,
+              }
               : req
           )
         );
@@ -209,10 +208,10 @@ export default function RequestTableWithTabs() {
           prevRequests.map((req) =>
             req.id === requestIdStr
               ? {
-                  ...req,
-                  status: newStatus,
-                  statusName: "Từ chối",
-                }
+                ...req,
+                status: newStatus,
+                statusName: "Từ chối",
+              }
               : req
           )
         );
@@ -230,10 +229,10 @@ export default function RequestTableWithTabs() {
           prevRequests.map((req) =>
             req.id === requestIdStr
               ? {
-                  ...req,
-                  status: newStatus,
-                  statusName: "Đã xóa",
-                }
+                ...req,
+                status: newStatus,
+                statusName: "Đã xóa",
+              }
               : req
           )
         );
@@ -274,7 +273,7 @@ export default function RequestTableWithTabs() {
   };
 
   const ActionButton = ({ request }: { request: Request }) => {
-    if (activeTab === "processed" || activeTab === "closed") { // Áp dụng cho cả tab "ĐÃ ĐÓNG"
+    if (activeTab === "processed") {
       return (
         <div className="flex gap-2">
           <Badge
@@ -285,6 +284,16 @@ export default function RequestTableWithTabs() {
             }
           >
             Chấp nhận
+          </Badge>
+        </div>
+      );
+    } else if (activeTab === "closed") {
+      return (
+        <div className="flex gap-2">
+          <Badge
+            className="bg-gray-500 dark:bg-gray-600 hover:bg-gray-600 dark:hover:bg-gray-700 w-24 h-6 justify-center px-2 py-0.5 text-xs whitespace-nowrap"
+          >
+            Đã đóng
           </Badge>
         </div>
       );

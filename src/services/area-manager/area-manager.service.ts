@@ -920,7 +920,7 @@ class AreaManagerService {
         localStorage.removeItem("token");
       } else {
         toast.error(
-          "Lỗi kết nối API: " + (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
           { position: "top-right", duration: 3000 }
         );
       }
