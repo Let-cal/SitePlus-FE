@@ -1,13 +1,12 @@
 import Sidebar from "@/lib/all-site/SideBar";
-import { Briefcase, ClipboardList, FileText, Home, ClipboardCheck, Mail } from "lucide-react";
+import { FileText, Handshake, Home, Mail } from "lucide-react";
 import * as React from "react";
-import LogoSitePlus from "/icons/logo-SitePlus.svg";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
-import StatsCards from "../components/home-manager/StatsCard";
 import DashboardCharts from "../components/home-manager/DashboardCharts";
+import StatsCards from "../components/home-manager/StatsCard";
 import UserManagement from "../components/home-manager/UserManagement";
-
+import LogoSitePlus from "/icons/logo-SitePlus.svg";
 
 export default function ManagerPage() {
   const managerItems = [
@@ -32,14 +31,18 @@ export default function ManagerPage() {
       label: "KHO MẶT BẰNG",
       href: "/manager-site",
     },
+    {
+      icon: <Handshake size={20} />,
+      label: "ĐỐI TÁC",
+      href: "/manager-brand",
+    },
   ];
 
   const { handleLogout } = useAuth();
 
   return (
-    <div className="flex h-screen overflow-hidden"> 
-      
-      <div className="flex-none"> 
+    <div className="flex h-screen overflow-hidden">
+      <div className="flex-none">
         <Sidebar
           onLogout={handleLogout}
           logoHref={LogoSitePlus}
@@ -50,9 +53,7 @@ export default function ManagerPage() {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <Header
-          title="TRANG CHỦ"
-        />
+        <Header title="TRANG CHỦ" />
 
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">

@@ -125,6 +125,15 @@ class AdminService {
     };
   }
 
+  private getAuthHeaderForCreateUser() {
+    const token = localStorage.getItem("token");
+    return {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json-patch+json",
+      accept: "*/*",
+    };
+  }
+
   async getAllRoles(): Promise<Role[]> {
     try {
       const response: AxiosResponse<AdminApiResponse<Role[]>> = await axios.get(
@@ -185,9 +194,13 @@ class AdminService {
   ): Promise<AdminApiResponse<CreateUserResponse>> {
     try {
       const response: AxiosResponse<AdminApiResponse<CreateUserResponse>> =
-        await axios.post(`${API_BASE_URL}/api/user/register`, userData, {
-          headers: this.getAuthHeader(),
-        });
+        await axios.post(
+          `${API_BASE_URL}${API_ENDPOINTS.ADMIN.POST.CREATE_USER}`,
+          userData,
+          {
+            headers: this.getAuthHeaderForCreateUser(),
+          }
+        );
       return response.data;
     } catch (error) {
       console.error("Error creating user:", error);

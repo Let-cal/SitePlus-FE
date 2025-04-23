@@ -12,6 +12,7 @@ import { ThemeProvider } from "./lib/all-site/ThemeProvider";
 import AreaManagerPage from "./lib/area-manager/pages/AreaManagerPage";
 import AreaManagerSiteCheck from "./lib/area-manager/pages/AreaManagerSiteCheck";
 import AreaManagerTask from "./lib/area-manager/pages/AreaManagerTask";
+import ManagerBrand from "./lib/manager/pages/ManagerBrand";
 import ManagerPage from "./lib/manager/pages/ManagerPage";
 import ManagerRequest from "./lib/manager/pages/ManagerRequest";
 import ManagerSite from "./lib/manager/pages/ManagerSite";
@@ -100,6 +101,15 @@ createRoot(document.getElementById("root")!).render(
                 element={
                   <ProtectedRoute
                     element={<ManagerTask />}
+                    roles={["Manager"]}
+                  />
+                }
+              />
+              <Route
+                path="/manager-brand"
+                element={
+                  <ProtectedRoute
+                    element={<ManagerBrand />}
                     roles={["Manager"]}
                   />
                 }

@@ -21,6 +21,7 @@ import {
   District,
   Role,
 } from "@/services/admin/admin.service";
+import { useUserContext } from "@/services/admin/UserContext";
 import axios from "axios";
 import { useSnackbar } from "notistack";
 import * as React from "react";
@@ -35,6 +36,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
   open,
   onOpenChange,
 }) => {
+  const { refreshData } = useUserContext();
   const { enqueueSnackbar } = useSnackbar();
   const [step, setStep] = useState(1);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -138,6 +140,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         roleId: parseInt(formData.roleId),
         areaId: parseInt(formData.area),
       };
+      console.log("user param: ", userData);
 
       await adminService.createUser(userData);
 
@@ -149,18 +152,21 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
           vertical: "bottom",
         },
       });
+
+      // Refresh the user data after successful creation
+      refreshData();
+
       handleOpenChange(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const errorMessages = error.response?.data?.["error-messages"] || [
-          "Đã xảy ra lỗi. Vui lòng thử lại.",
-        ];
-        errorMessages.forEach((message) => {
-          enqueueSnackbar(`Lỗi: ${message}`, {
-            variant: "error",
-            anchorOrigin: { horizontal: "left", vertical: "bottom" },
-            preventDuplicate: true,
-          });
+        // Trích xuất message từ API response
+        const errorMessage =
+          error.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại.";
+
+        enqueueSnackbar(`Lỗi: ${errorMessage}`, {
+          variant: "error",
+          anchorOrigin: { horizontal: "left", vertical: "bottom" },
+          preventDuplicate: true,
         });
       } else {
         enqueueSnackbar("Đã xảy ra lỗi khi tạo người dùng", {
@@ -294,11 +300,6 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             }
             placeholder="Nhập mật khẩu"
           />
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox checked={true} disabled className="bg-gray-200" />
-          <Label>Trạng thái (Đang hoạt động)</Label>
         </div>
       </div>
 

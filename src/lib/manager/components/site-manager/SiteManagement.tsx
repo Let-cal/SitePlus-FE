@@ -1,12 +1,5 @@
-import * as React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
@@ -15,7 +8,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -23,9 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import * as React from "react";
 import managerService from "../../../../services/manager/manager.service";
-import areaManagerService from "../../../../services/area-manager/area-manager.service";
 import SiteDetail from "./SiteDetail"; // Import component SiteDetail
 
 // Interface cho site (đơn giản hóa từ API)
@@ -60,7 +59,9 @@ export default function SiteManagement() {
   const [totalPages, setTotalPages] = React.useState(1); // Tổng số trang
   const [isLoading, setIsLoading] = React.useState(false); // Trạng thái loading
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all"); // State để lọc theo siteCategoryId
-  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(null); // State để lưu siteId khi bấm "Xem chi tiết"
+  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(
+    null
+  ); // State để lưu siteId khi bấm "Xem chi tiết"
   const itemsPerPage = 10; // Số lượng site trên mỗi trang
 
   // Danh sách các category để hiển thị trong dropdown
@@ -75,7 +76,11 @@ export default function SiteManagement() {
     const loadSites = async () => {
       setIsLoading(true);
       try {
-        const response: SitesApiResponse = await managerService.fetchSites(currentPage, itemsPerPage, 1); // Gọi API với status=1
+        const response: SitesApiResponse = await managerService.fetchSites(
+          currentPage,
+          itemsPerPage,
+          1
+        ); // Gọi API với status=1
         console.log("Sites loaded:", response); // Kiểm tra dữ liệu
         if (response.success) {
           // Lọc site theo selectedCategory
@@ -83,8 +88,8 @@ export default function SiteManagement() {
             selectedCategory === "all"
               ? response.data.listData
               : response.data.listData.filter(
-                (site) => site.siteCategoryId.toString() === selectedCategory
-              );
+                  (site) => site.siteCategoryId.toString() === selectedCategory
+                );
           setSites(filteredSites);
           setTotalPages(response.data.totalPage || 1); // Lấy totalPage từ API response
         } else {
@@ -117,7 +122,11 @@ export default function SiteManagement() {
           </SelectTrigger>
           <SelectContent className="border border-gray-300 rounded-md shadow-sm">
             {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id} className="hover:bg-gray-100">
+              <SelectItem
+                key={category.id}
+                value={category.id}
+                className="hover:bg-gray-100"
+              >
                 {category.name}
               </SelectItem>
             ))}
@@ -146,7 +155,9 @@ export default function SiteManagement() {
               {sites.map((site) => (
                 <TableRow key={site.id}>
                   <TableCell>{site.id}</TableCell>
-                  <TableCell>{`${site.address}${site.areaName ? `, ${site.areaName}` : ""}`}</TableCell>
+                  <TableCell>{`${site.address}${
+                    site.areaName ? `, ${site.areaName}` : ""
+                  }`}</TableCell>
                   <TableCell>{site.districtName || "Không xác định"}</TableCell>
                   <TableCell>{`${site.size}m²`}</TableCell>
                   <TableCell>
@@ -179,7 +190,9 @@ export default function SiteManagement() {
                 <PaginationItem>
                   <PaginationPrevious
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    className={
+                      currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                    }
                   />
                 </PaginationItem>
                 {Array.from({ length: totalPages }).map((_, i) => (
@@ -194,8 +207,14 @@ export default function SiteManagement() {
                 ))}
                 <PaginationItem>
                   <PaginationNext
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    className={
+                      currentPage === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>

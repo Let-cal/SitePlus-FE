@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import Pagination from "@/lib/all-site/pagination";
 import { adminService, Role, User } from "@/services/admin/admin.service";
+import { useUserContext } from "@/services/admin/UserContext";
 import { Eye, MoreVertical, Plus, Search, Trash } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -37,121 +38,63 @@ interface ProcessedUser extends User {
 }
 
 const UserTable = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const { usersData, isLoading, currentParams, updateParams, refreshData } =
+    useUserContext();
+
   const [roles, setRoles] = useState<Role[]>([]);
-  const [selectedRole, setSelectedRole] = useState<string>("");
   const [processedUsers, setProcessedUsers] = useState<ProcessedUser[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sort] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const pageSize = 10;
+  const [searchQueryInput, setSearchQueryInput] = useState(
+    currentParams.search || ""
+  );
+  const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const handleRoleChange = (newRole: string) => {
-    setSelectedRole(newRole);
-    setCurrentPage(1); // Đặt lại trang 1 khi thay đổi vai trò
-  };
-
-  const handleStatusFilterChange = (newStatus: string) => {
-    setStatusFilter(newStatus);
-    setCurrentPage(1); // Đặt lại trang 1 khi thay đổi bộ lọc trạng thái
-  };
-
-  const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1); // Đặt lại trang 1 khi thay đổi từ khóa tìm kiếm
-  };
-
+  // Lấy danh sách vai trò khi component được mount
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        setIsLoading(true);
         const data = await adminService.getAllRoles();
+        // Lọc các vai trò theo yêu cầu: "Manager", "Area-Manager", "Staff"
+        const filteredRoles = data
+          .filter((role) =>
+            ["Manager", "Area-Manager", "Staff"].includes(role.name)
+          )
+          .sort((a, b) => a.name.localeCompare(b.name));
 
-        // Kiểm tra dữ liệu vai trò trước khi lọc
-        if (data && Array.isArray(data)) {
-          // Lọc các vai trò theo yêu cầu: "Manager", "Area-Manager", "Staff"
-          const filteredRoles = data
-            .filter((role) =>
-              ["Manager", "Area-Manager", "Staff"].includes(role.name)
-            )
-            .sort((a, b) => a.name.localeCompare(b.name));
+        setRoles(filteredRoles);
 
-          setRoles(filteredRoles);
-
-          // Đặt vai trò Manager làm mặc định nếu có
+        // Đặt vai trò Manager làm mặc định nếu có và chưa có roleId trong params
+        if (!currentParams.roleId && filteredRoles.length > 0) {
           const managerRole = filteredRoles.find(
             (role) => role.name === "Manager"
           );
 
           if (managerRole) {
-            setSelectedRole(managerRole.id.toString());
+            updateParams({ roleId: managerRole.id });
           }
-        } else {
-          console.error(
-            "Dữ liệu vai trò không phải là mảng hoặc undefined:",
-            data
-          );
-          setRoles([]);
         }
       } catch (error) {
         console.error("Lỗi khi lấy vai trò:", error);
         setRoles([]);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchRoles();
   }, []);
 
-  // Lấy danh sách người dùng khi bộ lọc hoặc phân trang thay đổi
+  // Xử lý dữ liệu người dùng khi có dữ liệu mới
   useEffect(() => {
-    if (selectedRole) {
-      const debounceTimer = setTimeout(fetchUsers, 500);
-      return () => clearTimeout(debounceTimer);
+    if (usersData && usersData.listData) {
+      processUserData(usersData.listData);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRole, statusFilter, currentPage, searchQuery, sort]);
+  }, [usersData, currentParams.roleId]);
 
-  const fetchUsers = async () => {
-    if (!selectedRole) return;
-    setIsLoading(true);
-    try {
-      const response = await adminService.getAllUsers({
-        roleId: parseInt(selectedRole),
-        status: statusFilter === "all" ? null : statusFilter === "active",
-        page: currentPage,
-        pageSize,
-        search: searchQuery,
-        sort,
-      });
-
-      // Cập nhật theo cấu trúc phản hồi thực tế
-      setUsers(response.data.listData);
-      setTotalPages(response.data.totalPage);
-      setTotalRecords(response.data.totalRecords);
-    } catch (error) {
-      console.error("Lỗi khi lấy người dùng:", error);
-      setUsers([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    processUserData();
-  }, [users, selectedRole]);
-
-  const processUserData = () => {
+  const processUserData = (users: User[]) => {
     const processed: ProcessedUser[] = users.map((user) => {
       const processedUser: ProcessedUser = { ...user };
 
       // Định dạng dữ liệu vị trí dựa theo vai trò
-      switch (selectedRole) {
+      const roleId = currentParams.roleId?.toString();
+      switch (roleId) {
         case "7": // Manager
           processedUser.formattedBranch = `${user.districtName || ""}/${
             user.areaName || ""
@@ -175,8 +118,38 @@ const UserTable = () => {
     setProcessedUsers(processed);
   };
 
+  const handleRoleChange = (newRole: string) => {
+    updateParams({ roleId: parseInt(newRole) });
+  };
+
+  const handleStatusFilterChange = (newStatus: string) => {
+    // Chuyển đổi giá trị trạng thái
+    const statusValue = newStatus === "all" ? null : newStatus === "Hoạt động";
+
+    updateParams({ status: statusValue });
+  };
+
+  const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQueryInput(value);
+
+    // Debounce search to avoid too many requests
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      updateParams({ search: value });
+    }, 500);
+  };
+
+  const handlePageChange = (page: number) => {
+    updateParams({ page });
+  };
+
   const getExtraColumns = () => {
-    switch (selectedRole) {
+    const roleId = currentParams.roleId?.toString();
+    switch (roleId) {
       case "7": // Manager
         return <TableHead>Chi nhánh trực thuộc</TableHead>;
       case "8": // Area Manager
@@ -189,7 +162,8 @@ const UserTable = () => {
   };
 
   const getExtraCell = (user: ProcessedUser) => {
-    switch (selectedRole) {
+    const roleId = currentParams.roleId?.toString();
+    switch (roleId) {
       case "7": // Manager
         return <TableCell>{user.formattedBranch}</TableCell>;
       case "8": // Area Manager
@@ -203,21 +177,17 @@ const UserTable = () => {
 
   const getStatusBadge = (statusName: string) => {
     const statusStyles = {
-      Available: "bg-green-500 hover:bg-green-600", // Đang hoạt động
-      Unavailable: "bg-gray-500 hover:bg-gray-600", // Không hoạt động
+      "Hoạt động": "bg-green-500 hover:bg-green-600", // Đang hoạt động
+      "Vô hiệu": "bg-gray-500 hover:bg-gray-600", // Không hoạt động
     };
 
     return (
       <Badge
         className={`${statusStyles[statusName] || "bg-gray-500"} text-white`}
       >
-        {statusName === "Available" ? "Đang hoạt động" : "Không hoạt động"}
+        {statusName === "Hoạt động" ? "Đang hoạt động" : "Vô hiệu"}
       </Badge>
     );
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
   };
 
   // Hàm định dạng ngày
@@ -237,32 +207,46 @@ const UserTable = () => {
     }
   };
 
+  // Xác định trạng thái hiện tại cho các bộ lọc
+  const currentStatus =
+    currentParams.status === null
+      ? "all"
+      : currentParams.status
+      ? "Hoạt động"
+      : "Vô hiệu";
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Danh Sách Tài Khoản</h2>
+        <h2 className="text-2xl font-bold">Danh Sách Tài Khoản</h2>
         <div className="flex gap-4">
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Tìm kiếm..."
               className="pl-8 w-[200px]"
-              value={searchQuery}
+              value={searchQueryInput}
               onChange={handleSearchQueryChange}
             />
           </div>
-          <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+          <Select
+            value={currentStatus}
+            onValueChange={handleStatusFilterChange}
+          >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Lọc theo trạng thái" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="active">Đang hoạt động</SelectItem>
-              <SelectItem value="inactive">Không hoạt động</SelectItem>
+              <SelectItem value="Hoạt động">Đang hoạt động</SelectItem>
+              <SelectItem value="Vô hiệu">Vô hiệu</SelectItem>
             </SelectContent>
           </Select>
 
-          <Select value={selectedRole} onValueChange={handleRoleChange}>
+          <Select
+            value={currentParams.roleId?.toString() || ""}
+            onValueChange={handleRoleChange}
+          >
             <SelectTrigger className="w-[170px]">
               <SelectValue placeholder="Chọn vai trò" />
             </SelectTrigger>
@@ -280,7 +264,7 @@ const UserTable = () => {
       <div>
         <Table>
           <TableCaption>
-            Danh sách người dùng - Tổng số: {totalRecords}
+            Danh sách người dùng - Tổng số: {usersData?.totalRecords || 0}
           </TableCaption>
           <TableHeader>
             <TableRow>
@@ -294,28 +278,34 @@ const UserTable = () => {
               <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
-            {isLoading
-              ? Array.from({ length: pageSize }).map((_, index) => (
-                  <TableRow key={`skeleton-${index}`}>
-                    {Array.from({
-                      length:
-                        selectedRole === "7" ||
-                        selectedRole === "8" ||
-                        selectedRole === "9"
-                          ? 7
-                          : 6,
-                    }).map((_, cellIndex) => (
-                      <TableCell key={`cell-${index}-${cellIndex}`}>
-                        <Skeleton className="h-4 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
+            {isLoading && !processedUsers.length
+              ? Array.from({ length: currentParams.pageSize || 10 }).map(
+                  (_, index) => (
+                    <TableRow key={`skeleton-${index}`}>
+                      {Array.from({
+                        length:
+                          currentParams.roleId === 7 ||
+                          currentParams.roleId === 8 ||
+                          currentParams.roleId === 9
+                            ? 7
+                            : 6,
+                      }).map((_, cellIndex) => (
+                        <TableCell key={`cell-${index}-${cellIndex}`}>
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  )
+                )
               : processedUsers.map((user, index) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
-                      {(currentPage - 1) * pageSize + index + 1}
+                      {((currentParams.page || 1) - 1) *
+                        (currentParams.pageSize || 10) +
+                        index +
+                        1}
                     </TableCell>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
@@ -344,7 +334,7 @@ const UserTable = () => {
                           >
                             <UpdateUserDialog
                               user={user}
-                              onUpdate={fetchUsers}
+                              onUpdate={refreshData}
                               asTrigger={true}
                             />
                           </DropdownMenuItem>
@@ -359,11 +349,13 @@ const UserTable = () => {
                 ))}
           </TableBody>
         </Table>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+        {usersData && (
+          <Pagination
+            currentPage={currentParams.page || 1}
+            totalPages={usersData.totalPage}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
     </div>
   );
