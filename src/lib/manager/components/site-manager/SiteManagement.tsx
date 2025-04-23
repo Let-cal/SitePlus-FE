@@ -64,6 +64,53 @@ export default function SiteManagement() {
   ); // State để lưu siteId khi bấm "Xem chi tiết"
   const itemsPerPage = 10; // Số lượng site trên mỗi trang
 
+  React.useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const siteIdParam = searchParams.get("siteId");
+
+    if (siteIdParam) {
+      const siteId = parseInt(siteIdParam);
+      if (!isNaN(siteId)) {
+        // Nếu có siteId hợp lệ, thiết lập lại category về "all" để đảm bảo không bị lọc mất
+        setSelectedCategory("all");
+        // Gọi API với siteId
+        loadSiteById(siteId);
+      }
+    }
+  }, []);
+
+  const loadSiteById = async (siteId: number) => {
+    setIsLoading(true);
+    try {
+      const response: SitesApiResponse = await managerService.fetchSites(
+        1, // Luôn bắt đầu từ trang 1 khi tìm theo ID
+        itemsPerPage,
+        1, // status=1
+        siteId // Truyền siteId vào API
+      );
+
+      if (response.success && response.data.listData.length > 0) {
+        setSites(response.data.listData);
+        setTotalPages(response.data.totalPage || 1);
+        setCurrentPage(1);
+
+        // Nếu tìm thấy site, hiển thị chi tiết luôn
+        if (response.data.listData[0].id === siteId) {
+          setSelectedSiteId(siteId);
+        }
+      } else {
+        setSites([]);
+        setTotalPages(1);
+      }
+    } catch (error) {
+      console.error("Error loading site by ID:", error);
+      setSites([]);
+      setTotalPages(1);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Danh sách các category để hiển thị trong dropdown
   const categories = [
     { id: "all", name: "Tất cả" },
@@ -104,7 +151,13 @@ export default function SiteManagement() {
         setIsLoading(false);
       }
     };
-    loadSites();
+    const searchParams = new URLSearchParams(window.location.search);
+    const siteIdParam = searchParams.get("siteId");
+
+    if (!siteIdParam) {
+      // Nếu không có siteId trong URL, load bình thường
+      loadSites();
+    }
   }, [currentPage, selectedCategory]);
 
   return (

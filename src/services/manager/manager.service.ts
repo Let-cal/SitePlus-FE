@@ -250,6 +250,40 @@ interface UpdateBrandResponse {
   data?: UpdateBrandData;
 }
 
+interface StoreResponse {
+  data: {
+    page: number;
+    totalPage: number;
+    totalRecords: number;
+    currentPageCount: number;
+    listData: SiteCategoryWithStores[];
+  };
+  success: boolean;
+  message: string;
+  totalCount: number;
+}
+
+interface SiteCategoryWithStores {
+  siteCategory: {
+    id: number;
+    name: string;
+  };
+  stores: Store[];
+}
+
+export interface Store {
+  id: number;
+  name: string;
+  address: string;
+  siteId: number;
+  storeProfileId: number;
+  brandId: number;
+  storeProfileCategory: {
+    id: number;
+    name: string;
+  };
+}
+
 class ManagerService {
   private getAuthHeader(
     isPatch: boolean = false
@@ -860,7 +894,8 @@ class ManagerService {
   async fetchSites(
     pageNumber: number = 1,
     pageSize: number = 6,
-    status?: number
+    status?: number,
+    siteId?: number | null
   ): Promise<SitesApiResponse> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {
@@ -884,6 +919,9 @@ class ManagerService {
       queryParams.append("pageSize", pageSize.toString());
       if (status !== undefined) {
         queryParams.append("status", status.toString());
+      }
+      if (siteId !== undefined && siteId !== null) {
+        queryParams.append("search", siteId.toString());
       }
 
       const response = await axios.get(
@@ -1247,6 +1285,73 @@ class ManagerService {
           (axios.isAxiosError(error)
             ? error.response?.data?.message || error.message
             : "Không xác định"),
+      };
+    }
+  }
+  async fetchStoresByBrandId(
+    brandId: number,
+    page: number = 1,
+    pageSize: number = 10
+  ): Promise<StoreResponse> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return {
+        data: {
+          page: 1,
+          totalPage: 1,
+          totalRecords: 0,
+          currentPageCount: 0,
+          listData: [],
+        },
+        success: false,
+        message: "Không có quyền truy cập",
+        totalCount: 0,
+      };
+    }
+
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append("page", page.toString());
+      queryParams.append("pageSize", pageSize.toString());
+
+      const response = await axios.get(
+        `${API_BASE_URL}/api/stores/${brandId}?${queryParams.toString()}`,
+        authHeader
+      );
+
+      console.log("API Response for Fetch Stores by Brand ID:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error(
+        "API Error for Fetch Stores by Brand ID:",
+        error.response ? error.response.data : error.message
+      );
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+          position: "top-left",
+          duration: 3000,
+        });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " +
+            (axios.isAxiosError(error)
+              ? error.response?.data?.message || error.message
+              : "Không xác định"),
+          { position: "top-left", duration: 3000 }
+        );
+      }
+      return {
+        data: {
+          page: 1,
+          totalPage: 1,
+          totalRecords: 0,
+          currentPageCount: 0,
+          listData: [],
+        },
+        success: false,
+        message: "Lỗi khi tải danh sách cửa hàng",
+        totalCount: 0,
       };
     }
   }
