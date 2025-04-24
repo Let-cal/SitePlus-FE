@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react"; // Thêm icon Search
+import { Search } from "lucide-react";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import {
   AlertDialog,
@@ -22,13 +22,15 @@ import { useDebounce } from 'use-debounce';
 // Định nghĩa interface cho dữ liệu nhân viên dựa trên API
 interface Staff {
   id: number;
-  staffId: number; 
+  staffId: number;
   name: string;
-  district: string; 
+  areaName: string; // Thay district thành areaName
   email: string;
-  status: number; 
+  status: number;
   statusName: string;
-  createdAt: string; // Thêm trường createdAt
+  createdAt: string;
+  tasksInProgress: number;
+  tasksCompleted: number;
 }
 
 // Hàm lấy trạng thái đối lập dựa trên status hiện tại
@@ -38,14 +40,14 @@ const getOppositeStatus = (currentStatus: number): number => {
 
 const StaffManagement = () => {
   const [staffs, setStaffs] = useState<Staff[]>([]);
-  const [filteredStaffs, setFilteredStaffs] = useState<Staff[]>([]); // Dữ liệu sau khi lọc
+  const [filteredStaffs, setFilteredStaffs] = useState<Staff[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(""); // State cho ô search
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 300); // Debounce tìm kiếm
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
   const [statusNameMap, setStatusNameMap] = useState<Record<number, string>>({});
-  const itemsPerPage = 10; // Sửa thành 10 để hiển thị 10 nhân viên mỗi trang
+  const itemsPerPage = 10;
 
   // Hàm lấy tên trạng thái đối lập dựa trên trạng thái hiện tại
   const getOppositeStatusName = (currentStatus: number): string => {
@@ -55,29 +57,28 @@ const StaffManagement = () => {
   // Gọi API để lấy danh sách nhân viên khi component mount
   useEffect(() => {
     const fetchStaffData = async () => {
-      // Lấy toàn bộ nhân viên
       const users = await areaManagerService.fetchUsers();
       
       const mappedStaffs: Staff[] = users.map(user => ({
         id: user.id,
         staffId: user.id,
         name: user.name,
-        district: user.districtName,
+        areaName: user.areaName, 
         email: user.email,
         status: user.status,
         statusName: user.statusName,
         createdAt: user.createdAt,
+        tasksInProgress: user.tasksInProgress, // Lấy từ API
+        tasksCompleted: user.tasksCompleted, // Lấy từ API
       }));
       
-      // Sắp xếp nhân viên theo thời gian tạo mới nhất (giảm dần)
       const sortedStaffs = [...mappedStaffs].sort((a, b) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
       
       setStaffs(sortedStaffs);
-      setFilteredStaffs(sortedStaffs); // Ban đầu dữ liệu lọc giống dữ liệu gốc
+      setFilteredStaffs(sortedStaffs);
       
-      // Tạo map lưu trữ status -> statusName
       const newStatusNameMap: Record<number, string> = {};
       users.forEach(user => {
         newStatusNameMap[user.status] = user.statusName;
@@ -95,7 +96,7 @@ const StaffManagement = () => {
       staff.id.toString().includes(debouncedSearchQuery)
     );
     setFilteredStaffs(filtered);
-    setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
+    setCurrentPage(1);
   }, [debouncedSearchQuery, staffs]);
 
   const handleStatusClick = (staff: Staff) => {
@@ -148,14 +149,13 @@ const StaffManagement = () => {
         <CardContent>
           <div className="mb-4">
             <div className="flex gap-3 flex-wrap justify-end">
-              {/* Ô search với icon kính lúp */}
               <div className="relative w-[300px]">
                 <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                 <Input
                   placeholder="Tìm kiếm..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10" // Thêm padding-left để không đè lên icon
+                  className="pl-10"
                 />
               </div>
             </div>
@@ -165,10 +165,11 @@ const StaffManagement = () => {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[15%]">ID</TableHead>
-                <TableHead className="w-[25%]">Tên</TableHead>
-                <TableHead className="w-[20%]">Khu vực (quận)</TableHead>
-                <TableHead className="w-[30%]">Tên đăng nhập</TableHead>
-                <TableHead className="w-[10%]">Trạng thái</TableHead>
+                <TableHead className="w-[20%]">Tên</TableHead>
+                <TableHead className="w-[20%]">Khu vực</TableHead>
+                <TableHead className="w-[15%]">Hoàn thành</TableHead>
+                <TableHead className="w-[15%]">Đang làm</TableHead>
+                <TableHead className="w-[8%]">Trạng thái</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -177,8 +178,9 @@ const StaffManagement = () => {
                   <TableRow key={staff.id}>
                     <TableCell>{staff.staffId}</TableCell>
                     <TableCell>{staff.name}</TableCell>
-                    <TableCell>{staff.district}</TableCell>
-                    <TableCell>{staff.email}</TableCell>
+                    <TableCell>{staff.areaName}</TableCell>
+                    <TableCell>{staff.tasksCompleted}</TableCell>
+                    <TableCell>{staff.tasksInProgress}</TableCell>
                     <TableCell>
                       <Badge
                         variant="outline"
@@ -196,7 +198,7 @@ const StaffManagement = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8">
+                  <TableCell colSpan={6} className="text-center py-8">
                     Không có dữ liệu
                   </TableCell>
                 </TableRow>

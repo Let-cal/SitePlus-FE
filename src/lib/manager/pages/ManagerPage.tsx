@@ -3,10 +3,10 @@ import { FileText, Handshake, Home, Mail } from "lucide-react";
 import * as React from "react";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
-import DashboardCharts from "../components/home-manager/DashboardCharts";
 import StatsCards from "../components/home-manager/StatsCard";
 import UserManagement from "../components/home-manager/UserManagement";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
+import SiteChart from "../components/home-manager/SiteChart";
 
 export default function ManagerPage() {
   const managerItems = [
@@ -59,7 +59,7 @@ export default function ManagerPage() {
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
             <StatsCards />
-            <DashboardCharts />
+            <SiteChart />
             <UserManagement />
           </div>
         </div>

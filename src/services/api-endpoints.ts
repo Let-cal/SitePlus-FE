@@ -51,6 +51,7 @@ export const API_ENDPOINTS = {
       GET_TASK_BY_ID: "/api/Task/:taskId",
       GET_BRAND_REQUESTS: "/api/BrandRequest",
       GET_SITE_BY_ID: "/api/Site/:siteId",
+      GET_DASHBOARD_STATISTICS: "/api/Statistics/area-manager",
     },
     POST: {
       CREATE_TASK: "/api/Task",
@@ -75,6 +76,8 @@ export const API_ENDPOINTS = {
       EXPORT_PDF: "/api/generate/:brandRequestId",
       GET_SITES: "/api/Site",
       GET_BRANDS: "/api/Brand",
+      GET_MANAGER_DASHBOARD: "/api/Statistics/manager-dashboard",
+      GET_BRAND_REQUEST_CHART: "/api/Statistics/brand-request-chart",
     },
     PUT: {
       UPDATE_BRAND_REQUEST_STATUS: "/api/BrandRequest/Status/:id",

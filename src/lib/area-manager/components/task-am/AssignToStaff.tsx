@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, MoreVertical, Eye, Trash, Search, Check, FileBarChart, XCircle } from "lucide-react";
+import { Plus, MoreVertical, Eye, Trash, Search, Check, FileBarChart, XCircle, Clock, AlertTriangle } from "lucide-react"; // Thêm icon Clock và AlertTriangle
 import {
   Pagination,
   PaginationContent,
@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import CreateTaskSheet from "./CreateTaskSheet";
 import TaskDetail from "./TaskDetail";
-import SiteDetail from "../../../manager/components/site-manager/SiteDetail"; 
+import SiteDetail from "../../../manager/components/site-manager/SiteDetail";
 import areaManagerService from "../../../../services/area-manager/area-manager.service";
 import { Loader2 } from "lucide-react";
 import { useDebounce } from 'use-debounce';
@@ -69,10 +69,13 @@ interface Task {
   deadline: string;
   createdAt: string;
   updatedAt: string;
+  isDeadlineWarning: boolean;
+  daysToDeadline: number;
 }
 
 type FilterStatus = "all" | "1" | "2" | "3" | "4";
 type FilterPriority = "all" | "1" | "2" | "3";
+type FilterDeadline = "all" | "warning";
 
 const filterLabels = {
   all: "Trạng thái",
@@ -89,11 +92,16 @@ const priorityLabels = {
   3: "Cao",
 };
 
+const deadlineFilterLabels = {
+  all: "Không cảnh báo",
+  warning: "Có cảnh báo",
+};
+
 const statusColors: { [key: string]: string } = {
-  "1": "bg-blue-500 hover:bg-blue-500", // Đã giao
-  "2": "bg-yellow-500 hover:bg-yellow-500", // Tiến hành
-  "3": "bg-gray-500 hover:bg-gray-500", // Chờ duyệt (màu xám)
-  "4": "bg-green-500 hover:bg-green-500", // Hoàn thành (màu xanh lá)
+  "1": "bg-blue-500 hover:bg-blue-500",
+  "2": "bg-yellow-500 hover:bg-yellow-500",
+  "3": "bg-gray-500 hover:bg-gray-500",
+  "4": "bg-green-500 hover:bg-green-500",
 };
 
 const priorityTextColors = {
@@ -120,6 +128,7 @@ const AssignToStaff = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [filterPriority, setFilterPriority] = useState<FilterPriority>("all");
+  const [filterDeadline, setFilterDeadline] = useState<FilterDeadline>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -130,7 +139,6 @@ const AssignToStaff = () => {
   const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 10;
 
-  // Load tasks from API
   useEffect(() => {
     const fetchTasks = async () => {
       setIsLoading(true);
@@ -141,11 +149,9 @@ const AssignToStaff = () => {
           priority: filterPriority !== "all" ? parseInt(filterPriority) : undefined,
         });
         let filteredTasks = tasksData;
-        // Lọc theo status nếu không phải "all"
         if (filterStatus !== "all") {
           filteredTasks = filteredTasks.filter(task => task.status === parseInt(filterStatus));
         }
-        // Lọc theo priority nếu không phải "all"
         if (filterPriority !== "all") {
           filteredTasks = filteredTasks.filter(task => task.priority === parseInt(filterPriority));
         }
@@ -163,12 +169,18 @@ const AssignToStaff = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterStatus, filterPriority, debouncedSearchQuery]);
+  }, [filterStatus, filterPriority, debouncedSearchQuery, filterDeadline]);
 
   const getFilteredData = () => {
     let data = tasks;
 
-    // Sắp xếp theo createdAt (mới nhất trước)
+    if (filterDeadline === "warning") {
+      data = data.filter(task =>
+        (task.status === 1 || task.status === 2) &&
+        (task.daysToDeadline <= 3)
+      );
+    }
+
     data = data.sort((a, b) => {
       const dateA = new Date(a.createdAt);
       const dateB = new Date(b.createdAt);
@@ -387,6 +399,29 @@ const AssignToStaff = () => {
                   }
                 </SelectContent>
               </Select>
+
+              <Select
+                value={filterDeadline}
+                onValueChange={(value: FilterDeadline) => setFilterDeadline(value)}
+              >
+                <SelectTrigger className="w-[180px] border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
+                  <SelectValue placeholder="Lọc theo deadline" />
+                </SelectTrigger>
+                <SelectContent className="border border-gray-300 rounded-md shadow-sm">
+                  {Object.entries(deadlineFilterLabels)
+                    .sort(([keyA], [keyB]) => {
+                      if (keyA === "all") return -1;
+                      if (keyB === "all") return 1;
+                      return 0;
+                    })
+                    .map(([key, label]) => (
+                      <SelectItem key={key} value={key} className="hover:bg-gray-100">
+                        {label}
+                      </SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -402,8 +437,8 @@ const AssignToStaff = () => {
                     <TableHead className="w-[8%]">Id</TableHead>
                     <TableHead className="w-[12%]">Tên</TableHead>
                     <TableHead className="w-[15%]">Nhân viên</TableHead>
-                    <TableHead className="w-[15%]">Độ ưu tiên</TableHead>
-                    <TableHead className="w-[15%]">Deadline</TableHead>
+                    <TableHead className="w-[15%]">Deadline</TableHead> {/* Đổi vị trí: Deadline trước */}
+                    <TableHead className="w-[15%]">Độ ưu tiên</TableHead> {/* Đổi vị trí: Độ ưu tiên sau */}
                     <TableHead className="w-[10%] text-center">Trạng thái</TableHead>
                     <TableHead className="w-[10%] text-center">Hành động</TableHead>
                   </TableRow>
@@ -415,10 +450,34 @@ const AssignToStaff = () => {
                         <TableCell>{task.id}</TableCell>
                         <TableCell title={task.name}>{truncateName(task.name)}</TableCell>
                         <TableCell>{task.staffName || "Chưa giao"}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span>{formatDate(task.deadline)}</span>
+                            {(task.status === 1 || task.status === 2) && (
+                              <>
+                                {task.daysToDeadline === 0 ? (
+                                  <Badge className="bg-red-500 text-white text-xs whitespace-nowrap border border-red-600 px-2 py-1 min-w-[100px] flex items-center">
+                                    <AlertTriangle size={12} className="mr-1" />
+                                    Sắp hết hạn
+                                  </Badge>
+                                ) : task.daysToDeadline < 0 ? (
+                                  <Badge className="bg-red-500 text-white text-xs whitespace-nowrap border border-red-600 px-2 py-1 min-w-[100px] flex items-center">
+                                    <AlertTriangle size={12} className="mr-1" />
+                                    Trễ {Math.abs(task.daysToDeadline)} ngày
+                                  </Badge>
+                                ) : task.daysToDeadline <= 3 ? (
+                                  <Badge className="bg-yellow-500 text-white text-xs whitespace-nowrap border border-yellow-600 px-2 py-1 min-w-[100px] flex items-center">
+                                    <Clock size={12} className="mr-1" />
+                                    Còn {task.daysToDeadline} ngày
+                                  </Badge>
+                                ) : null}
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell className={`font-medium ${priorityTextColors[task.priority] || 'text-gray-600'}`}>
                           {task.priorityName}
                         </TableCell>
-                        <TableCell>{formatDate(task.deadline)}</TableCell>
                         <TableCell className="text-center p-1 min-w-24">
                           <Badge
                             variant="outline"

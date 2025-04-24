@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import * as React from "react";
 import managerService from "../../../../services/manager/manager.service";
-import SiteDetail from "./SiteDetail"; // Import component SiteDetail
+import SiteDetail from "./SiteDetail";
 
 // Interface cho site (đơn giản hóa từ API)
 interface Site {
@@ -59,9 +59,8 @@ export default function SiteManagement() {
   const [totalPages, setTotalPages] = React.useState(1); // Tổng số trang
   const [isLoading, setIsLoading] = React.useState(false); // Trạng thái loading
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all"); // State để lọc theo siteCategoryId
-  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(
-    null
-  ); // State để lưu siteId khi bấm "Xem chi tiết"
+  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(null); // State để lưu siteId khi bấm "Xem chi tiết"
+  const [activeTab, setActiveTab] = React.useState<"KHẢ DỤNG" | "ĐÃ CHỐT">("KHẢ DỤNG"); // State cho tab
   const itemsPerPage = 10; // Số lượng site trên mỗi trang
 
   React.useEffect(() => {
@@ -71,8 +70,9 @@ export default function SiteManagement() {
     if (siteIdParam) {
       const siteId = parseInt(siteIdParam);
       if (!isNaN(siteId)) {
-        // Nếu có siteId hợp lệ, thiết lập lại category về "all" để đảm bảo không bị lọc mất
+        // Nếu có siteId hợp lệ, thiết lập lại category về "all" và tab về "SẴN SÀNG"
         setSelectedCategory("all");
+        setActiveTab("KHẢ DỤNG");
         // Gọi API với siteId
         loadSiteById(siteId);
       }
@@ -85,7 +85,7 @@ export default function SiteManagement() {
       const response: SitesApiResponse = await managerService.fetchSites(
         1, // Luôn bắt đầu từ trang 1 khi tìm theo ID
         itemsPerPage,
-        1, // status=1
+        activeTab === "KHẢ DỤNG" ? 1 : 10, // Dùng status theo tab
         siteId // Truyền siteId vào API
       );
 
@@ -118,7 +118,7 @@ export default function SiteManagement() {
     { id: "2", name: "Mặt bằng độc lập" }, // siteCategoryId: 2
   ];
 
-  // Gọi API fetchSites khi currentPage hoặc selectedCategory thay đổi
+  // Gọi API fetchSites khi currentPage, selectedCategory hoặc activeTab thay đổi
   React.useEffect(() => {
     const loadSites = async () => {
       setIsLoading(true);
@@ -126,9 +126,8 @@ export default function SiteManagement() {
         const response: SitesApiResponse = await managerService.fetchSites(
           currentPage,
           itemsPerPage,
-          1
-        ); // Gọi API với status=1
-        console.log("Sites loaded:", response); // Kiểm tra dữ liệu
+          activeTab === "KHẢ DỤNG" ? 1 : 10 // Dùng status theo tab
+        );
         if (response.success) {
           // Lọc site theo selectedCategory
           const filteredSites =
@@ -151,6 +150,7 @@ export default function SiteManagement() {
         setIsLoading(false);
       }
     };
+
     const searchParams = new URLSearchParams(window.location.search);
     const siteIdParam = searchParams.get("siteId");
 
@@ -158,11 +158,31 @@ export default function SiteManagement() {
       // Nếu không có siteId trong URL, load bình thường
       loadSites();
     }
-  }, [currentPage, selectedCategory]);
+  }, [currentPage, selectedCategory, activeTab]);
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <div className="flex gap-4">
+          <Button
+            variant={activeTab === "KHẢ DỤNG" ? "default" : "outline"}
+            onClick={() => {
+              setActiveTab("KHẢ DỤNG");
+              setCurrentPage(1); // Reset về trang 1 khi đổi tab
+            }}
+          >
+            KHẢ DỤNG
+          </Button>
+          <Button
+            variant={activeTab === "ĐÃ CHỐT" ? "default" : "outline"}
+            onClick={() => {
+              setActiveTab("ĐÃ CHỐT");
+              setCurrentPage(1); // Reset về trang 1 khi đổi tab
+            }}
+          >
+            ĐÃ CHỐT
+          </Button>
+        </div>
         <Select
           value={selectedCategory}
           onValueChange={(value) => {
@@ -208,9 +228,7 @@ export default function SiteManagement() {
               {sites.map((site) => (
                 <TableRow key={site.id}>
                   <TableCell>{site.id}</TableCell>
-                  <TableCell>{`${site.address}${
-                    site.areaName ? `, ${site.areaName}` : ""
-                  }`}</TableCell>
+                  <TableCell>{`${site.address}${site.areaName ? `, ${site.areaName}` : ""}`}</TableCell>
                   <TableCell>{site.districtName || "Không xác định"}</TableCell>
                   <TableCell>{`${site.size}m²`}</TableCell>
                   <TableCell>
@@ -243,9 +261,7 @@ export default function SiteManagement() {
                 <PaginationItem>
                   <PaginationPrevious
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className={
-                      currentPage === 1 ? "pointer-events-none opacity-50" : ""
-                    }
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                   />
                 </PaginationItem>
                 {Array.from({ length: totalPages }).map((_, i) => (
@@ -260,14 +276,8 @@ export default function SiteManagement() {
                 ))}
                 <PaginationItem>
                   <PaginationNext
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    className={
-                      currentPage === totalPages
-                        ? "pointer-events-none opacity-50"
-                        : ""
-                    }
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
                   />
                 </PaginationItem>
               </PaginationContent>

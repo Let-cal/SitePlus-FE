@@ -45,7 +45,6 @@ export default function AreaManagerTask() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           title="GIAO VIỆC" // Truyền title vào đây
-          // onNotificationClick={() => {}}
         />
 
         {/* Content area */}

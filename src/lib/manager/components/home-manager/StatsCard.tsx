@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, ClipboardCheck, Briefcase, Search } from 'lucide-react';
+import { FileText, ClipboardCheck, Handshake, Users } from 'lucide-react'; // Cập nhật icon
+import managerService from "@/services/manager/manager.service"; // Import managerService
 
 interface StatsCardProps {
   title: string;
@@ -24,29 +25,58 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, iconColor }) 
 );
 
 const StatsCards: React.FC = () => {
+  // State để lưu dữ liệu từ API
+  const [statsData, setStatsData] = React.useState({
+    totalRequests: 0,
+    totalSites: 0,
+    totalBrands: 0,
+    totalAreaManagers: 0,
+  });
+
+  // Gọi API khi component mount
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await managerService.fetchDashboardStatistics();
+        if (response.success) {
+          setStatsData({
+            totalRequests: response.data.totalRequests,
+            totalSites: response.data.totalSites,
+            totalBrands: response.data.totalBrands,
+            totalAreaManagers: response.data.totalAreaManagers,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   const stats = [
     { 
-      title: "Tổng số yêu cầu", 
-      value: "700",
-      icon: <MessageSquare />,
+      title: "SỐ LƯỢNG YÊU CẦU", 
+      value: statsData.totalRequests.toString(),
+      icon: <FileText />, // Thay đổi icon
       iconColor: "text-blue-500"  
     },
     { 
-      title: "Tổng mặt bằng đã khảo sát", 
-      value: "520",
-      icon: <ClipboardCheck />,
+      title: "MẶT BẰNG ĐÃ KHẢO SÁT", 
+      value: statsData.totalSites.toString(),
+      icon: <ClipboardCheck />, // Giữ icon
       iconColor: "text-green-500"  
     },
     { 
-      title: "Dự án thành công", 
-      value: "300",
-      icon: <Briefcase />,
+      title: "THƯƠNG HIỆU ĐÃ HỢP TÁC", 
+      value: statsData.totalBrands.toString(),
+      icon: <Handshake />, // Thay đổi icon
       iconColor: "text-red-500"  
     },
     { 
-      title: "Yêu cầu cần khảo sát mới", 
-      value: "90",
-      icon: <Search />,
+      title: "SỐ LƯỢNG AREA MANAGER", 
+      value: statsData.totalAreaManagers.toString(),
+      icon: <Users />, // Thay đổi icon
       iconColor: "text-yellow-500"  
     },
   ];

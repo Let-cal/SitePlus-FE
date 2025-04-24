@@ -3,9 +3,9 @@ import { FileText, Handshake, Home, Mail } from "lucide-react";
 import * as React from "react";
 import { useAuth } from "../../../services/AuthContext";
 import Header from "../../all-site/HeaderOtherRole";
-import BarChart from "../components/request-manager/BarChart";
 import RequestTable from "../components/request-manager/RequestTable";
 import LogoSitePlus from "/icons/logo-SitePlus.svg";
+import RequestsChart from "../components/request-manager/RequestsChart";
 
 export default function ManagerRequest() {
   const managerItems = [
@@ -58,7 +58,7 @@ export default function ManagerRequest() {
         {/* Content area */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
-            <BarChart />
+            <RequestsChart />
             <RequestTable />
           </div>
         </div>

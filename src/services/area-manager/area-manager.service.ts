@@ -34,6 +34,8 @@ interface User {
   status: number;
   statusName: string;
   createdAt: string;
+  tasksInProgress: number;
+  tasksCompleted: number;
 }
 
 // Định nghĩa interface cho dữ liệu task từ API
@@ -169,6 +171,25 @@ interface SiteDeal {
   statusName: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface TaskPerMonth {
+  month: string; // "01/2025"
+  totalTasks: number;
+}
+
+interface DashboardData {
+  activeStaffCount: number;
+  completedTaskCount: number;
+  surveyCount: number;
+  taskPerMonths: TaskPerMonth[];
+}
+
+interface DashboardResponse {
+  data: DashboardData;
+  success: boolean;
+  message: string;
+  totalCount: number;
 }
 
 interface AttributeValue {
@@ -917,6 +938,41 @@ class AreaManagerService {
           position: "top-right",
           duration: 3000,
         });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          (axios.isAxiosError(error) ? error.response?.data?.message || error.message : "Không xác định"),
+          { position: "top-right", duration: 3000 }
+        );
+      }
+      return null;
+    }
+  }
+
+  // Get Dashboard Statistics
+  async fetchDashboardStatistics(): Promise<DashboardData | null> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return null;
+    }
+
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_DASHBOARD_STATISTICS}`,
+        authHeader
+      );
+
+      const data: DashboardResponse = response.data;
+      if (data.success) {
+        return data.data;
+      } else {
+        toast.error(data.message || "Lỗi khi tải dữ liệu dashboard", { position: "top-right", duration: 3000 });
+        return null;
+      }
+    } catch (error) {
+      console.error("API Error for Dashboard Statistics:", error.response ? error.response.data : error.message);
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", { position: "top-right", duration: 3000 });
         localStorage.removeItem("token");
       } else {
         toast.error(
