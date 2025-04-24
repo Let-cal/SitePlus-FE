@@ -284,6 +284,48 @@ export interface Store {
   };
 }
 
+// Interface cho monthlySiteSurveys
+interface MonthlySiteSurvey {
+  month: string; // Ví dụ: "02/2025"
+  count: number;
+}
+
+// Interface cho data trong response của API GET_MANAGER_DASHBOARD
+interface ManagerDashboardData {
+  totalRequests: number;
+  totalSites: number;
+  totalAreaManagers: number;
+  totalBrands: number;
+  monthlySiteSurveys: MonthlySiteSurvey[];
+}
+
+// Interface cho response của API GET_MANAGER_DASHBOARD
+interface ManagerDashboardResponse {
+  data: ManagerDashboardData;
+  success: boolean;
+  message: string;
+  totalCount: number;
+}
+
+// Interface cho monthlyRequests
+interface MonthlyRequest {
+  month: string; // Ví dụ: "03/2025"
+  count: number;
+}
+
+// Interface cho data trong response của API GET_BRAND_REQUEST_CHART
+interface BrandRequestChartData {
+  monthlyRequests: MonthlyRequest[];
+}
+
+// Interface cho response của API GET_BRAND_REQUEST_CHART
+interface BrandRequestChartResponse {
+  data: BrandRequestChartData;
+  success: boolean;
+  message: string;
+  totalCount: number;
+}
+
 class ManagerService {
   private getAuthHeader(
     isPatch: boolean = false
@@ -323,8 +365,7 @@ class ManagerService {
       if (search) queryParams.append("search", search);
 
       const response = await axios.get(
-        `${API_BASE_URL}${
-          API_ENDPOINTS.AREA_MANAGER.GET.GET_USERS
+        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_USERS
         }?${queryParams.toString()}`,
         authHeader
       );
@@ -345,8 +386,7 @@ class ManagerService {
 
             return axios
               .get(
-                `${API_BASE_URL}${
-                  API_ENDPOINTS.AREA_MANAGER.GET.GET_USERS
+                `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_USERS
                 }?${pageQueryParams.toString()}`,
                 authHeader
               )
@@ -396,9 +436,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -418,8 +458,7 @@ class ManagerService {
       queryParams.append("pageSize", "1000");
 
       const response = await axios.get(
-        `${API_BASE_URL}${
-          API_ENDPOINTS.MANAGER.GET.GET_BRAND_REQUESTS
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_BRAND_REQUESTS
         }?${queryParams.toString()}`,
         authHeader
       );
@@ -461,9 +500,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -516,9 +555,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -541,8 +580,7 @@ class ManagerService {
       queryParams.append("limit", limit.toString());
 
       const response = await axios.post(
-        `${API_BASE_URL}${
-          API_ENDPOINTS.MANAGER.POST.SEARCH_BY_AI
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.POST.SEARCH_BY_AI
         }?${queryParams.toString()}`,
         {},
         authHeader
@@ -574,9 +612,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -628,9 +666,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -662,8 +700,7 @@ class ManagerService {
       queryParams.append("score", score.toString());
 
       const response = await axios.put(
-        `${API_BASE_URL}${
-          API_ENDPOINTS.MANAGER.PUT.UPDATE_MATCHED_SITE
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.PUT.UPDATE_MATCHED_SITE
         }?${queryParams.toString()}`,
         {},
         authHeader
@@ -695,9 +732,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -749,9 +786,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -826,7 +863,7 @@ class ManagerService {
         } else {
           toast.error(
             "Lỗi kết nối API: " +
-              (error.response?.data?.message || error.message),
+            (error.response?.data?.message || error.message),
             { position: "top-left", duration: 3000 }
           );
         }
@@ -881,9 +918,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi khi xuất PDF: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -925,8 +962,7 @@ class ManagerService {
       }
 
       const response = await axios.get(
-        `${API_BASE_URL}${
-          API_ENDPOINTS.MANAGER.GET.GET_SITES
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_SITES
         }?${queryParams.toString()}`,
         authHeader
       );
@@ -948,9 +984,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -1024,9 +1060,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -1054,7 +1090,6 @@ class ManagerService {
         totalCount: 0,
       };
     }
-
     try {
       const body = {
         id: requestId,
@@ -1092,9 +1127,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -1160,9 +1195,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -1202,8 +1237,7 @@ class ManagerService {
       }
 
       const response = await axios.get(
-        `${API_BASE_URL}${
-          API_ENDPOINTS.MANAGER.GET.GET_BRANDS
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_BRANDS
         }?${queryParams.toString()}`,
         authHeader
       );
@@ -1224,9 +1258,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -1335,9 +1369,9 @@ class ManagerService {
       } else {
         toast.error(
           "Lỗi kết nối API: " +
-            (axios.isAxiosError(error)
-              ? error.response?.data?.message || error.message
-              : "Không xác định"),
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
           { position: "top-left", duration: 3000 }
         );
       }
@@ -1355,7 +1389,155 @@ class ManagerService {
       };
     }
   }
-}
+  async fetchDashboardStatistics(): Promise<ManagerDashboardResponse> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return {
+        data: {
+          totalRequests: 0,
+          totalSites: 0,
+          totalAreaManagers: 0,
+          totalBrands: 0,
+          monthlySiteSurveys: [],
+        },
+        success: false,
+        message: "Không có quyền truy cập",
+        totalCount: 0,
+      };
+    }
 
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_MANAGER_DASHBOARD}`,
+        authHeader
+      );
+
+      console.log("API Response for Manager Dashboard:", response.data);
+      const data: ManagerDashboardResponse = response.data;
+      if (data.success) {
+        return data;
+      } else {
+        console.log("API Error: Success is false", data.message);
+        toast.error(data.message || "Lỗi khi tải dữ liệu dashboard", {
+          position: "top-left",
+          duration: 3000,
+        });
+        return {
+          data: {
+            totalRequests: 0,
+            totalSites: 0,
+            totalAreaManagers: 0,
+            totalBrands: 0,
+            monthlySiteSurveys: [],
+          },
+          success: false,
+          message: data.message || "Lỗi khi tải dữ liệu dashboard",
+          totalCount: 0,
+        };
+      }
+    } catch (error) {
+      console.error(
+        "API Error for Manager Dashboard:",
+        error.response ? error.response.data : error.message
+      );
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+          position: "top-left",
+          duration: 3000,
+        });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " +
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
+          { position: "top-left", duration: 3000 }
+        );
+      }
+      return {
+        data: {
+          totalRequests: 0,
+          totalSites: 0,
+          totalAreaManagers: 0,
+          totalBrands: 0,
+          monthlySiteSurveys: [],
+        },
+        success: false,
+        message: "Lỗi khi tải dữ liệu dashboard",
+        totalCount: 0,
+      };
+    }
+  }
+
+  async fetchBrandRequestChart(): Promise<BrandRequestChartResponse> {
+    const authHeader = this.getAuthHeader();
+    if (!authHeader) {
+      return {
+        data: {
+          monthlyRequests: [],
+        },
+        success: false,
+        message: "Không có quyền truy cập",
+        totalCount: 0,
+      };
+    }
+
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_BRAND_REQUEST_CHART}`,
+        authHeader
+      );
+
+      console.log("API Response for Brand Request Chart:", response.data);
+      const data: BrandRequestChartResponse = response.data;
+      if (data.success) {
+        return data;
+      } else {
+        console.log("API Error: Success is false", data.message);
+        toast.error(data.message || "Lỗi khi tải dữ liệu biểu đồ yêu cầu", {
+          position: "top-left",
+          duration: 3000,
+        });
+        return {
+          data: {
+            monthlyRequests: [],
+          },
+          success: false,
+          message: data.message || "Lỗi khi tải dữ liệu biểu đồ yêu cầu",
+          totalCount: 0,
+        };
+      }
+    } catch (error) {
+      console.error(
+        "API Error for Brand Request Chart:",
+        error.response ? error.response.data : error.message
+      );
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+          position: "top-left",
+          duration: 3000,
+        });
+        localStorage.removeItem("token");
+      } else {
+        toast.error(
+          "Lỗi kết nối API: " +
+          (axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : "Không xác định"),
+          { position: "top-left", duration: 3000 }
+        );
+      }
+      return {
+        data: {
+          monthlyRequests: [],
+        },
+        success: false,
+        message: "Lỗi khi tải dữ liệu biểu đồ yêu cầu",
+        totalCount: 0,
+      };
+    }
+  }
+}
 const managerService = new ManagerService();
 export default managerService;

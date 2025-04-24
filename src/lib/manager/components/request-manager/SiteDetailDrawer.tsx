@@ -11,6 +11,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import areaManagerService from "../../../../services/area-manager/area-manager.service";
 
 // Interface cho dữ liệu chi tiết site (đã định nghĩa trong areaManagerService, import lại để sử dụng)
@@ -196,14 +197,14 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
             </h2>
 
             {error ? (
-                <div className="text-center py-4 text-red-500">{error}</div>
+                <div className="text-center py-4 text-destructive">{error}</div>
             ) : (
                 <Tabs
                     value={activeTab}
                     onValueChange={handleTabChange}
                     className="w-full mt-2 flex flex-col flex-1"
                 >
-                    <TabsList className="grid w-full grid-cols-2 sticky top-0 bg-white z-10">
+                    <TabsList className="grid w-full grid-cols-2 sticky top-0 bg-muted z-10">
                         <TabsTrigger value="info">Thông tin mặt bằng</TabsTrigger>
                         <TabsTrigger value="attributes">Thuộc tính</TabsTrigger>
                     </TabsList>
@@ -273,9 +274,20 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                                             <h3 className="font-semibold mb-2">Điều kiện thuê:</h3>
                                             {sortedSiteDeals.map((deal, index) => (
                                                 <div key={index} className="border p-4 rounded-md mb-4">
-                                                    <p className="font-semibold text-lg bg-gray-100 p-2 rounded-md mb-2">
-                                                        Ngày tạo: {formatDate(deal.createdAt)}
-                                                    </p>
+                                                    <div className="flex justify-between items-center bg-muted p-2 rounded-md mb-2">
+                                                        <p className="font-semibold text-lg">
+                                                            Ngày tạo: {formatDate(deal.createdAt)}
+                                                        </p>
+                                                        <Badge
+                                                            className={
+                                                                deal.status === 1
+                                                                    ? "bg-green-500 text-white"
+                                                                    : "bg-red-500 text-white"
+                                                            }
+                                                        >
+                                                            {deal.statusName}
+                                                        </Badge>
+                                                    </div>
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div>
                                                             <p>
@@ -294,9 +306,6 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                                                             </p>
                                                             <p>
                                                                 <span className="font-medium">Số tháng cọc:</span> {deal.depositMonth}
-                                                            </p>
-                                                            <p>
-                                                                <span className="font-medium">Trạng thái:</span> {deal.statusName}
                                                             </p>
                                                             <p>
                                                                 <span className="font-medium">Ngày cập nhật:</span> {formatDate(deal.updatedAt)}
@@ -363,19 +372,19 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                             className="w-full h-auto max-h-[80vh] object-contain"
                         />
                         <button
-                            className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/70 rounded-full p-2 hover:bg-white/90"
+                            className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-background/70 rounded-full p-2 hover:bg-background/90"
                             onClick={handlePrevImage}
                         >
                             ←
                         </button>
                         <button
-                            className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/70 rounded-full p-2 hover:bg-white/90"
+                            className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-background/70 rounded-full p-2 hover:bg-background/90"
                             onClick={handleNextImage}
                         >
                             →
                         </button>
                         <button
-                            className="absolute top-2 right-2 bg-white/70 rounded-full p-2 hover:bg-white/90"
+                            className="absolute top-2 right-2 bg-background/70 rounded-full p-2 hover:bg-background/90"
                             onClick={() => setSelectedImage(null)}
                         >
                             ✕

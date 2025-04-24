@@ -20,40 +20,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import areaManagerService from "../../../../services/area-manager/area-manager.service";
+import managerService from "../../../../services/manager/manager.service"; // Sử dụng managerService
 
 // Định nghĩa interface cho dữ liệu biểu đồ
 interface ChartData {
   month: string; // Ví dụ: "Tháng 1"
-  totalTasks: number;
+  surveyCount: number; // Số lượng mặt bằng khảo sát
 }
 
 // Định nghĩa interface cho dữ liệu từ API
-interface TaskPerMonth {
-  month: string; // Ví dụ: "01/2025"
-  totalTasks: number;
-}
-
-interface DashboardData {
-  activeStaffCount: number;
-  completedTaskCount: number;
-  surveyCount: number;
-  taskPerMonths: TaskPerMonth[];
+interface MonthlySiteSurvey {
+  month: string; // Ví dụ: "02/2025"
+  count: number;
 }
 
 // Cấu hình biểu đồ
 const chartConfig = {
-  totalTasks: {
-    label: "Tổng công việc",
+  surveyCount: {
+    label: "Số lượng khảo sát",
     color: "hsl(var(--chart-1))",
   },
 } as any;
 
-export default function TaskChart() {
+export default function SiteChart() {
   const [chartData, setChartData] = React.useState<ChartData[]>([]);
   const [selectedYear, setSelectedYear] = React.useState<string>("2025"); // Mặc định là năm 2025
   const [availableYears, setAvailableYears] = React.useState<string[]>([]); // Danh sách các năm từ API
-  const [apiData, setApiData] = React.useState<TaskPerMonth[]>([]); // Lưu dữ liệu gốc từ API
+  const [apiData, setApiData] = React.useState<MonthlySiteSurvey[]>([]); // Lưu dữ liệu gốc từ API
   const [isLoading, setIsLoading] = React.useState<boolean>(true); // Thêm isLoading để kiểm soát render
   const [animationKey, setAnimationKey] = React.useState<number>(0); // Thêm animationKey để buộc re-render
 
@@ -62,15 +55,15 @@ export default function TaskChart() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const dashboardData = await areaManagerService.fetchDashboardStatistics();
-        if (dashboardData && dashboardData.taskPerMonths) {
+        const dashboardData = await managerService.fetchDashboardStatistics();
+        if (dashboardData && dashboardData.data.monthlySiteSurveys) {
           // Lưu dữ liệu gốc từ API
-          setApiData(dashboardData.taskPerMonths);
+          setApiData(dashboardData.data.monthlySiteSurveys);
 
           // Lấy danh sách các năm từ dữ liệu API
           const years = Array.from(
             new Set(
-              dashboardData.taskPerMonths.map((item) => item.month.split("/")[1])
+              dashboardData.data.monthlySiteSurveys.map((item) => item.month.split("/")[1])
             )
           ).sort();
           setAvailableYears(years);
@@ -102,7 +95,7 @@ export default function TaskChart() {
     const allMonths: ChartData[] = Array.from({ length: 12 }, (_, i) => {
       return {
         month: `Tháng ${i + 1}`,
-        totalTasks: 0,
+        surveyCount: 0,
       };
     });
 
@@ -113,7 +106,7 @@ export default function TaskChart() {
         const monthIndex = parseInt(month) - 1;
         allMonths[monthIndex] = {
           month: `Tháng ${parseInt(month)}`,
-          totalTasks: item.totalTasks,
+          surveyCount: item.count, // Sử dụng count thay vì totalTasks
         };
       }
     });
@@ -129,7 +122,7 @@ export default function TaskChart() {
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Biểu đồ công việc</CardTitle>
+            <CardTitle>Biểu đồ mặt bằng khảo sát</CardTitle>
             <CardDescription>{timeRange}</CardDescription>
           </div>
           <Select value={selectedYear} onValueChange={setSelectedYear}>
@@ -151,7 +144,7 @@ export default function TaskChart() {
           <div className="flex items-center justify-center h-[450px] text-gray-500">
             {/* Đang tải dữ liệu... */}
           </div>
-        ) : chartData.every((item) => item.totalTasks === 0) ? (
+        ) : chartData.every((item) => item.surveyCount === 0) ? (
           <div className="flex items-center justify-center h-[450px] text-gray-500">
             Không có dữ liệu để hiển thị
           </div>
@@ -161,7 +154,7 @@ export default function TaskChart() {
             className="flex items-center justify-center h-[450px] w-full"
             key={`chart-container-${animationKey}`}
           >
-            <BarChart data={chartData}> {/* Xóa các thuộc tính animation */}
+            <BarChart data={chartData}>
               <CartesianGrid vertical={false} />
               {/* @ts-ignore */}
               <XAxis
@@ -179,8 +172,8 @@ export default function TaskChart() {
                 content={<ChartTooltipContent indicator="dashed" />}
               />
               <Bar
-                dataKey="totalTasks"
-                fill="var(--color-totalTasks)"
+                dataKey="surveyCount" // Thay totalTasks thành surveyCount
+                fill="var(--color-surveyCount)"
                 radius={4}
                 isAnimationActive={true}
                 animationBegin={0}

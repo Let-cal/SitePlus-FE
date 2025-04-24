@@ -24,135 +24,13 @@ interface SearchAIProject {
 interface CloseSiteProps {
     isOpen: boolean;
     onClose: () => void;
+    onUnclose: () => void;
     title: string;
     brandRequestId: number;
     setFavorites: React.Dispatch<React.SetStateAction<SearchAIProject[]>>;
 }
 
-const customStyles = `
-  .closesite-drawer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background-color: hsl(var(--background));
-    border-top: 1px solid hsl(var(--border));
-    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1001;
-    display: flex;
-    flex-direction: column;
-  }
-  .closesite-header {
-    position: sticky;
-    top: 0;
-    background-color: hsl(var(--background));
-    z-index: 10;
-    padding: 1.5rem;
-    border-bottom: 1px solid hsl(var(--border));
-  }
-  .closesite-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
-    padding-top: 0;
-  }
-  .search-result-card {
-    position: relative;
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 1rem;
-    transition: all 0.3s ease;
-  }
-  .search-result-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-  .search-result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.75rem;
-  }
-  .search-result-title {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  .search-result-id {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #6b7280;
-  }
-  .search-result-address {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1f2937;
-    line-height: 1.5;
-    min-height: 3rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .search-result-image {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 0.75rem;
-  }
-  .search-result-placeholder {
-    width: 100%;
-    height: 150px;
-    background-color: #f3f4f6;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 0.75rem;
-  }
-  .search-result-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .search-result-info-item {
-    display: flex;
-    align-items: center;
-    font-size: 0.875rem;
-    color: #4b5563;
-    gap: 0.25rem;
-  }
-  .search-result-info-item-label {
-    font-weight: 500;
-    color: #6b7280;
-  }
-  .search-result-info-item-value {
-    font-weight: 500;
-    color: #1f2937;
-  }
-  .search-result-score {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    background-color: #fee2e2;
-    color: #dc2626;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.25rem 0.5rem;
-    border-radius: 9999px;
-  }
-  .search-result-buttons {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-  }
-`;
-
-const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequestId, setFavorites }) => {
+const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, onUnclose, title, brandRequestId, setFavorites }) => {
     const [closedSites, setClosedSites] = useState<SearchAIProject[]>([]);
     const [isExporting, setIsExporting] = useState(false);
     const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
@@ -195,15 +73,6 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
         }
     }, [isOpen, brandRequestId]);
 
-    useEffect(() => {
-        const styleElement = document.createElement("style");
-        styleElement.innerHTML = customStyles;
-        document.head.appendChild(styleElement);
-        return () => {
-            document.head.removeChild(styleElement);
-        };
-    }, []);
-
     const handleViewDetails = (projectId: number) => {
         setSelectedSiteId(projectId);
     };
@@ -217,16 +86,11 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
             const success = await managerService.updateSiteStatus(project.siteId, 1);
             if (success) {
                 setClosedSites((prevClosedSites) => prevClosedSites.filter((site) => site.siteId !== project.siteId));
-                setFavorites((prevFavorites) => {
-                    const updatedFavorites = [...prevFavorites, project];
-                    return Array.from(
-                        new Map(updatedFavorites.map((item) => [item.siteId, item])).values()
-                    );
-                });
                 toast.success(`Đã bỏ chốt mặt bằng ID: ${project.siteId}`, {
                     position: "top-left",
                     duration: 3000,
                 });
+                onUnclose(); // Gọi callback để trigger refetch trong WishList và RequestDetail
             } else {
                 toast.error("Không thể bỏ chốt mặt bằng", {
                     position: "top-left",
@@ -299,8 +163,8 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
 
     return (
         <>
-            <div className="closesite-drawer">
-                <div className="closesite-header">
+            <div className="fixed bottom-0 left-0 w-full h-screen bg-background border-t border-border shadow-[0_-4px_8px_rgba(0,0,0,0.1)] z-[1001] flex flex-col">
+                <div className="sticky top-0 bg-background z-10 p-6 border-b border-border">
                     <div className="relative">
                         <div className="flex justify-center items-center">
                             <h2 className="text-xl font-semibold mt-1">{title}</h2>
@@ -317,7 +181,7 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
                     </div>
                 </div>
 
-                <div className="closesite-content">
+                <div className="flex-1 overflow-y-auto p-6 pt-0">
                     <div className="mt-6">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold">Danh sách đã chốt</h3>
@@ -339,14 +203,23 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
                         {closedSites.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-7xl mx-auto">
                                 {closedSites.map((project) => (
-                                    <div key={project.siteId} className="search-result-card">
-                                        <div className="search-result-header">
-                                            <div className="search-result-title">
-                                                <div className="search-result-id">ID: {project.siteId}</div>
-                                                <div className="search-result-address">{project.address || "-"}</div>
+                                    <div
+                                        key={project.siteId}
+                                        className="relative bg-card border border-border rounded-lg p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
+                                    >
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div className="flex flex-col gap-1">
+                                                <div className="text-sm font-medium text-muted-foreground">
+                                                    ID: {project.siteId}
+                                                </div>
+                                                <div className="text-base font-semibold text-foreground line-clamp-2 min-h-[3rem]">
+                                                    {project.address || "-"}
+                                                </div>
                                             </div>
                                             {project.totalScore > 0 && (
-                                                <div className="search-result-score">{project.totalScore}</div>
+                                                <div className="absolute top-2 right-2 bg-destructive/10 text-destructive text-xs font-semibold px-2 py-1 rounded-full">
+                                                    {project.totalScore}
+                                                </div>
                                             )}
                                         </div>
 
@@ -355,26 +228,26 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
                                                 <img
                                                     src={project.imageUrl}
                                                     alt={project.nameSite || project.address}
-                                                    className="search-result-image"
+                                                    className="w-full h-[150px] object-cover rounded-md mb-3"
                                                 />
                                             ) : (
-                                                <div className="search-result-placeholder">
-                                                    <span className="text-gray-500 text-sm">Không có hình ảnh</span>
+                                                <div className="w-full h-[150px] bg-muted rounded-md flex items-center justify-center mb-3">
+                                                    <span className="text-muted-foreground text-sm">Không có hình ảnh</span>
                                                 </div>
                                             )}
                                         </div>
 
-                                        <div className="search-result-info">
-                                            <div className="search-result-info-item">
-                                                <span className="search-result-info-item-label">Diện tích:</span>
-                                                <span className="search-result-info-item-value">
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-center text-sm text-muted gap-1">
+                                                <span className="font-medium text-muted-foreground">Diện tích:</span>
+                                                <span className="font-medium text-foreground">
                                                     {project.size != null ? `${project.size} m²` : "-"}
                                                 </span>
                                             </div>
                                             {project.proposedPrice != null && (
-                                                <div className="search-result-info-item">
-                                                    <span className="search-result-info-item-label">Giá đề xuất:</span>
-                                                    <span className="search-result-info-item-value">
+                                                <div className="flex items-center text-sm text-muted gap-1">
+                                                    <span className="font-medium text-muted-foreground">Giá đề xuất:</span>
+                                                    <span className="font-medium text-foreground">
                                                         {project.proposedPrice.toLocaleString("vi-VN", {
                                                             style: "currency",
                                                             currency: "VND",
@@ -383,9 +256,9 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
                                                 </div>
                                             )}
                                             {project.deposit != null && (
-                                                <div className="search-result-info-item">
-                                                    <span className="search-result-info-item-label">Tiền cọc:</span>
-                                                    <span className="search-result-info-item-value">
+                                                <div className="flex items-center text-sm text-muted gap-1">
+                                                    <span className="font-medium text-muted-foreground">Tiền cọc:</span>
+                                                    <span className="font-medium text-foreground">
                                                         {project.deposit.toLocaleString("vi-VN", {
                                                             style: "currency",
                                                             currency: "VND",
@@ -394,20 +267,20 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
                                                 </div>
                                             )}
                                             {project.leaseTerm && (
-                                                <div className="search-result-info-item">
-                                                    <span className="search-result-info-item-label">Thời hạn:</span>
-                                                    <span className="search-result-info-item-value">{project.leaseTerm}</span>
+                                                <div className="flex items-center text-sm text-muted gap-1">
+                                                    <span className="font-medium text-muted-foreground">Thời hạn:</span>
+                                                    <span className="font-medium text-foreground">{project.leaseTerm}</span>
                                                 </div>
                                             )}
                                             {project.additionalTerms && (
-                                                <div className="search-result-info-item">
-                                                    <span className="search-result-info-item-label">Điều khoản bổ sung:</span>
-                                                    <span className="search-result-info-item-value">{project.additionalTerms}</span>
+                                                <div className="flex items-center text-sm text-muted gap-1">
+                                                    <span className="font-medium text-muted-foreground">Điều khoản bổ sung:</span>
+                                                    <span className="font-medium text-foreground">{project.additionalTerms}</span>
                                                 </div>
                                             )}
                                         </div>
 
-                                        <div className="search-result-buttons">
+                                        <div className="flex gap-2 mt-4">
                                             <Button
                                                 variant="outline"
                                                 onClick={() => handleViewDetails(project.siteId)}
@@ -429,7 +302,7 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-center text-gray-500">Chưa có site nào đã chốt</p>
+                            <p className="text-center text-muted-foreground">Chưa có site nào đã chốt</p>
                         )}
                     </div>
                 </div>
@@ -438,7 +311,7 @@ const CloseSite: React.FC<CloseSiteProps> = ({ isOpen, onClose, title, brandRequ
             <Dialog.Root open={selectedSiteId !== null} onOpenChange={(open) => !open && setSelectedSiteId(null)}>
                 <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[1001]" />
-                    <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg z-[1002] w-[90vw] max-w-5xl h-[90vh] flex flex-col overflow-y-auto">
+                    <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-card rounded-lg shadow-lg z-[1002] w-[90vw] max-w-5xl h-[90vh] flex flex-col overflow-y-auto">
                         {selectedSiteId !== null && (
                             <SiteDetailDrawer
                                 siteId={selectedSiteId}

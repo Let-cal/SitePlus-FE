@@ -33,7 +33,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, ChevronDown, Trash2, XCircle } from "lucide-react";
+import { CheckCircle, ChevronDown, Trash2, XCircle, Eye, Lock, MoreVertical } from "lucide-react";
 import * as React from "react";
 import toast, { Toaster } from "react-hot-toast";
 import managerService from "../../../../services/manager/manager.service";
@@ -56,7 +56,7 @@ interface Request {
 export default function RequestTableWithTabs() {
   const [activeTab, setActiveTab] = React.useState<
     "new" | "processed" | "closed"
-  >("new"); // Thêm "closed"
+  >("new");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [requests, setRequests] = React.useState<Request[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
@@ -69,12 +69,14 @@ export default function RequestTableWithTabs() {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
   const [isRejectReasonDialogOpen, setIsRejectReasonDialogOpen] =
     React.useState(false);
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = React.useState(false);
   const [dialogAction, setDialogAction] = React.useState<
     "accepted" | "rejected" | "deleted" | null
   >(null);
   const [dialogRequestId, setDialogRequestId] = React.useState<string | null>(
     null
   );
+  const [closeRequestId, setCloseRequestId] = React.useState<string | null>(null);
   const [rejectReason, setRejectReason] = React.useState(
     "Rất tiếc, yêu cầu của bạn không đáp ứng được các tiêu chí hiện tại của chúng tôi."
   );
@@ -115,10 +117,7 @@ export default function RequestTableWithTabs() {
     } else if (activeTab === "processed") {
       return data
         .filter((item) => item.status === 1 || item.status === 3)
-        .sort(
-          (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
+        .sort((a, b) => b.id.localeCompare(a.id));
     } else {
       return data
         .filter((item) => item.status === 9)
@@ -162,12 +161,12 @@ export default function RequestTableWithTabs() {
 
   const processAction = async (
     requestIdStr: string,
-    action: "accepted" | "rejected" | "deleted",
+    action: "accepted" | "rejected" | "deleted" | "closed",
     note?: string
   ) => {
     setIsLoading(true);
     const requestId = parseInt(requestIdStr);
-    const newStatus = action === "accepted" ? 1 : 2;
+    const newStatus = action === "accepted" ? 1 : action === "closed" ? 9 : 2;
 
     try {
       const request = requests.find((req) => req.id === requestIdStr);
@@ -192,7 +191,7 @@ export default function RequestTableWithTabs() {
           );
           toast.error(
             "Lỗi khi gửi email chấp nhận: " +
-              (acceptEmailResult.message || "Không xác định"),
+            (acceptEmailResult.message || "Không xác định"),
             { position: "top-right", duration: 3000 }
           );
           return;
@@ -213,7 +212,7 @@ export default function RequestTableWithTabs() {
           );
           toast.error(
             "Lỗi khi cập nhật trạng thái yêu cầu: " +
-              (updateRequestResult.message || "Không xác định"),
+            (updateRequestResult.message || "Không xác định"),
             { position: "top-right", duration: 3000 }
           );
           return;
@@ -265,7 +264,7 @@ export default function RequestTableWithTabs() {
           );
           toast.error(
             "Lỗi khi gửi email từ chối: " +
-              (rejectEmailResult.message || "Không xác định"),
+            (rejectEmailResult.message || "Không xác định"),
             { position: "top-right", duration: 3000 }
           );
           return;
@@ -286,7 +285,7 @@ export default function RequestTableWithTabs() {
           );
           toast.error(
             "Lỗi khi cập nhật trạng thái yêu cầu: " +
-              (updateRequestResult.message || "Không xác định"),
+            (updateRequestResult.message || "Không xác định"),
             { position: "top-right", duration: 3000 }
           );
           return;
@@ -342,6 +341,41 @@ export default function RequestTableWithTabs() {
           position: "top-right",
           duration: 3000,
         });
+      } else if (action === "closed") {
+        console.log(
+          "Calling updateBrandRequestStatus with requestId:",
+          requestId,
+          "newStatus:",
+          newStatus
+        );
+        const result = await managerService.updateBrandRequestStatus(
+          requestId,
+          newStatus
+        );
+        if (!result.success) {
+          console.error("Lỗi khi đóng yêu cầu:", result.message);
+          toast.error(
+            "Lỗi khi đóng yêu cầu: " + (result.message || "Không xác định"),
+            { position: "top-right", duration: 3000 }
+          );
+          return;
+        }
+
+        setRequests((prevRequests) =>
+          prevRequests.map((req) =>
+            req.id === requestIdStr
+              ? {
+                ...req,
+                status: newStatus,
+                statusName: "Đã đóng",
+              }
+              : req
+          )
+        );
+        toast.success("Đã đóng yêu cầu ID: " + requestIdStr, {
+          position: "top-right",
+          duration: 3000,
+        });
       }
     } catch (error) {
       console.error("Error handling action:", error);
@@ -353,8 +387,10 @@ export default function RequestTableWithTabs() {
       setIsLoading(false);
       setIsConfirmDialogOpen(false);
       setIsRejectReasonDialogOpen(false);
+      setIsCloseDialogOpen(false);
       setDialogRequestId(null);
       setDialogAction(null);
+      setCloseRequestId(null);
       setRejectReason(
         "Rất tiếc, yêu cầu của bạn không đáp ứng được các tiêu chí hiện tại của chúng tôi."
       );
@@ -385,9 +421,67 @@ export default function RequestTableWithTabs() {
     setSelectedRequestId(null);
   };
 
+  const handleCloseRequest = (requestId: string) => {
+    setCloseRequestId(requestId);
+    setIsCloseDialogOpen(true);
+  };
+
+  const confirmCloseRequest = () => {
+    if (closeRequestId) {
+      processAction(closeRequestId, "closed");
+    }
+  };
+
   const ActionButton = ({ request }: { request: Request }) => {
-    if (activeTab === "processed" || activeTab === "closed") {
-      // Áp dụng cho cả tab "ĐÃ ĐÓNG"
+    if (activeTab === "processed") {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="link" className="text-foreground px-2 py-1">
+              <MoreVertical className="h-5 w-5 hover:text-muted-foreground hover:scale-110 transition duration-200" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              onClick={() => handleViewDetail(request.id)}
+              className="flex items-center gap-2"
+            >
+              <Eye className="h-4 w-4" /> Xem chi tiết
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleCloseRequest(request.id)}
+              className="flex items-center gap-2"
+            >
+              <Lock className="h-4 w-4" /> Đóng yêu cầu
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    } else if (activeTab === "closed") {
+      return (
+        <Button
+          variant="link"
+          className="text-blue-500 p-0 underline hover:text-blue-700"
+          onClick={() => handleViewDetail(request.id)}
+        >
+          Xem chi tiết
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        variant="link"
+        className="text-blue-500 p-0 underline hover:text-blue-700"
+        onClick={() => handleViewDetail(request.id)}
+      >
+        Xem chi tiết
+      </Button>
+    );
+  };
+
+  const StatusButton = ({ request }: { request: Request }) => {
+    if (activeTab === "processed") {
       return (
         <div className="flex gap-2">
           <Badge
@@ -483,7 +577,9 @@ export default function RequestTableWithTabs() {
             <TableHead className="w-[20%]">Thương hiệu</TableHead>
             <TableHead className="w-[20%]">Email khách hàng</TableHead>
             <TableHead className="w-[20%]">Loại cửa hàng</TableHead>
-            <TableHead className="w-[12%]">Xem chi tiết</TableHead>
+            <TableHead className="w-[12%]">
+              {activeTab === "processed" ? "Thao tác" : "Xem chi tiết"}
+            </TableHead>
             <TableHead className="w-[8%]">
               {activeTab === "new" ? "Hành động" : "Trạng thái"}
             </TableHead>
@@ -506,16 +602,10 @@ export default function RequestTableWithTabs() {
                 {request.storeProfileCategoryName || "Không xác định"}
               </TableCell>
               <TableCell>
-                <Button
-                  variant="link"
-                  className="text-blue-500 p-0 underline hover:text-blue-700"
-                  onClick={() => handleViewDetail(request.id)}
-                >
-                  Xem chi tiết
-                </Button>
+                <ActionButton request={request} />
               </TableCell>
               <TableCell>
-                <ActionButton request={request} />
+                <StatusButton request={request} />
               </TableCell>
             </TableRow>
           ))}
@@ -580,8 +670,8 @@ export default function RequestTableWithTabs() {
                 {dialogAction === "accepted"
                   ? "chấp nhận"
                   : dialogAction === "rejected"
-                  ? "từ chối"
-                  : "xóa"}
+                    ? "từ chối"
+                    : "xóa"}
               </strong>{" "}
               yêu cầu ID: {dialogRequestId} không?
             </AlertDialogDescription>
@@ -617,6 +707,26 @@ export default function RequestTableWithTabs() {
             <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={handleSubmitRejectReason}>
               Gửi
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={isCloseDialogOpen}
+        onOpenChange={setIsCloseDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận đóng yêu cầu</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn <strong>đóng</strong> yêu cầu ID: {closeRequestId} không?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmCloseRequest}>
+              Xác nhận
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
