@@ -59,57 +59,13 @@ export default function SiteManagement() {
   const [totalPages, setTotalPages] = React.useState(1); // Tổng số trang
   const [isLoading, setIsLoading] = React.useState(false); // Trạng thái loading
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all"); // State để lọc theo siteCategoryId
-  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(null); // State để lưu siteId khi bấm "Xem chi tiết"
-  const [activeTab, setActiveTab] = React.useState<"KHẢ DỤNG" | "ĐÃ CHỐT">("KHẢ DỤNG"); // State cho tab
+  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(
+    null
+  ); // State để lưu siteId khi bấm "Xem chi tiết"
+  const [activeTab, setActiveTab] = React.useState<"KHẢ DỤNG" | "ĐÃ CHỐT">(
+    "KHẢ DỤNG"
+  ); // State cho tab
   const itemsPerPage = 10; // Số lượng site trên mỗi trang
-
-  React.useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const siteIdParam = searchParams.get("siteId");
-
-    if (siteIdParam) {
-      const siteId = parseInt(siteIdParam);
-      if (!isNaN(siteId)) {
-        // Nếu có siteId hợp lệ, thiết lập lại category về "all" và tab về "SẴN SÀNG"
-        setSelectedCategory("all");
-        setActiveTab("KHẢ DỤNG");
-        // Gọi API với siteId
-        loadSiteById(siteId);
-      }
-    }
-  }, []);
-
-  const loadSiteById = async (siteId: number) => {
-    setIsLoading(true);
-    try {
-      const response: SitesApiResponse = await managerService.fetchSites(
-        1, // Luôn bắt đầu từ trang 1 khi tìm theo ID
-        itemsPerPage,
-        activeTab === "KHẢ DỤNG" ? 1 : 10, // Dùng status theo tab
-        siteId // Truyền siteId vào API
-      );
-
-      if (response.success && response.data.listData.length > 0) {
-        setSites(response.data.listData);
-        setTotalPages(response.data.totalPage || 1);
-        setCurrentPage(1);
-
-        // Nếu tìm thấy site, hiển thị chi tiết luôn
-        if (response.data.listData[0].id === siteId) {
-          setSelectedSiteId(siteId);
-        }
-      } else {
-        setSites([]);
-        setTotalPages(1);
-      }
-    } catch (error) {
-      console.error("Error loading site by ID:", error);
-      setSites([]);
-      setTotalPages(1);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Danh sách các category để hiển thị trong dropdown
   const categories = [
@@ -228,7 +184,9 @@ export default function SiteManagement() {
               {sites.map((site) => (
                 <TableRow key={site.id}>
                   <TableCell>{site.id}</TableCell>
-                  <TableCell>{`${site.address}${site.areaName ? `, ${site.areaName}` : ""}`}</TableCell>
+                  <TableCell>{`${site.address}${
+                    site.areaName ? `, ${site.areaName}` : ""
+                  }`}</TableCell>
                   <TableCell>{site.districtName || "Không xác định"}</TableCell>
                   <TableCell>{`${site.size}m²`}</TableCell>
                   <TableCell>
@@ -261,7 +219,9 @@ export default function SiteManagement() {
                 <PaginationItem>
                   <PaginationPrevious
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    className={
+                      currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                    }
                   />
                 </PaginationItem>
                 {Array.from({ length: totalPages }).map((_, i) => (
@@ -276,8 +236,14 @@ export default function SiteManagement() {
                 ))}
                 <PaginationItem>
                   <PaginationNext
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    className={
+                      currentPage === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>

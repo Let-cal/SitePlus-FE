@@ -38,10 +38,10 @@ import {
   UsersIcon,
 } from "lucide-react";
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
 import managerService, {
   Store as StoreType,
 } from "../../../../services/manager/manager.service";
+import SiteDetail from "../site-manager/SiteDetail";
 import type { Brand } from "./BrandTable";
 
 interface SiteCategoryWithStores {
@@ -64,7 +64,9 @@ export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
   const [isLoadingStores, setIsLoadingStores] = React.useState<boolean>(false);
   const [activeTab, setActiveTab] = React.useState<string>("info");
   const [storeCount, setStoreCount] = React.useState<number>(0);
-  const navigate = useNavigate();
+  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(
+    null
+  );
 
   // Đảm bảo reset body styles khi component unmount
   React.useEffect(() => {
@@ -129,15 +131,12 @@ export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
   };
 
   const handleViewSite = (siteId: number) => {
-    // Đóng dialog trước
-    onClose();
-    // Chuyển hướng đến trang manager-site với siteId
-    navigate(`/manager-site?siteId=${siteId}`);
+    setSelectedSiteId(siteId);
   };
 
   return (
     <Dialog open={!!brand} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden max-h-[90vh]">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
             Chi tiết thương hiệu
@@ -182,7 +181,7 @@ export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
           </div>
 
           <TabsContent value="info" className="pt-2">
-            <ScrollArea className="max-h-[65vh] overflow-y-auto">
+            <ScrollArea className="max-h-[50vh] overflow-y-auto">
               <div className="px-6 py-4 ">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Thông tin cơ bản */}
@@ -361,10 +360,13 @@ export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
                                     <TableHead className="w-[20%]">
                                       Tên cửa hàng
                                     </TableHead>
-                                    <TableHead className="w-[30%]">
+                                    <TableHead className="w-[20%] text-center">
+                                      ID mặt bằng
+                                    </TableHead>
+                                    <TableHead className="w-[20%] text-center">
                                       Địa chỉ
                                     </TableHead>
-                                    <TableHead className="w-[20%]">
+                                    <TableHead className="w-[20%] text-center">
                                       Loại hồ sơ
                                     </TableHead>
                                     <TableHead className="w-[25%]">
@@ -379,6 +381,9 @@ export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
                                         {store.id}
                                       </TableCell>
                                       <TableCell>{store.name}</TableCell>
+                                      <TableCell className="text-center">
+                                        {store.siteId}
+                                      </TableCell>
                                       <TableCell className="flex items-center">
                                         <MapPinIcon className="h-4 w-4 text-muted-foreground mr-1 flex-shrink-0" />
                                         <span className="line-clamp-2">
@@ -445,6 +450,12 @@ export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
           </Button>
         </DialogFooter>
       </DialogContent>
+      {selectedSiteId && (
+        <SiteDetail
+          siteId={selectedSiteId}
+          onClose={() => setSelectedSiteId(null)}
+        />
+      )}
     </Dialog>
   );
 }
