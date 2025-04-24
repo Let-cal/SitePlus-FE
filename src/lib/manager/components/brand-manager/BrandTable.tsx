@@ -203,14 +203,14 @@ export default function BrandManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[8%]">ID</TableHead>
-                <TableHead className="w-[25%]">Tên thương hiệu</TableHead>
+                <TableHead className="w-[5%]">ID</TableHead>
+                <TableHead className="w-[20%]">Tên thương hiệu</TableHead>
                 <TableHead className="w-[10%]">Cửa hàng</TableHead>
                 <TableHead className="w-[15%]">Trạng thái</TableHead>
                 <TableHead className="w-[15%]">Loại ngành</TableHead>
                 <TableHead className="w-[15%]">Đối tượng khách hàng</TableHead>
-                <TableHead className="w-[15%]">Ngày cập nhật</TableHead>
-                <TableHead className="w-[7%] text-right">Thao tác</TableHead>
+                <TableHead className="w-[12%]">Ngày cập nhật</TableHead>
+                <TableHead className="w-[15%] text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
