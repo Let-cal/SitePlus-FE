@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { Edit, Eye, MoreHorizontal, Search } from "lucide-react";
+import { Edit, Eye, MoreHorizontal, Search, Store } from "lucide-react";
 import * as React from "react";
 import { Toaster } from "react-hot-toast";
 import managerService from "../../../../services/manager/manager.service";
@@ -49,6 +49,7 @@ export interface Brand {
   updatedAt: string;
   customerSegments: CustomerSegment[];
   industryCategories: IndustryCategory[];
+  storeCount?: number;
 }
 
 // Interface cho response của API GET_BRANDS
@@ -82,6 +83,14 @@ export default function BrandManagement() {
       setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
       loadBrands(); // Tải lại dữ liệu với searchName mới
     }
+  };
+
+  const handleUpdateStoreCount = (brandId: number, storeCount: number) => {
+    setBrands((prevBrands) =>
+      prevBrands.map((brand) =>
+        brand.id === brandId ? { ...brand, storeCount } : brand
+      )
+    );
   };
 
   // Hàm tải dữ liệu brands
@@ -126,12 +135,8 @@ export default function BrandManagement() {
   };
 
   const handleCloseDetail = () => {
-    console.log("Closing detail dialog");
     detailDialog.closeDialog();
-    // Đặt timeout để đảm bảo dialog đã đóng trước khi reset selectedBrand
-    setTimeout(() => {
-      setSelectedBrand(null);
-    }, 100);
+    setSelectedBrand(null);
   };
 
   // Hàm xử lý mở dialog cập nhật
@@ -200,6 +205,7 @@ export default function BrandManagement() {
               <TableRow>
                 <TableHead className="w-[8%]">ID</TableHead>
                 <TableHead className="w-[25%]">Tên thương hiệu</TableHead>
+                <TableHead className="w-[10%]">Cửa hàng</TableHead>
                 <TableHead className="w-[15%]">Trạng thái</TableHead>
                 <TableHead className="w-[15%]">Loại ngành</TableHead>
                 <TableHead className="w-[15%]">Đối tượng khách hàng</TableHead>
@@ -212,6 +218,21 @@ export default function BrandManagement() {
                 <TableRow key={brand.id}>
                   <TableCell>{brand.id}</TableCell>
                   <TableCell className="font-medium">{brand.name}</TableCell>
+                  <TableCell>
+                    {brand.storeCount ? (
+                      <div className="flex items-center gap-1">
+                        <Badge
+                          variant="secondary"
+                          className="bg-blue-50 text-blue-700 hover:bg-blue-100"
+                        >
+                          <Store className="h-3 w-3 mr-1" />
+                          {brand.storeCount}
+                        </Badge>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-xs">Chưa có</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Badge
                       className={
@@ -312,7 +333,14 @@ export default function BrandManagement() {
       )}
       {/* Hiển thị modal BrandDetail khi có selectedBrand */}
       {selectedBrand && (
-        <BrandDetail brand={selectedBrand} onClose={handleCloseDetail} />
+        <BrandDetail
+          brand={selectedBrand}
+          isOpen={detailDialog.isOpen}
+          onOpenChange={(open) => {
+            if (!open) handleCloseDetail();
+          }}
+          onUpdateStoreCount={handleUpdateStoreCount}
+        />
       )}
       {/* Hiển thị dialog cập nhật brand khi isUpdateDialogOpen = true */}
       <UpdateBrandDialog

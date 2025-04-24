@@ -54,10 +54,17 @@ interface SiteCategoryWithStores {
 
 interface BrandDetailProps {
   brand: Brand | null;
-  onClose: () => void;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onUpdateStoreCount?: (brandId: number, storeCount: number) => void;
 }
 
-export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
+export default function BrandDetail({
+  brand,
+  isOpen,
+  onOpenChange,
+  onUpdateStoreCount,
+}: BrandDetailProps) {
   const [storesData, setStoresData] = React.useState<SiteCategoryWithStores[]>(
     []
   );
@@ -70,30 +77,21 @@ export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
 
   // Đảm bảo reset body styles khi component unmount
   React.useEffect(() => {
-    return () => {
-      document.body.style.pointerEvents = "auto";
-      document.body.style.overflow = "auto";
-    };
-  }, []);
-
-  // Fetch stores data when brand is available
-  React.useEffect(() => {
     const fetchStores = async () => {
-      if (brand) {
+      if (brand && brand.id) {
         setIsLoadingStores(true);
         try {
           const response = await managerService.fetchStoresByBrandId(brand.id);
           if (response.success && response.data.listData) {
             setStoresData(response.data.listData);
-
-            // Calculate total store count across all categories
             const totalStores = response.data.listData.reduce(
-              (total, category) => {
-                return total + (category.stores?.length || 0);
-              },
+              (total, category) => total + (category.stores?.length || 0),
               0
             );
             setStoreCount(totalStores);
+            if (onUpdateStoreCount && totalStores > 0) {
+              onUpdateStoreCount(brand.id, totalStores);
+            }
           }
         } catch (error) {
           console.error("Failed to fetch stores:", error);
@@ -103,20 +101,16 @@ export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
       }
     };
 
-    fetchStores();
-  }, [brand]);
-
-  // Xử lý đóng dialog
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      // Đặt timeout để đảm bảo các styles được reset sau khi dialog đóng
-      setTimeout(() => {
-        // Reset body styles trước khi đóng dialog
-        document.body.style.pointerEvents = "auto";
-        document.body.style.overflow = "auto";
-        onClose();
-      }, 100);
+    if (brand && activeTab === "stores" && storesData.length === 0) {
+      fetchStores();
     }
+  }, [brand, activeTab, storesData.length, onUpdateStoreCount]);
+
+  const handleClose = () => {
+    setStoresData([]); // Reset state
+    setActiveTab("info"); // Reset tab
+    setStoreCount(0); // Reset store count
+    onOpenChange(false); // Đóng dialog thông qua prop
   };
 
   if (!brand) return null;
@@ -135,7 +129,7 @@ export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
   };
 
   return (
-    <Dialog open={!!brand} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden max-h-[90vh]">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
@@ -435,17 +429,7 @@ export default function BrandDetail({ brand, onClose }: BrandDetailProps) {
         <Separator />
 
         <DialogFooter className="px-6 py-4">
-          <Button
-            onClick={() => {
-              // Đặt timeout để đảm bảo các styles được reset sau khi dialog đóng
-              setTimeout(() => {
-                document.body.style.pointerEvents = "auto";
-                document.body.style.overflow = "auto";
-                onClose();
-              }, 100);
-            }}
-            className="w-full sm:w-auto"
-          >
+          <Button onClick={handleClose} className="w-full sm:w-auto">
             Đóng
           </Button>
         </DialogFooter>
