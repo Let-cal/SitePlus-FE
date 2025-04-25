@@ -185,9 +185,9 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
   const getStepTitle = () => {
     switch (step) {
       case 1:
-        return "Chọn Vai Trò";
+        return "Chọn vai trò";
       case 2:
-        return "Chọn Khu Vực";
+        return "Chọn khu vực";
       case 3:
         return "Thông Tin Người Dùng";
       default:
@@ -203,7 +203,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
     <div className="space-y-6">
       <div className="space-y-2">
         <Label>Thành phố</Label>
-        <Input value="Thành Phố Hồ Chí Minh" disabled className="bg-gray-100" />
+        <Input value="Thành Phố Hồ Chí Minh" disabled />
       </div>
 
       <div className="space-y-2">

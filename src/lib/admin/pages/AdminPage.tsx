@@ -13,13 +13,13 @@ export default function AdminPage() {
   const adminItems = [
     {
       icon: <Home size={20} />,
-      label: "Trang chủ",
+      label: "TRANG CHỦ",
       href: "/admin-page",
       isActive: true,
     },
     {
       icon: <User size={20} />,
-      label: "Quản lý người dùng",
+      label: "QUẢN LÝ NGƯỜI DÙNG",
       href: "/admin-users",
     },
   ];
@@ -115,21 +115,25 @@ export default function AdminPage() {
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       {/* Sidebar container */}
-      <Sidebar
-        logoHref={LogoSitePlus}
-        title="Admin Page"
-        mainNavItems={adminItems}
-        onLogout={handleLogout}
-      />
+      <div className="flex-none">
+        <Sidebar
+          logoHref={LogoSitePlus}
+          title="Admin"
+          mainNavItems={adminItems}
+          onLogout={handleLogout}
+        />
+      </div>
 
       {/* Main content area */}
-      <div className="flex-grow flex flex-col">
-        <Header title="Tổng Quan" />
-        <div className="flex-grow p-6 space-y-6">
-          <StatCardGrid cards={cards} />
-          <UsageChart />
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header title="TRANG CHỦ" />
+        <div className="flex-1 p-6 overflow-y-auto">
+          <div className="space-y-12 max-w-full">
+            <StatCardGrid cards={cards} />
+            <UsageChart />
+          </div>
         </div>
       </div>
     </div>

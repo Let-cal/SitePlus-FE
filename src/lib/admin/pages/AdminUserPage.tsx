@@ -17,49 +17,52 @@ export default function AdminUserPage() {
   const adminItems = [
     {
       icon: <Home size={20} />,
-      label: "Trang chủ",
+      label: "TRANG CHỦ",
       href: "/admin-page",
     },
     {
       icon: <User size={20} />,
-      label: "Quản lý người dùng",
+      label: "QUẢN LÝ NGƯỜI DÙNG",
       href: "/admin-users",
       isActive: true,
     },
   ];
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar
-        logoHref={LogoSitePlus}
-        title="Admin Page"
-        mainNavItems={adminItems}
-        onLogout={handleLogout}
-      />
-
-      <div className="flex-grow flex flex-col">
-        <Header
-          title="Quản Lý Người Dùng" // Truyền title vào đây
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar container */}
+      <div className="flex-none">
+        <Sidebar
+          logoHref={LogoSitePlus}
+          title="Admin"
+          mainNavItems={adminItems}
+          onLogout={handleLogout}
         />
+      </div>
+
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header title="QUẢN LÝ NGƯỜI DÙNG" />
         <UserProvider>
-          {" "}
-          <div className="flex-grow p-6 space-y-6">
-            <div className="flex flex-row justify-between">
-              <Button
-                className="lg:w-[15%] items-center"
-                onClick={() => setIsDialogOpen(true)}
-              >
-                Tạo Người Dùng
-              </Button>
+          <div className="flex-1 p-6 overflow-y-auto">
+            <div className="space-y-12 max-w-full">
+              <div className="flex flex-row justify-between">
+                <Button
+                  className="lg:w-[15%] items-center"
+                  onClick={() => setIsDialogOpen(true)}
+                >
+                  Tạo Người Dùng
+                </Button>
+              </div>
+
+              <CreateUserDialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+              />
+
+              <UsersChart />
+              <UserTable />
             </div>
-
-            <CreateUserDialog
-              open={isDialogOpen}
-              onOpenChange={setIsDialogOpen}
-            />
-
-            <UsersChart />
-            <UserTable />
           </div>
         </UserProvider>
       </div>

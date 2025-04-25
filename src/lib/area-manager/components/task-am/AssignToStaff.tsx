@@ -13,7 +13,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, MoreVertical, Eye, Trash, Search, Check, FileBarChart, XCircle, Clock, AlertTriangle } from "lucide-react"; // Thêm icon Clock và AlertTriangle
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Plus, MoreVertical, Eye, Trash, Search, Check, FileBarChart, XCircle, Clock, AlertTriangle, Loader2 } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -39,7 +49,6 @@ import CreateTaskSheet from "./CreateTaskSheet";
 import TaskDetail from "./TaskDetail";
 import SiteDetail from "../../../manager/components/site-manager/SiteDetail";
 import areaManagerService from "../../../../services/area-manager/area-manager.service";
-import { Loader2 } from "lucide-react";
 import { useDebounce } from 'use-debounce';
 
 interface Task {
@@ -137,7 +146,12 @@ const AssignToStaff = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const itemsPerPage = 10;
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [dialogAction, setDialogAction] = useState<"accept" | "reject" | null>(null);
+  const [dialogTaskId, setDialogTaskId] = useState<number | null>(null);
+  const itemsPerPage
+   = 10;
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -229,7 +243,34 @@ const AssignToStaff = () => {
     console.log(`Xóa task ID: ${taskId}`);
   };
 
+  const handleAction = (taskId: number, action: "accept" | "reject") => {
+    setDialogTaskId(taskId);
+    setDialogAction(action);
+    setIsConfirmDialogOpen(true);
+  };
+
+  const confirmAction = async () => {
+    if (!dialogTaskId || !dialogAction) return;
+
+    const task = tasks.find(t => t.id === dialogTaskId);
+    if (!task) {
+      toast.error("Không tìm thấy task", { position: "top-right", duration: 3000 });
+      return;
+    }
+
+    if (dialogAction === "accept") {
+      await handleAccept(task);
+    } else if (dialogAction === "reject") {
+      await handleReject(task);
+    }
+
+    setIsConfirmDialogOpen(false);
+    setDialogTaskId(null);
+    setDialogAction(null);
+  };
+
   const handleAccept = async (task: Task) => {
+    setIsActionLoading(true);
     try {
       const siteId = task.location.siteId;
       if (siteId) {
@@ -276,10 +317,13 @@ const AssignToStaff = () => {
     } catch (error) {
       console.error("Error accepting task:", error);
       toast.error("Lỗi khi chấp nhận task", { position: "top-right", duration: 3000 });
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
   const handleReject = async (task: Task) => {
+    setIsActionLoading(true);
     try {
       const siteId = task.location.siteId;
       if (siteId) {
@@ -312,6 +356,8 @@ const AssignToStaff = () => {
     } catch (error) {
       console.error("Error rejecting task:", error);
       toast.error("Lỗi khi từ chối task", { position: "top-right", duration: 3000 });
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -330,7 +376,7 @@ const AssignToStaff = () => {
 
   return (
     <>
-      <Card className="w-full">
+      <Card className="w-full relative">
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="text-2xl md:text-2xl font-extrabold tracking-tight lg:text-3xl">
@@ -431,16 +477,21 @@ const AssignToStaff = () => {
             </div>
           ) : (
             <>
+              {isActionLoading && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                  <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+                </div>
+              )}
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[8%]">Id</TableHead>
                     <TableHead className="w-[12%]">Tên</TableHead>
                     <TableHead className="w-[15%]">Nhân viên</TableHead>
-                    <TableHead className="w-[15%]">Deadline</TableHead> {/* Đổi vị trí: Deadline trước */}
-                    <TableHead className="w-[15%]">Độ ưu tiên</TableHead> {/* Đổi vị trí: Độ ưu tiên sau */}
+                    <TableHead className="w-[15%]">Deadline</TableHead>
+                    <TableHead className="w-[15%]">Độ ưu tiên</TableHead>
                     <TableHead className="w-[10%] text-center">Trạng thái</TableHead>
-                    <TableHead className="w-[10%] text-center">Hành động</TableHead>
+                    <TableHead className="w-[10%] text-center">Thao tác</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -506,11 +557,11 @@ const AssignToStaff = () => {
                               )}
                               {task.status === 3 && (
                                 <>
-                                  <DropdownMenuItem onClick={() => handleAccept(task)}>
+                                  <DropdownMenuItem onClick={() => handleAction(task.id, "accept")}>
                                     <Check size={16} className="mr-2" />
                                     Chấp nhận
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleReject(task)}>
+                                  <DropdownMenuItem onClick={() => handleAction(task.id, "reject")}>
                                     <XCircle size={16} className="mr-2" />
                                     Từ chối
                                   </DropdownMenuItem>
@@ -590,6 +641,30 @@ const AssignToStaff = () => {
           onClose={handleCloseSiteDetail}
         />
       )}
+
+      <AlertDialog
+        open={isConfirmDialogOpen}
+        onOpenChange={setIsConfirmDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận hành động</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn{" "}
+              <strong>
+                {dialogAction === "accept" ? "chấp nhận" : "từ chối"}
+              </strong>{" "}
+              task ID: {dialogTaskId} không?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmAction}>
+              Xác nhận
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
