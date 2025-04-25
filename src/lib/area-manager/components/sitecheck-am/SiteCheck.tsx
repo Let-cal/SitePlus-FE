@@ -78,6 +78,7 @@ export default function SiteCheck() {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(1);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isActionLoading, setIsActionLoading] = React.useState(false);
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
   const [activeTab, setActiveTab] = React.useState<"status9" | "status8">("status9");
   const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(null);
@@ -125,6 +126,7 @@ export default function SiteCheck() {
 
   const handleAccept = async () => {
     if (!alertSiteId) return;
+    setIsActionLoading(true);
     try {
       const success = await areaManagerService.updateSiteStatus({
         siteId: alertSiteId,
@@ -141,6 +143,7 @@ export default function SiteCheck() {
       console.error("Lỗi khi chấp nhận site:", error);
       toast.error("Lỗi khi cập nhật trạng thái Site", { position: "top-right", duration: 3000 });
     } finally {
+      setIsActionLoading(false);
       setIsAlertOpen(false);
       setAlertSiteId(null);
       setAlertAction(null);
@@ -149,6 +152,7 @@ export default function SiteCheck() {
 
   const handleReject = async () => {
     if (!alertSiteId) return;
+    setIsActionLoading(true);
     try {
       const success = await areaManagerService.updateSiteStatus({
         siteId: alertSiteId,
@@ -165,6 +169,7 @@ export default function SiteCheck() {
       console.error("Lỗi khi từ chối site:", error);
       toast.error("Lỗi khi cập nhật trạng thái Site", { position: "top-right", duration: 3000 });
     } finally {
+      setIsActionLoading(false);
       setIsAlertOpen(false);
       setAlertSiteId(null);
       setAlertAction(null);
@@ -196,7 +201,6 @@ export default function SiteCheck() {
     staff: string;
     description: string;
   }) => {
-    // Không fetch danh sách trực tiếp, chỉ trigger useEffect để làm mới
     setRefreshTrigger((prev) => prev + 1);
   };
 
@@ -213,7 +217,13 @@ export default function SiteCheck() {
   }, [currentPage, selectedCategory, activeTab, refreshTrigger]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 relative">
+      {isActionLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <div className="flex gap-4">
           <Button
@@ -374,7 +384,6 @@ export default function SiteCheck() {
         </>
       )}
 
-      {/* AlertDialog để xác nhận hành động */}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -398,12 +407,10 @@ export default function SiteCheck() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Hiển thị SiteDetail khi có siteId được chọn */}
       {selectedSiteId !== null && (
         <SiteDetail siteId={selectedSiteId} onClose={handleCloseDetail} />
       )}
 
-      {/* Hiển thị AssignTaskSheet khi nhấn nút Giao việc */}
       {isAssignTaskOpen && assignSiteId !== null && (
         <AssignTaskSheet
           isOpen={isAssignTaskOpen}

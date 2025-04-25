@@ -51,7 +51,6 @@ export default function AreaManagerPage() {
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-12 max-w-full">
             <Cards />
-            {/* <AreaMap /> */}
             <StaffManagement />
           </div>
         </div>

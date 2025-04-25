@@ -4,62 +4,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react"; // Thêm icon Search
+import { Search } from "lucide-react";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import managerService from "../../../../services/manager/manager.service";
 import { useDebounce } from 'use-debounce';
 
 // Định nghĩa interface cho dữ liệu nhân viên dựa trên API
 interface Staff {
   id: number;
-  staffId: number; 
+  staffId: number;
   name: string;
-  district: string; 
+  district: string;
   email: string;
-  status: number; 
+  status: number;
   statusName: string;
-  createdAt: string; // Thêm trường createdAt
+  createdAt: string;
 }
 
-// Hàm lấy trạng thái đối lập dựa trên status hiện tại
-const getOppositeStatus = (currentStatus: number): number => {
-  return currentStatus === 1 ? 2 : 1;
-};
-
 const UserManagement = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [staffs, setStaffs] = useState<Staff[]>([]);
-  const [filteredStaffs, setFilteredStaffs] = useState<Staff[]>([]); // Dữ liệu sau khi lọc
+  const [filteredStaffs, setFilteredStaffs] = useState<Staff[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(""); // State cho ô search
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 300); // Debounce tìm kiếm
-  const [statusNameMap, setStatusNameMap] = useState<Record<number, string>>({});
-  const itemsPerPage = 10; // Sửa thành 10 để hiển thị 10 người dùng mỗi trang
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
+  const itemsPerPage = 10;
 
-  // Hàm lấy tên trạng thái đối lập dựa trên trạng thái hiện tại
-  const getOppositeStatusName = (currentStatus: number): string => {
-    return statusNameMap[getOppositeStatus(currentStatus)] || (currentStatus === 1 ? "Vô hiệu" : "Hoạt động");
-  };
-
-  // Gọi API để lấy danh sách người dùng khi component mount
   useEffect(() => {
     const fetchStaffData = async () => {
-      // Lấy toàn bộ user với tham số search
       const users = await managerService.fetchUsers({ search: debouncedSearchQuery || undefined });
-    
-      // Lọc chỉ lấy user có role "Area-Manager"
       const managers = users.filter(user => user.roleName === "Area-Manager");
       
       const mappedStaffs: Staff[] = managers.map(user => ({
@@ -73,62 +45,16 @@ const UserManagement = () => {
         createdAt: user.createdAt,
       }));
       
-      // Sắp xếp nhân viên theo thời gian tạo mới nhất (giảm dần)
       const sortedStaffs = [...mappedStaffs].sort((a, b) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
       
       setStaffs(sortedStaffs);
-      setFilteredStaffs(sortedStaffs); // Ban đầu dữ liệu lọc giống dữ liệu gốc
-      
-      // Tạo map lưu trữ status -> statusName
-      const newStatusNameMap: Record<number, string> = {};
-      managers.forEach(user => {
-        newStatusNameMap[user.status] = user.statusName;
-      });
-      setStatusNameMap(newStatusNameMap);
+      setFilteredStaffs(sortedStaffs);
     };
 
     fetchStaffData();
-  }, [debouncedSearchQuery]); // Gọi lại API khi debouncedSearchQuery thay đổi
-
-  const handleStatusClick = (staff: Staff) => {
-    setSelectedStaff(staff);
-    setDialogOpen(true);
-  };
-
-  const handleStatusChange = () => {
-    if (selectedStaff) {
-      const newStatus = getOppositeStatus(selectedStaff.status);
-      const newStatusName = statusNameMap[newStatus] || getOppositeStatusName(selectedStaff.status);
-      
-      setStaffs(prevStaffs =>
-        prevStaffs.map(s => {
-          if (s.id === selectedStaff.id) {
-            return {
-              ...s,
-              status: newStatus,
-              statusName: newStatusName,
-            };
-          }
-          return s;
-        })
-      );
-      setFilteredStaffs(prevStaffs =>
-        prevStaffs.map(s => {
-          if (s.id === selectedStaff.id) {
-            return {
-              ...s,
-              status: newStatus,
-              statusName: newStatusName,
-            };
-          }
-          return s;
-        })
-      );
-    }
-    setDialogOpen(false);
-  };
+  }, [debouncedSearchQuery]);
 
   const totalPages = Math.ceil(filteredStaffs.length / itemsPerPage);
   const currentItems = filteredStaffs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -142,14 +68,13 @@ const UserManagement = () => {
         <CardContent>
           <div className="mb-4">
             <div className="flex gap-3 flex-wrap justify-end">
-              {/* Ô search với icon kính lúp */}
-              <div className="relative w-[300px]">
+              <div className="relative w-[350px]">
                 <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                 <Input
                   placeholder="Tìm kiếm..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10" // Thêm padding-left để không đè lên icon
+                  className="pl-10"
                 />
               </div>
             </div>
@@ -176,12 +101,11 @@ const UserManagement = () => {
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className={`w-[100px] h-5 flex items-center justify-center cursor-pointer ${
+                        className={`w-[100px] h-5 flex items-center justify-center ${
                           staff.status === 1
-                            ? "bg-green-500 hover:bg-green-600"
-                            : "bg-gray-500 hover:bg-gray-600"
+                            ? "bg-green-500"
+                            : "bg-gray-500"
                         } text-white text-xs whitespace-nowrap`}
-                        onClick={() => handleStatusClick(staff)}
                       >
                         {staff.statusName}
                       </Badge>
@@ -232,22 +156,6 @@ const UserManagement = () => {
           )}
         </CardContent>
       </Card>
-
-      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận thay đổi trạng thái</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc chắn muốn thay đổi trạng thái của {selectedStaff?.name} từ {selectedStaff?.statusName} sang{" "}
-              {selectedStaff && (statusNameMap[getOppositeStatus(selectedStaff.status)] || getOppositeStatusName(selectedStaff.status))}?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleStatusChange}>Xác nhận</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 };
