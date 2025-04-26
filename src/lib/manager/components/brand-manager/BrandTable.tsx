@@ -29,7 +29,7 @@ import { Toaster } from "react-hot-toast";
 import managerService from "../../../../services/manager/manager.service";
 import BrandDetail from "./BrandDetail"; // Import BrandDetail component
 import UpdateBrandDialog from "./UpdateBrandDialog"; // Import UpdateBrandDialog component
-import { useDialogState } from "./UseDialogState";
+import { useDialogState } from "../../../all-site/UseDialogState";
 
 // Interface cho Brand
 interface CustomerSegment {

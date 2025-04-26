@@ -26,6 +26,7 @@ export const API_ENDPOINTS = {
     GET: {
       GET_ROLES: "/api/roles/get-all",
       GET_AREA_BY_DISTRICTS: "/api/areas",
+      GET_ALL_AREAS: "/api/areas/get-all",
       GET_DISTRICTS: "/api/districts/get-all",
       CREATE_STAFF: "/api/Authen/staff",
       GET_USERS: "/api/user/get-users",
@@ -38,7 +39,7 @@ export const API_ENDPOINTS = {
       GET_USER_COUNT_BY_ROLE_PER_MONTH: "/api/user/count-by-role-per-month",
     },
     POST: {
-      UPDATE_USRES: "/api/update-from-admin",
+      UPDATE_USRES: "/api/user",
       CREATE_USER: "/api/user/register",
     },
   },

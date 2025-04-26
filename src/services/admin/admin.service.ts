@@ -22,7 +22,9 @@ export interface User {
   districtName?: string;
   cityName?: string;
   statusName: string;
+  status: boolean;
   createdAt: string;
+  password: string;
 }
 export interface GetUsersParams {
   page?: number;
@@ -169,6 +171,21 @@ class AdminService {
     }
   }
 
+  async getAllAreas(page: number = 1, pageSize: number = 100): Promise<Area[]> {
+    try {
+      const response: AxiosResponse<AdminApiResponse<PaginatedResponse<Area>>> =
+        await axios.get(
+          `${API_BASE_URL}${API_ENDPOINTS.ADMIN.GET.GET_ALL_AREAS}?page=${page}&pageSize=${pageSize}`,
+          {
+            headers: this.getAuthHeader(),
+          }
+        );
+      return response.data.data.listData || [];
+    } catch (error) {
+      console.error("Error fetching all areas:", error);
+      throw error;
+    }
+  }
   async getAreasByDistrict(
     districtId: number,
     page: number = 1,
@@ -236,12 +253,20 @@ class AdminService {
       throw error;
     }
   }
-  async updateUser(data: { id: number; area?: string; status: boolean }) {
+  async updateUser(data: {
+    id: number;
+    email: string;
+    name: string;
+    roleId: number;
+    status: number;
+    areaId: number;
+    password?: string;
+  }) {
     try {
       const response = await axios.put(
-        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.POST.UPDATE_USRES}`,
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.POST.UPDATE_USRES}/${data.id}`,
         data,
-        { headers: this.getAuthHeader() }
+        { headers: this.getAuthHeaderForCreateUser() } // Sử dụng header với Content-Type: application/json-patch+json
       );
       return response.data;
     } catch (error) {
@@ -249,6 +274,7 @@ class AdminService {
       throw error;
     }
   }
+
   async getTotalUsers(): Promise<TotalResponse> {
     try {
       const response: AxiosResponse<TotalResponse> = await axios.get(

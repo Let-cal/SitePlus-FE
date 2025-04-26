@@ -1,11 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -25,9 +19,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Pagination from "@/lib/all-site/pagination";
+import { useDialogState } from "@/lib/all-site/UseDialogState";
 import { adminService, Role, User } from "@/services/admin/admin.service";
 import { useUserContext } from "@/services/admin/UserContext";
-import { Eye, MoreVertical, Plus, Search, Trash } from "lucide-react";
+import { Edit, Search } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import UpdateUserDialog from "./UpdateUserDialog";
@@ -40,7 +35,8 @@ interface ProcessedUser extends User {
 const UserTable = () => {
   const { usersData, isLoading, currentParams, updateParams, refreshData } =
     useUserContext();
-
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const updateDialog = useDialogState(false);
   const [roles, setRoles] = useState<Role[]>([]);
   const [processedUsers, setProcessedUsers] = useState<ProcessedUser[]>([]);
   const [searchQueryInput, setSearchQueryInput] = useState(
@@ -48,12 +44,10 @@ const UserTable = () => {
   );
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  // Lấy danh sách vai trò khi component được mount
   useEffect(() => {
     const fetchRoles = async () => {
       try {
         const data = await adminService.getAllRoles();
-        // Lọc các vai trò theo yêu cầu: "Manager", "Area-Manager", "Staff"
         const filteredRoles = data
           .filter((role) =>
             ["Manager", "Area-Manager", "Staff"].includes(role.name)
@@ -62,7 +56,6 @@ const UserTable = () => {
 
         setRoles(filteredRoles);
 
-        // Đặt vai trò Manager làm mặc định nếu có và chưa có roleId trong params
         if (!currentParams.roleId && filteredRoles.length > 0) {
           const managerRole = filteredRoles.find(
             (role) => role.name === "Manager"
@@ -79,9 +72,8 @@ const UserTable = () => {
     };
 
     fetchRoles();
-  }, []);
+  }, [currentParams.roleId, updateParams]);
 
-  // Xử lý dữ liệu người dùng khi có dữ liệu mới
   useEffect(() => {
     if (usersData && usersData.listData) {
       processUserData(usersData.listData);
@@ -92,18 +84,17 @@ const UserTable = () => {
     const processed: ProcessedUser[] = users.map((user) => {
       const processedUser: ProcessedUser = { ...user };
 
-      // Định dạng dữ liệu vị trí dựa theo vai trò
       const roleId = currentParams.roleId?.toString();
       switch (roleId) {
-        case "7": // Manager
+        case "7":
           processedUser.formattedBranch = `${user.districtName || ""}/${
             user.areaName || ""
           }`;
           break;
-        case "8": // Area Manager
+        case "8":
           processedUser.formattedArea = user.districtName || "";
           break;
-        case "9": // Staff
+        case "9":
           processedUser.formattedBranch = `${user.districtName || ""}/${
             user.areaName || ""
           }`;
@@ -123,9 +114,7 @@ const UserTable = () => {
   };
 
   const handleStatusFilterChange = (newStatus: string) => {
-    // Chuyển đổi giá trị trạng thái
     const statusValue = newStatus === "all" ? null : newStatus === "Hoạt động";
-
     updateParams({ status: statusValue });
   };
 
@@ -133,7 +122,6 @@ const UserTable = () => {
     const value = e.target.value;
     setSearchQueryInput(value);
 
-    // Debounce search to avoid too many requests
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
@@ -150,11 +138,11 @@ const UserTable = () => {
   const getExtraColumns = () => {
     const roleId = currentParams.roleId?.toString();
     switch (roleId) {
-      case "7": // Manager
+      case "7":
         return <TableHead>Chi nhánh trực thuộc</TableHead>;
-      case "8": // Area Manager
+      case "8":
         return <TableHead>Khu vực quản lý</TableHead>;
-      case "9": // Staff
+      case "9":
         return <TableHead>Chi nhánh trực thuộc</TableHead>;
       default:
         return null;
@@ -164,11 +152,11 @@ const UserTable = () => {
   const getExtraCell = (user: ProcessedUser) => {
     const roleId = currentParams.roleId?.toString();
     switch (roleId) {
-      case "7": // Manager
+      case "7":
         return <TableCell>{user.formattedBranch}</TableCell>;
-      case "8": // Area Manager
+      case "8":
         return <TableCell>{user.formattedArea}</TableCell>;
-      case "9": // Staff
+      case "9":
         return <TableCell>{user.formattedBranch}</TableCell>;
       default:
         return null;
@@ -177,23 +165,23 @@ const UserTable = () => {
 
   const getStatusBadge = (statusName: string) => {
     const statusStyles = {
-      "Hoạt động": "bg-green-500 hover:bg-green-600", // Đang hoạt động
-      "Vô hiệu": "bg-gray-500 hover:bg-gray-600", // Không hoạt động
+      "Hoạt động": "bg-green-500 hover:bg-green-600",
+      "Vô hiệu": "bg-gray-500 hover:bg-gray-600",
     };
 
     return (
       <Badge
-        className={`${statusStyles[statusName] || "bg-gray-500"} text-white`}
+        className={`${
+          statusStyles[statusName] || "bg-gray-500"
+        } text moti text-white`}
       >
         {statusName === "Hoạt động" ? "Đang hoạt động" : "Vô hiệu"}
       </Badge>
     );
   };
 
-  // Hàm định dạng ngày
   const formatDate = (dateString: string): string => {
     if (!dateString || dateString === "0001-01-01T00:00:00") return "N/A";
-
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("vi-VN", {
@@ -207,13 +195,25 @@ const UserTable = () => {
     }
   };
 
-  // Xác định trạng thái hiện tại cho các bộ lọc
   const currentStatus =
     currentParams.status === null
       ? "all"
       : currentParams.status
       ? "Hoạt động"
       : "Vô hiệu";
+
+  const openUpdate = (u: User) => {
+    setSelectedUser(u);
+    updateDialog.openDialog();
+  };
+
+  const closeUpdate = async () => {
+    updateDialog.closeDialog();
+    setTimeout(() => {
+      setSelectedUser(null);
+      refreshData();
+    }, 100);
+  };
 
   return (
     <div className="space-y-4">
@@ -313,37 +313,16 @@ const UserTable = () => {
                     {getExtraCell(user)}
                     <TableCell>{getStatusBadge(user.statusName)}</TableCell>
                     <TableCell>{formatDate(user.createdAt)}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Xem chi tiết
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Tạo mới
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onSelect={(e) => e.preventDefault()}
-                          >
-                            <UpdateUserDialog
-                              user={user}
-                              onUpdate={refreshData}
-                              asTrigger={true}
-                            />
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash className="h-4 w-4 mr-2" />
-                            Xóa
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    <TableCell className="flex justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openUpdate(user)}
+                        className="flex items-center space-x-1"
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span>Cập nhật</span>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -354,6 +333,15 @@ const UserTable = () => {
             currentPage={currentParams.page || 1}
             totalPages={usersData.totalPage}
             onPageChange={handlePageChange}
+          />
+        )}
+        {selectedUser && (
+          <UpdateUserDialog
+            user={selectedUser}
+            roles={roles}
+            open={updateDialog.isOpen}
+            onOpenChange={updateDialog.handleOpenChange}
+            onUpdate={closeUpdate}
           />
         )}
       </div>
