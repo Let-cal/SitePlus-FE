@@ -17,10 +17,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  adminService,
+  clientService,
   SiteCategory,
   StoreProfileCategory,
-} from "@/services/admin/admin.service";
+} from "@/services/client-role/client.service";
 import { AnimatePresence, motion } from "framer-motion";
 import { Info, PlusCircle } from "lucide-react";
 import * as React from "react";
@@ -55,8 +55,8 @@ const Step2Form = ({ form }) => {
         try {
           // Load both data sets in parallel for better performance
           const [siteData, profileData] = await Promise.all([
-            adminService.getAllSiteCategories(),
-            adminService.getAllStoreProfileCategories(),
+            clientService.getAllSiteCategories(),
+            clientService.getAllStoreProfileCategories(),
           ]);
 
           console.log("Site categories fetched:", siteData);

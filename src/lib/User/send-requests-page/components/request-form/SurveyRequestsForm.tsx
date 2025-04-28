@@ -1,4 +1,4 @@
-import clientService from "@/services/client-role/client.service";
+import {clientService} from "@/services/client-role/client.service";
 import { CustomerSegment, IndustryCategory } from "@/services/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSnackbar } from "notistack";

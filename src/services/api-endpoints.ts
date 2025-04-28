@@ -9,6 +9,8 @@ export const API_ENDPOINTS = {
     GET: {
       GET_INDUSTRY: "/api/Industry",
       GET_INDUSTRY_CATEGORY: "/api/IndustryCategory",
+      GET_SITE_CATEGORY: "/api/SiteCate",
+      GET_STORE_PROFILE_CATEGORY: "/api/StoreProfileCategory",
       GET_INDUSTRY_CATEGORY_BY_INDUSTRY:
         "/api/IndustryCategory/IndustryCategoryByIndustry",
       GET_CUSTOMER_SEGMENT: "/api/CustomerSegment",
