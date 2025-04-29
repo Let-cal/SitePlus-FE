@@ -243,8 +243,6 @@ class AdminService {
   }
   async updateUser(data: {
     id: number;
-    email: string;
-    name: string;
     roleId: number;
     status: number;
     areaId: number;

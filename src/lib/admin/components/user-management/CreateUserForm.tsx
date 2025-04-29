@@ -491,7 +491,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
         <div className="space-y-2">
           <Label htmlFor="email" className="flex items-center">
             <Mail className="h-4 w-4 mr-2" />
-            Email
+            Tên đăng nhập
           </Label>
           <Input
             id="email"
@@ -500,7 +500,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, email: e.target.value }))
             }
-            placeholder="example@company.com"
+            placeholder="Nhập tên đăng nhập"
             className="w-full"
           />
         </div>

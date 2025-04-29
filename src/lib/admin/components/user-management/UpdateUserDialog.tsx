@@ -112,7 +112,8 @@ const UpdateUserDialog = ({
   }, [open, user]);
 
   useEffect(() => {
-    // Check for district without area after user interaction
+    // Only check for district without area after user interaction
+    // or if user has modified the selections
     if (hasInteracted) {
       if (formData.districtId && !formData.areaId) {
         setDistrictWithoutArea(true);
@@ -173,7 +174,7 @@ const UpdateUserDialog = ({
           };
         });
       } else {
-        setAreas(allAreasData || []); // Load all areas if no district is selected
+        setAreas([]);
         setFormData((prev) => ({
           ...prev,
           districtId: null,
@@ -204,31 +205,8 @@ const UpdateUserDialog = ({
             formData.districtId
           );
           setAreas(Array.isArray(areasData) ? areasData : []);
-
-          // Only reset areaId if district changed AND user has interacted
-          if (
-            (formData.districtId !== user.districtId && hasInteracted) ||
-            hasInteracted
-          ) {
-            setFormData((prev) => ({
-              ...prev,
-              areaId: null,
-            }));
-          }
         } catch (error) {
           console.error("Error fetching areas:", error);
-          setAreas([]);
-          enqueueSnackbar("Không thể tải danh sách khu vực", {
-            variant: "error",
-          });
-        }
-      } else {
-        // If no district is selected, load all areas
-        try {
-          const allAreasData = await adminService.getAllAreas();
-          setAreas(Array.isArray(allAreasData) ? allAreasData : []);
-        } catch (error) {
-          console.error("Error fetching all areas:", error);
           setAreas([]);
           enqueueSnackbar("Không thể tải danh sách khu vực", {
             variant: "error",
@@ -340,6 +318,31 @@ const UpdateUserDialog = ({
           }
         }
       }
+      if (originalRole?.name !== "Manager" && newRole?.name === "Manager") {
+        // Lấy ID của role Manager
+        const managerRoleId = roles.find((r) => r.name === "Manager")?.id;
+        if (managerRoleId) {
+          // Lấy danh sách tất cả Managers
+          const allManagers = await fetchAllUsers(managerRoleId);
+          if (allManagers?.listData) {
+            // Lọc ra những Manager khác cùng thành phố với user hiện tại
+            const conflict = allManagers.listData.find(
+              (u) => u.id !== user.id && u.cityName === user.cityName
+            );
+            if (conflict) {
+              enqueueSnackbar(`Mỗi thành phố chỉ cho phép 1 Manager`, {
+                variant: "error",
+                preventDuplicate: true,
+                anchorOrigin: {
+                  horizontal: "left",
+                  vertical: "bottom",
+                },
+              });
+              return false;
+            }
+          }
+        }
+      }
 
       return true;
     } catch (error) {
@@ -384,11 +387,14 @@ const UpdateUserDialog = ({
   }, []);
 
   const handleSubmit = async () => {
-    // Check for district without area when submitting
-    if (formData.districtId && !formData.areaId) {
-      enqueueSnackbar("Vui lòng chọn khu vực khi đã chọn quận/huyện", {
-        variant: "error",
-      });
+    // Only check for district without area when submitting
+    if (!isFormValid()) {
+      // Chỉ hiển thị thông báo nếu người dùng đã tương tác và chưa chọn areaId khi đã chọn districtId
+      if (hasInteracted && formData.districtId && !formData.areaId) {
+        enqueueSnackbar("Vui lòng chọn khu vực khi đã chọn quận/huyện", {
+          variant: "error",
+        });
+      }
       return;
     }
 
@@ -403,12 +409,10 @@ const UpdateUserDialog = ({
     try {
       const updateData = {
         id: formData.id,
-        email: user.email,
-        name: user.name,
-        roleId: user.roleId || 0,
-        districtId: formData.districtId || 0,
-        areaId: formData.areaId || 0,
+        roleId: formData.roleId || user.roleId || 0,
         status: formData.status ? 1 : 2,
+        areaId: formData.areaId || user.areaId || 0,
+        districtId: formData.districtId || user.districtId || 0,
         password: user.passWord,
       };
       console.log("payload update user: ", updateData);
@@ -434,6 +438,7 @@ const UpdateUserDialog = ({
   // Check if any changes have been made to enable/disable submit button
   const hasChanges = () => {
     return (
+      formData.roleId !== user.roleId ||
       formData.status !== (user.status === 1) ||
       formData.districtId !== user.districtId ||
       formData.areaId !== user.areaId
@@ -579,7 +584,8 @@ const UpdateUserDialog = ({
                   areas={areas}
                   selectedAreaId={formData.areaId}
                   onSelect={handleAreaChange}
-                  disabled={false}
+                  disabled={!formData.districtId}
+                  defaultName={!hasInteracted ? user.areaName : undefined}
                 />
                 {districtWithoutArea && (
                   <p className="text-amber-600 text-xs mt-1">
