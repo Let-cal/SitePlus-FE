@@ -18,6 +18,7 @@ interface UserContextType {
   isLoading: boolean;
   error: string | null;
   fetchUsers: (params: GetUsersParams) => Promise<void>;
+  fetchAllUsers: (roleId?: number) => Promise<UsersResponse | null>;
   currentParams: GetUsersParams;
   updateParams: (newParams: Partial<GetUsersParams>) => void;
   refreshData: () => Promise<void>;
@@ -83,6 +84,25 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  // Hàm mới để fetch tất cả users (với pageSize lớn) cho mục đích validation
+  const fetchAllUsers = async (
+    roleId?: number
+  ): Promise<UsersResponse | null> => {
+    try {
+      const params: GetUsersParams = {
+        page: 1,
+        pageSize: 1000, // Dùng pageSize lớn để có thể lấy tất cả user
+        roleId,
+      };
+
+      const response = await adminService.getAllUsers(params);
+      return response.data;
+    } catch (err) {
+      console.error("Error fetching all users:", err);
+      return null;
+    }
+  };
+
   const updateParams = (newParams: Partial<GetUsersParams>) => {
     setCurrentParams((prev) => {
       // Nếu thay đổi bộ lọc thì reset về trang 1
@@ -118,6 +138,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         isLoading,
         error,
         fetchUsers,
+        fetchAllUsers,
         currentParams,
         updateParams,
         refreshData,

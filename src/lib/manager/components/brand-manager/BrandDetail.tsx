@@ -325,12 +325,12 @@ export default function BrandDetail({
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-6 accordion-table-container">
                     <h3 className="text-lg font-semibold">
                       Danh sách cửa hàng ({storeCount})
                     </h3>
 
-                    <Accordion type="single" collapsible className="w-full">
+                    <Accordion type="multiple" className="w-full">
                       {storesData.map((categoryData, index) => (
                         <AccordionItem
                           key={index}
@@ -346,24 +346,26 @@ export default function BrandDetail({
                             </div>
                           </AccordionTrigger>
                           <AccordionContent>
-                            <div className="pt-2 pb-1">
+                            <div className="pt-2 pb-1 ">
                               <Table>
                                 <TableHeader>
                                   <TableRow>
-                                    <TableHead className="w-[5%]">ID</TableHead>
-                                    <TableHead className="w-[20%]">
+                                    <TableHead className="w-[5%] sticky top-0 bg-background z-10">
+                                      ID
+                                    </TableHead>
+                                    <TableHead className="w-[20%] sticky top-0 bg-background z-10">
                                       Tên cửa hàng
                                     </TableHead>
-                                    <TableHead className="w-[20%] text-center">
-                                      ID mặt bằng
+                                    <TableHead className="w-[20%] text-center sticky top-0 bg-background z-10">
+                                      ID mặt bằng
                                     </TableHead>
-                                    <TableHead className="w-[20%] text-center">
+                                    <TableHead className="w-[20%] text-center sticky top-0 bg-background z-10">
                                       Địa chỉ
                                     </TableHead>
-                                    <TableHead className="w-[20%] text-center">
+                                    <TableHead className="w-[20%] text-center sticky top-0 bg-background z-10">
                                       Loại hồ sơ
                                     </TableHead>
-                                    <TableHead className="w-[25%]">
+                                    <TableHead className="w-[25%] sticky top-0 bg-background z-10">
                                       Xem mặt bằng
                                     </TableHead>
                                   </TableRow>
