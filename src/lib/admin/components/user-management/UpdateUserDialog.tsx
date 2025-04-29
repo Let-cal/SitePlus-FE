@@ -205,18 +205,6 @@ const UpdateUserDialog = ({
             formData.districtId
           );
           setAreas(Array.isArray(areasData) ? areasData : []);
-
-          // Only reset areaId if district changed AND user has interacted
-          // or if it's a manual district change
-          if (
-            (formData.districtId !== user.districtId && hasInteracted) ||
-            hasInteracted
-          ) {
-            setFormData((prev) => ({
-              ...prev,
-              areaId: null,
-            }));
-          }
         } catch (error) {
           console.error("Error fetching areas:", error);
           setAreas([]);
@@ -330,6 +318,31 @@ const UpdateUserDialog = ({
           }
         }
       }
+      if (originalRole?.name !== "Manager" && newRole?.name === "Manager") {
+        // Lấy ID của role Manager
+        const managerRoleId = roles.find((r) => r.name === "Manager")?.id;
+        if (managerRoleId) {
+          // Lấy danh sách tất cả Managers
+          const allManagers = await fetchAllUsers(managerRoleId);
+          if (allManagers?.listData) {
+            // Lọc ra những Manager khác cùng thành phố với user hiện tại
+            const conflict = allManagers.listData.find(
+              (u) => u.id !== user.id && u.cityName === user.cityName
+            );
+            if (conflict) {
+              enqueueSnackbar(`Mỗi thành phố chỉ cho phép 1 Manager`, {
+                variant: "error",
+                preventDuplicate: true,
+                anchorOrigin: {
+                  horizontal: "left",
+                  vertical: "bottom",
+                },
+              });
+              return false;
+            }
+          }
+        }
+      }
 
       return true;
     } catch (error) {
@@ -375,10 +388,13 @@ const UpdateUserDialog = ({
 
   const handleSubmit = async () => {
     // Only check for district without area when submitting
-    if (formData.districtId && !formData.areaId) {
-      enqueueSnackbar("Vui lòng chọn khu vực khi đã chọn quận/huyện", {
-        variant: "error",
-      });
+    if (!isFormValid()) {
+      // Chỉ hiển thị thông báo nếu người dùng đã tương tác và chưa chọn areaId khi đã chọn districtId
+      if (hasInteracted && formData.districtId && !formData.areaId) {
+        enqueueSnackbar("Vui lòng chọn khu vực khi đã chọn quận/huyện", {
+          variant: "error",
+        });
+      }
       return;
     }
 
@@ -393,10 +409,8 @@ const UpdateUserDialog = ({
     try {
       const updateData = {
         id: formData.id,
-        email: formData.email,
-        name: formData.name,
         roleId: formData.roleId || user.roleId || 0,
-        status: formData.status ? 1 : 0,
+        status: formData.status ? 1 : 2,
         areaId: formData.areaId || user.areaId || 0,
         districtId: formData.districtId || user.districtId || 0,
         password: user.passWord,
@@ -571,7 +585,7 @@ const UpdateUserDialog = ({
                   selectedAreaId={formData.areaId}
                   onSelect={handleAreaChange}
                   disabled={!formData.districtId}
-                  defaultName={user.areaName}
+                  defaultName={!hasInteracted ? user.areaName : undefined}
                 />
                 {districtWithoutArea && (
                   <p className="text-amber-600 text-xs mt-1">
