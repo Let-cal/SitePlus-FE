@@ -22,13 +22,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import { Edit, Eye, MoreHorizontal, Search, Store } from "lucide-react";
+import { Edit, Eye, MoreHorizontal, MoreVertical, Search, Store } from "lucide-react";
 import * as React from "react";
 import { Toaster } from "react-hot-toast";
 import managerService from "../../../../services/manager/manager.service";
-import BrandDetail from "./BrandDetail"; // Import BrandDetail component
-import UpdateBrandDialog from "./UpdateBrandDialog"; // Import UpdateBrandDialog component
+import BrandDetail from "./BrandDetail";
+import UpdateBrandDialog from "./UpdateBrandDialog";
 import { useDialogState } from "../../../all-site/UseDialogState";
 
 // Interface cho Brand
@@ -63,72 +70,132 @@ interface BrandsApiResponse {
 }
 
 export default function BrandManagement() {
-  const [brands, setBrands] = React.useState<Brand[]>([]); // State để lưu danh sách brand
-  const [currentPage, setCurrentPage] = React.useState(1); // Trang hiện tại
-  const [totalPages, setTotalPages] = React.useState(1); // Tổng số trang
-  const [isLoading, setIsLoading] = React.useState(false); // Trạng thái loading
-  const [searchName, setSearchName] = React.useState<string>(""); // State để lưu keyword tìm kiếm
-  const [selectedBrand, setSelectedBrand] = React.useState<Brand | null>(null); // State để lưu brand được chọn để xem chi tiết
-  const [updateBrand, setUpdateBrand] = React.useState<Brand | null>(null); // State để lưu brand được chọn để cập nhật
+  const [allBrands, setAllBrands] = React.useState<Brand[]>([]);
+  const [filteredBrands, setFilteredBrands] = React.useState<Brand[]>([]);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [totalPages, setTotalPages] = React.useState(1);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [searchName, setSearchName] = React.useState<string>("");
+  const [filterStatus, setFilterStatus] = React.useState<"all" | "active" | "pending">("all");
+  const [selectedBrand, setSelectedBrand] = React.useState<Brand | null>(null);
+  const [updateBrand, setUpdateBrand] = React.useState<Brand | null>(null);
 
-  // Sử dụng custom hook để quản lý trạng thái dialog
   const updateDialog = useDialogState(false);
   const detailDialog = useDialogState(false);
 
-  const itemsPerPage = 10; // Số lượng brand trên mỗi trang
+  const itemsPerPage = 10;
 
-  // Hàm tìm kiếm khi bấm Enter
+  const statusFilterLabels = {
+    all: "Tất cả",
+    active: "Hữu hiệu",
+    pending: "Chờ xử lý",
+  };
+
+  // Tải toàn bộ dữ liệu thương hiệu từ tất cả các trang
+  const loadAllBrands = React.useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Lấy trang đầu tiên để biết tổng số trang
+      const firstResponse: BrandsApiResponse = await managerService.fetchBrands(
+        1,
+        itemsPerPage,
+        searchName
+      );
+      console.log("First response:", firstResponse);
+
+      if (!firstResponse.data) {
+        setAllBrands([]);
+        setTotalPages(1);
+        setIsLoading(false);
+        return;
+      }
+
+      const totalPage = firstResponse.totalPage || 1;
+      let allData: Brand[] = firstResponse.data;
+
+      // Nếu có nhiều hơn 1 trang, lấy dữ liệu từ các trang còn lại
+      if (totalPage > 1) {
+        const promises = [];
+        for (let page = 2; page <= totalPage; page++) {
+          promises.push(managerService.fetchBrands(page, itemsPerPage, searchName));
+        }
+
+        const responses = await Promise.all(promises);
+        responses.forEach((response: BrandsApiResponse) => {
+          if (response.data) {
+            allData = [...allData, ...response.data];
+          }
+        });
+      }
+
+      setAllBrands(allData);
+    } catch (error) {
+      console.error("Error loading all brands:", error);
+      setAllBrands([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchName]);
+
+  // Lọc dữ liệu cục bộ và áp dụng phân trang
+  React.useEffect(() => {
+    let filtered = allBrands;
+
+    // Lọc theo trạng thái
+    if (filterStatus !== "all") {
+      filtered = filtered.filter((brand) =>
+        filterStatus === "active" ? brand.status === 1 : brand.status !== 1
+      );
+    }
+
+    // Lọc theo tên (nếu API chưa lọc)
+    if (searchName) {
+      filtered = filtered.filter((brand) =>
+        brand.name.toLowerCase().includes(searchName.toLowerCase())
+      );
+    }
+
+    setFilteredBrands(filtered);
+
+    // Tính toán lại totalPages dựa trên danh sách đã lọc
+    const newTotalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+    setTotalPages(newTotalPages);
+
+    // Reset về trang 1 nếu currentPage vượt quá totalPages
+    if (currentPage > newTotalPages) {
+      setCurrentPage(1);
+    }
+
+    console.log("Filtered brands:", filtered);
+    console.log("Total pages:", newTotalPages);
+  }, [allBrands, filterStatus, searchName, currentPage]);
+
+  // Tải dữ liệu khi searchName thay đổi
+  React.useEffect(() => {
+    loadAllBrands();
+  }, [loadAllBrands]);
+
+  // Reset trang khi thay đổi bộ lọc
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, searchName]);
+
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      setCurrentPage(1); // Reset về trang 1 khi tìm kiếm
-      loadBrands(); // Tải lại dữ liệu với searchName mới
+      setCurrentPage(1);
+      loadAllBrands();
     }
   };
 
-  const handleUpdateStoreCount = (brandId: number, storeCount: number) => {
-    setBrands((prevBrands) =>
+  // Memo hóa hàm handleUpdateStoreCount để tránh re-render không cần thiết
+  const handleUpdateStoreCount = React.useCallback((brandId: number, storeCount: number) => {
+    setAllBrands((prevBrands) =>
       prevBrands.map((brand) =>
         brand.id === brandId ? { ...brand, storeCount } : brand
       )
     );
-  };
+  }, []);
 
-  // Hàm tải dữ liệu brands
-  const loadBrands = React.useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response: BrandsApiResponse = await managerService.fetchBrands(
-        currentPage,
-        itemsPerPage,
-        searchName
-      );
-      console.log("Brands loaded:", response); // Kiểm tra dữ liệu
-      if (response.data) {
-        setBrands(response.data);
-        // Tính toán tổng số trang nếu API không trả về
-        setTotalPages(
-          response.totalPage ||
-            Math.ceil((response.totalCount || brands.length) / itemsPerPage)
-        );
-      } else {
-        setBrands([]);
-        setTotalPages(1);
-      }
-    } catch (error) {
-      console.error("Error loading brands:", error);
-      setBrands([]);
-      setTotalPages(1);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, searchName]);
-
-  // Gọi API loadBrands khi component mount và khi currentPage hoặc searchName thay đổi
-  React.useEffect(() => {
-    loadBrands();
-  }, [currentPage, loadBrands]);
-
-  // Hàm xử lý xem chi tiết
   const handleViewDetails = (brand: Brand) => {
     setSelectedBrand(brand);
     detailDialog.openDialog();
@@ -139,28 +206,23 @@ export default function BrandManagement() {
     setSelectedBrand(null);
   };
 
-  // Hàm xử lý mở dialog cập nhật
   const handleUpdate = (brand: Brand) => {
     setUpdateBrand(brand);
     updateDialog.openDialog();
   };
 
-  // Hàm xử lý đóng dialog cập nhật
   const handleCloseUpdateDialog = () => {
     console.log("Closing update dialog");
     updateDialog.closeDialog();
-    // Đặt timeout để đảm bảo dialog đã đóng trước khi reset updateBrand
     setTimeout(() => {
       setUpdateBrand(null);
     }, 100);
   };
 
-  // Hàm xử lý khi cập nhật thành công
   const handleUpdateSuccess = () => {
-    loadBrands(); // Tải lại danh sách brand
+    loadAllBrands();
   };
 
-  // Hàm định dạng ngày
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("vi-VN", {
@@ -170,7 +232,6 @@ export default function BrandManagement() {
     }).format(date);
   };
 
-  // Đảm bảo reset body styles khi component unmount
   React.useEffect(() => {
     return () => {
       document.body.style.pointerEvents = "auto";
@@ -178,43 +239,66 @@ export default function BrandManagement() {
     };
   }, []);
 
+  // Áp dụng phân trang trên danh sách đã lọc
+  const currentItems = filteredBrands.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="space-y-4">
-      <Toaster /> {/* Thêm Toaster component để hiển thị thông báo */}
+      <Toaster />
       <div className="flex justify-between items-center">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            type="text"
-            placeholder="Tìm kiếm theo tên thương hiệu..."
-            className="pl-8 w-[300px] focus:border-blue-500"
-            value={searchName}
-            onChange={(e) => setSearchName(e.target.value)}
-            onKeyDown={handleSearch}
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="text"
+              placeholder="Tìm kiếm theo tên thương hiệu..."
+              className="pl-8 w-[300px] focus:border-blue-500"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              onKeyDown={handleSearch}
+            />
+          </div>
+          <Select
+            value={filterStatus}
+            onValueChange={(value: "all" | "active" | "pending") => setFilterStatus(value)}
+          >
+            <SelectTrigger className="w-[180px] border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
+              <SelectValue placeholder="Lọc theo trạng thái" />
+            </SelectTrigger>
+            <SelectContent className="border border-gray-300 rounded-md shadow-sm">
+              {Object.entries(statusFilterLabels).map(([key, label]) => (
+                <SelectItem key={key} value={key} className="hover:bg-gray-100">
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
       {isLoading ? (
         <div className="text-center py-4">Đang tải...</div>
-      ) : brands.length === 0 ? (
+      ) : filteredBrands.length === 0 ? (
         <div className="text-center py-4">Không có dữ liệu để hiển thị</div>
       ) : (
         <>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[5%]">ID</TableHead>
-                <TableHead className="w-[20%]">Tên thương hiệu</TableHead>
-                <TableHead className="w-[10%]">Cửa hàng</TableHead>
-                <TableHead className="w-[15%]">Trạng thái</TableHead>
+                <TableHead className="w-[8%]">ID</TableHead>
+                <TableHead className="w-[17%]">Tên thương hiệu</TableHead>
+                <TableHead className="w-[12%]">Cửa hàng</TableHead>
+                <TableHead className="w-[12%]">Trạng thái</TableHead>
                 <TableHead className="w-[15%]">Loại ngành</TableHead>
                 <TableHead className="w-[15%]">Đối tượng khách hàng</TableHead>
-                <TableHead className="w-[12%]">Ngày cập nhật</TableHead>
-                <TableHead className="w-[15%] text-right">Thao tác</TableHead>
+                <TableHead className="w-[10%]">Ngày cập nhật</TableHead>
+                <TableHead className="w-[8%] text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {brands.map((brand) => (
+              {currentItems.map((brand) => (
                 <TableRow key={brand.id}>
                   <TableCell>{brand.id}</TableCell>
                   <TableCell className="font-medium">{brand.name}</TableCell>
@@ -265,7 +349,7 @@ export default function BrandManagement() {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="p-1 rounded-md hover:bg-gray-100">
-                          <MoreHorizontal className="h-4 w-4" />
+                          <MoreVertical className="h-4 w-4" />
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40">
@@ -301,7 +385,7 @@ export default function BrandManagement() {
                     }
                   />
                 </PaginationItem>
-                {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
+                {Array.from({ length: totalPages }).map((_, i) => {
                   const pageNumber = i + 1;
                   return (
                     <PaginationItem key={i}>
@@ -331,7 +415,6 @@ export default function BrandManagement() {
           </div>
         </>
       )}
-      {/* Hiển thị modal BrandDetail khi có selectedBrand */}
       {selectedBrand && (
         <BrandDetail
           brand={selectedBrand}
@@ -342,7 +425,6 @@ export default function BrandManagement() {
           onUpdateStoreCount={handleUpdateStoreCount}
         />
       )}
-      {/* Hiển thị dialog cập nhật brand khi isUpdateDialogOpen = true */}
       <UpdateBrandDialog
         brand={updateBrand}
         isOpen={updateDialog.isOpen}
