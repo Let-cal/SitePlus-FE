@@ -23,6 +23,7 @@ import InfoPage from "./lib/User/infopage/pages/InfoPage";
 import SurveyRequestsPage from "./lib/User/send-requests-page/pages/SurveyRequestsPage";
 import { AuthProvider } from "./services/AuthContext";
 import ProtectedRoute from "./services/ProtectedRoute";
+import ScrollToTop from "./lib/all-site/ScrollToTop"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -38,6 +39,7 @@ createRoot(document.getElementById("root")!).render(
       <AuthProvider>
         <ThemeProvider>
           <BrowserRouter>
+          <ScrollToTop />
             <Routes>
               {/* Redirect root to /home-page */}
 
