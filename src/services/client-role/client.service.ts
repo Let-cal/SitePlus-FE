@@ -34,6 +34,26 @@ interface BrandRequestPayload {
     createdAt: string;
   }>;
 }
+
+export interface StoreProfileCategory {
+  id: number;
+  name: string;
+  siteCategoryId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SiteCategory {
+  id: number;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiResponse<T> {
+  data: T[];
+  success: boolean;
+}
 class ClientService {
   private getAuthHeader() {
     return {
@@ -206,7 +226,67 @@ class ClientService {
     }
   }
 
+  async getAllStoreProfileCategories(): Promise<StoreProfileCategory[]> {
+    try {
+      const response = await axios.get<ApiResponse<StoreProfileCategory[]>>(
+        `${API_BASE_URL}${API_ENDPOINTS.CLIENT.GET.GET_STORE_PROFILE_CATEGORY}`,
+        {
+          params: {
+            page: 1,
+            pageSize: 100, // Tăng số lượng để đảm bảo lấy tất cả dữ liệu
+          },
+          headers: this.getAuthHeader(),
+        }
+      );
+
+      if (response.data.success) {
+        return response.data.data.flat();
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching store profile categories:", error);
+      return [];
+    }
+  }
+
+  async getStoreProfileCategoriesBySiteCategoryId(
+    siteCategoryId: number
+  ): Promise<StoreProfileCategory[]> {
+    try {
+      const allStoreProfileCategories =
+        await this.getAllStoreProfileCategories();
+      return allStoreProfileCategories.filter(
+        (profile) => profile.siteCategoryId === siteCategoryId
+      );
+    } catch (error) {
+      console.error("Error filtering store profile categories:", error);
+      return [];
+    }
+  }
+
+  async getAllSiteCategories(): Promise<SiteCategory[]> {
+    try {
+      const response = await axios.get<ApiResponse<SiteCategory[]>>(
+        `${API_BASE_URL}${API_ENDPOINTS.CLIENT.GET.GET_SITE_CATEGORY}`,
+        {
+          params: {
+            page: 1,
+            pageSize: 50,
+          },
+          headers: this.getAuthHeader(),
+        }
+      );
+
+      if (response.data.success) {
+        return response.data.data.flat();
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching site categories:", error);
+      return [];
+    }
+  }
+
   // ... các method khác
 }
-
-export default new ClientService();
+export const clientService = new ClientService();

@@ -18,7 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import ClientService from "@/services/client-role/client.service";
+import {clientService} from "@/services/client-role/client.service";
 import {
   Brand,
   CustomerSegment,
@@ -136,7 +136,7 @@ const Step1Form = ({ form, onDataFetched }: Step1FormProps) => {
   useEffect(() => {
     const fetchIndustries = async () => {
       try {
-        const data: Industry[] = await ClientService.getIndustries();
+        const data: Industry[] = await clientService.getIndustries();
         setIndustries(data);
       } catch (error) {
         console.error("Error fetching industries", error);
@@ -150,8 +150,8 @@ const Step1Form = ({ form, onDataFetched }: Step1FormProps) => {
       try {
         // Fetch cả hai API đồng thời bằng Promise.all
         const [segments, categories] = await Promise.all([
-          ClientService.getAllCustomerSegments(),
-          ClientService.getAllIndustryCategories(),
+          clientService.getAllCustomerSegments(),
+          clientService.getAllIndustryCategories(),
         ]);
 
         // Cập nhật state sau khi cả hai API hoàn tất
@@ -176,7 +176,7 @@ const Step1Form = ({ form, onDataFetched }: Step1FormProps) => {
   useEffect(() => {
     const fetchBrands = async () => {
       try {
-        const data = await ClientService.getAllBrands();
+        const data = await clientService.getAllBrands();
         setBrands(data);
       } catch (error) {
         console.error("Error fetching brands", error);
@@ -299,13 +299,13 @@ const Step1Form = ({ form, onDataFetched }: Step1FormProps) => {
                 [1, 2, 4].includes(segment.id)
               );
             } else {
-              segments = await ClientService.getCustomerSegmentsByIndustry(
+              segments = await clientService.getCustomerSegmentsByIndustry(
                 industry.id
               );
             }
             setSuggestedSegments(segments);
             const categories: IndustryCategory[] =
-              await ClientService.getIndustryCategoriesByIndustry(industry.id);
+              await clientService.getIndustryCategoriesByIndustry(industry.id);
             setSuggestedIndustryCategories(categories);
           } catch (error) {
             console.error("Error fetching suggested data", error);

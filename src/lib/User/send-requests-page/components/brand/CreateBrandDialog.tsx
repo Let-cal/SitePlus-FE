@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import ClientService from "@/services/client-role/client.service";
+import {clientService} from "@/services/client-role/client.service";
 import { PlusCircle } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -61,7 +61,7 @@ const CreateBrandDialog = ({
     if (open) {
       const fetchAllBrands = async () => {
         try {
-          const brands = await ClientService.getAllBrands();
+          const brands = await clientService.getAllBrands();
           console.log("Fetched all brands:", brands);
           setExistingBrands(brands);
         } catch (error) {
@@ -140,13 +140,13 @@ const CreateBrandDialog = ({
                 [1, 2, 4].includes(segment.id)
               );
             } else {
-              segments = await ClientService.getCustomerSegmentsByIndustry(
+              segments = await clientService.getCustomerSegmentsByIndustry(
                 industry.id
               );
             }
             setLocalSuggestedSegments(segments);
             const categories =
-              await ClientService.getIndustryCategoriesByIndustry(industry.id);
+              await clientService.getIndustryCategoriesByIndustry(industry.id);
             setLocalSuggestedIndustryCategories(categories);
           } catch (error) {
             console.error("Error fetching suggested data:", error);

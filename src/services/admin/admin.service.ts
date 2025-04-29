@@ -68,20 +68,7 @@ export interface Area {
   createdAt: string;
   updatedAt: string;
 }
-export interface SiteCategory {
-  id: number;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
-export interface StoreProfileCategory {
-  id: number;
-  name: string;
-  siteCategoryId: number;
-  createdAt: string;
-  updatedAt: string;
-}
 interface PaginatedResponse<T> {
   page: number;
   totalPage: number;
@@ -365,66 +352,6 @@ class AdminService {
     } catch (error) {
       console.error("Error fetching user count by role per month:", error);
       throw error;
-    }
-  }
-  async getAllSiteCategories(): Promise<SiteCategory[]> {
-    try {
-      const response = await axios.get<ApiResponse<SiteCategory[]>>(
-        "https://siteplus-eeb6evfwhhagfzdd.southeastasia-01.azurewebsites.net/api/SiteCate",
-        {
-          params: {
-            page: 1,
-            pageSize: 50,
-          },
-          headers: this.getAuthHeader(),
-        }
-      );
-
-      if (response.data.success) {
-        return response.data.data.flat();
-      }
-      return [];
-    } catch (error) {
-      console.error("Error fetching site categories:", error);
-      return [];
-    }
-  }
-
-  async getAllStoreProfileCategories(): Promise<StoreProfileCategory[]> {
-    try {
-      const response = await axios.get<ApiResponse<StoreProfileCategory[]>>(
-        "https://siteplus-eeb6evfwhhagfzdd.southeastasia-01.azurewebsites.net/api/StoreProfileCategory",
-        {
-          params: {
-            page: 1,
-            pageSize: 100, // Tăng số lượng để đảm bảo lấy tất cả dữ liệu
-          },
-          headers: this.getAuthHeader(),
-        }
-      );
-
-      if (response.data.success) {
-        return response.data.data.flat();
-      }
-      return [];
-    } catch (error) {
-      console.error("Error fetching store profile categories:", error);
-      return [];
-    }
-  }
-
-  async getStoreProfileCategoriesBySiteCategoryId(
-    siteCategoryId: number
-  ): Promise<StoreProfileCategory[]> {
-    try {
-      const allStoreProfileCategories =
-        await this.getAllStoreProfileCategories();
-      return allStoreProfileCategories.filter(
-        (profile) => profile.siteCategoryId === siteCategoryId
-      );
-    } catch (error) {
-      console.error("Error filtering store profile categories:", error);
-      return [];
     }
   }
 }
