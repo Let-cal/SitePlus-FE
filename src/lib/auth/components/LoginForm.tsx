@@ -168,7 +168,7 @@ const LoginForm: React.FC = () => {
   return (
     <div className="w-full max-w-md space-y-6 p-6 bg-white rounded-lg shadow-lg">
       <div className="text-center">
-        <Heading text="Log in Account" hasMargin={false} size="sm" />
+        <Heading text="Login Account" hasMargin={false} size="sm" />
         <p className="mt-2 text-sm text-gray-600">
           Join our exclusive community
         </p>
@@ -187,7 +187,7 @@ const LoginForm: React.FC = () => {
         <div className="dark:text-theme-primary-dark">
           <Input
             type="username"
-            placeholder="Email Address"
+            placeholder="Username"
             disabled={isLoading}
             className={errors.username ? "border-red-500" : ""}
             value={formData.username}

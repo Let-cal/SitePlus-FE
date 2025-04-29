@@ -12,7 +12,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -65,57 +64,68 @@ export default function BrandDetail({
   onOpenChange,
   onUpdateStoreCount,
 }: BrandDetailProps) {
-  const [storesData, setStoresData] = React.useState<SiteCategoryWithStores[]>(
-    []
-  );
+  const [storesData, setStoresData] = React.useState<SiteCategoryWithStores[]>([]);
   const [isLoadingStores, setIsLoadingStores] = React.useState<boolean>(false);
-  const [activeTab, setActiveTab] = React.useState<string>("info");
+  const [hasFetchedData, setHasFetchedData] = React.useState<boolean>(false);
+  const [activeTab, setActiveTab] = React.useState<"info" | "stores">("info");
   const [storeCount, setStoreCount] = React.useState<number>(0);
-  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(
-    null
-  );
+  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(null);
 
-  // Đảm bảo reset body styles khi component unmount
+  // Reset trạng thái khi dialog đóng
   React.useEffect(() => {
-    const fetchStores = async () => {
-      if (brand && brand.id) {
-        setIsLoadingStores(true);
-        try {
-          const response = await managerService.fetchStoresByBrandId(brand.id);
-          if (response.success && response.data.listData) {
-            setStoresData(response.data.listData);
-            const totalStores = response.data.listData.reduce(
-              (total, category) => total + (category.stores?.length || 0),
-              0
-            );
-            setStoreCount(totalStores);
-            if (onUpdateStoreCount && totalStores > 0) {
-              onUpdateStoreCount(brand.id, totalStores);
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch stores:", error);
-        } finally {
-          setIsLoadingStores(false);
-        }
-      }
-    };
-
-    if (brand && activeTab === "stores" && storesData.length === 0) {
-      fetchStores();
+    if (!isOpen) {
+      setStoresData([]);
+      setHasFetchedData(false);
+      setStoreCount(0);
+      setActiveTab("info");
+      setSelectedSiteId(null);
+      setIsLoadingStores(false);
     }
-  }, [brand, activeTab, storesData.length, onUpdateStoreCount]);
+  }, [isOpen]);
 
-  const handleClose = () => {
-    setStoresData([]); // Reset state
-    setActiveTab("info"); // Reset tab
-    setStoreCount(0); // Reset store count
-    onOpenChange(false); // Đóng dialog thông qua prop
-  };
+  // Gộp logic fetch dữ liệu: chỉ gọi API một lần
+  const fetchData = React.useCallback(async () => {
+    if (brand && brand.id) {
+      setIsLoadingStores(true);
+      try {
+        const response = await managerService.fetchStoresByBrandId(brand.id);
+        console.log("Fetch Stores Data - API Response:", response);
+        if (response.success && response.data && Array.isArray(response.data.listData)) {
+          const totalStores = response.data.listData.reduce(
+            (total: number, category: SiteCategoryWithStores) => total + (category.stores?.length || 0),
+            0
+          );
+          setStoreCount(totalStores);
+          setStoresData(response.data.listData);
+          if (onUpdateStoreCount && totalStores > 0) {
+            onUpdateStoreCount(brand.id, totalStores);
+          }
+        } else {
+          setStoreCount(0);
+          setStoresData([]);
+        }
+        setHasFetchedData(true);
+      } catch (error) {
+        console.error("Failed to fetch stores data:", error);
+        setStoreCount(0);
+        setStoresData([]);
+        setHasFetchedData(true);
+      } finally {
+        setIsLoadingStores(false);
+      }
+    }
+  }, [brand, onUpdateStoreCount]);
+
+  // Gọi API khi dialog mở hoặc khi tab "stores" được kích hoạt
+  React.useEffect(() => {
+    if (brand && isOpen && !hasFetchedData) {
+      fetchData();
+    }
+  }, [brand, isOpen, hasFetchedData, fetchData]);
 
   if (!brand) return null;
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("vi-VN", {
       day: "2-digit",
@@ -130,7 +140,7 @@ export default function BrandDetail({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden max-h-[90vh]">
+      <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden max-h-[95vh]">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
             Chi tiết thương hiệu
@@ -157,7 +167,7 @@ export default function BrandDetail({
         <Tabs
           defaultValue="info"
           value={activeTab}
-          onValueChange={setActiveTab}
+          onValueChange={(value) => setActiveTab(value as "info" | "stores")}
           className="w-full"
         >
           <div className="px-6 pt-4">
@@ -176,7 +186,7 @@ export default function BrandDetail({
 
           <TabsContent value="info" className="pt-2">
             <ScrollArea className="max-h-[50vh] overflow-y-auto">
-              <div className="px-6 py-4 ">
+              <div className="px-6 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Thông tin cơ bản */}
                   <Card>
@@ -225,7 +235,6 @@ export default function BrandDetail({
                         <CalendarIcon className="mr-2 h-5 w-5 text-primary" />
                         Thông tin thời gian
                       </h3>
-
                       <div className="space-y-3">
                         <div>
                           <div className="text-sm text-muted-foreground mb-1">
@@ -235,7 +244,6 @@ export default function BrandDetail({
                             {formatDate(brand.createdAt)}
                           </div>
                         </div>
-
                         <div>
                           <div className="text-sm text-muted-foreground mb-1">
                             Cập nhật lần cuối
@@ -255,7 +263,6 @@ export default function BrandDetail({
                         <Building className="mr-2 h-5 w-5 text-primary" />
                         Loại ngành
                       </h3>
-
                       <div className="flex flex-wrap gap-2">
                         {brand.industryCategories.length > 0 ? (
                           brand.industryCategories.map((category, index) => (
@@ -283,7 +290,6 @@ export default function BrandDetail({
                         <UsersIcon className="mr-2 h-5 w-5 text-primary" />
                         Đối tượng khách hàng
                       </h3>
-
                       <div className="flex flex-wrap gap-2">
                         {brand.customerSegments.length > 0 ? (
                           brand.customerSegments.map((segment, index) => (
@@ -309,7 +315,7 @@ export default function BrandDetail({
           </TabsContent>
 
           <TabsContent value="stores">
-            <ScrollArea className="max-h-[65vh]">
+            <ScrollArea className="max-h-[50vh]">
               <div className="px-6 py-4">
                 {isLoadingStores ? (
                   <div className="flex justify-center items-center py-12">
@@ -329,11 +335,10 @@ export default function BrandDetail({
                     <h3 className="text-lg font-semibold">
                       Danh sách cửa hàng ({storeCount})
                     </h3>
-
                     <Accordion type="multiple" className="w-full">
-                      {storesData.map((categoryData, index) => (
+                      {storesData.map((categoryData) => (
                         <AccordionItem
-                          key={index}
+                          key={categoryData.siteCategory.id}
                           value={`category-${categoryData.siteCategory.id}`}
                         >
                           <AccordionTrigger className="hover:bg-muted/50 px-3 rounded-md">
@@ -346,26 +351,24 @@ export default function BrandDetail({
                             </div>
                           </AccordionTrigger>
                           <AccordionContent>
-                            <div className="pt-2 pb-1 ">
+                            <div className="pt-2 pb-1">
                               <Table>
                                 <TableHeader>
                                   <TableRow>
-                                    <TableHead className="w-[5%] sticky top-0 bg-background z-10">
-                                      ID
-                                    </TableHead>
-                                    <TableHead className="w-[20%] sticky top-0 bg-background z-10">
+                                    <TableHead className="w-[5%]">ID</TableHead>
+                                    <TableHead className="w-[20%]">
                                       Tên cửa hàng
                                     </TableHead>
-                                    <TableHead className="w-[20%] text-center sticky top-0 bg-background z-10">
+                                    <TableHead className="w-[20%] text-center">
                                       ID mặt bằng
                                     </TableHead>
-                                    <TableHead className="w-[20%] text-center sticky top-0 bg-background z-10">
+                                    <TableHead className="w-[20%] text-center">
                                       Địa chỉ
                                     </TableHead>
-                                    <TableHead className="w-[20%] text-center sticky top-0 bg-background z-10">
+                                    <TableHead className="w-[20%] text-center">
                                       Loại hồ sơ
                                     </TableHead>
-                                    <TableHead className="w-[25%] sticky top-0 bg-background z-10">
+                                    <TableHead className="w-[25%]">
                                       Xem mặt bằng
                                     </TableHead>
                                   </TableRow>
@@ -378,20 +381,20 @@ export default function BrandDetail({
                                       </TableCell>
                                       <TableCell>{store.name}</TableCell>
                                       <TableCell className="text-center">
-                                        {store.siteId}
+                                        {store.siteId || "-"}
                                       </TableCell>
                                       <TableCell className="flex items-center">
                                         <MapPinIcon className="h-4 w-4 text-muted-foreground mr-1 flex-shrink-0" />
                                         <span className="line-clamp-2">
-                                          {store.address}
+                                          {store.address || "Chưa có địa chỉ"}
                                         </span>
                                       </TableCell>
-                                      <TableCell>
+                                      <TableCell className="text-center">
                                         <Badge
                                           variant="secondary"
                                           className="text-xs font-normal"
                                         >
-                                          {store.storeProfileCategory.name}
+                                          {store.storeProfileCategory?.name || "Không xác định"}
                                         </Badge>
                                       </TableCell>
                                       <TableCell>
@@ -429,14 +432,9 @@ export default function BrandDetail({
         </Tabs>
 
         <Separator />
-
-        <DialogFooter className="px-6 py-4">
-          <Button onClick={handleClose} className="w-full sm:w-auto">
-            Đóng
-          </Button>
-        </DialogFooter>
       </DialogContent>
-      {selectedSiteId && (
+
+      {selectedSiteId !== null && (
         <SiteDetail
           siteId={selectedSiteId}
           onClose={() => setSelectedSiteId(null)}

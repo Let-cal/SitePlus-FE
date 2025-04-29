@@ -500,7 +500,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, email: e.target.value }))
             }
-            placeholder="example@company.com"
+            placeholder="Nhập tên đăng nhập"
             className="w-full"
           />
         </div>
