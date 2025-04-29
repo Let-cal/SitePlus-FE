@@ -299,14 +299,9 @@ const UserTable = () => {
                     </TableRow>
                   )
                 )
-              : processedUsers.map((user, index) => (
+              : processedUsers.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      {((currentParams.page || 1) - 1) *
-                        (currentParams.pageSize || 10) +
-                        index +
-                        1}
-                    </TableCell>
+                    <TableCell className="font-medium">{user.id}</TableCell>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.roleName}</TableCell>

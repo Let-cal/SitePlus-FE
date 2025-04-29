@@ -19,12 +19,13 @@ export interface User {
   name: string;
   roleName: string;
   areaName?: string;
+  areaId: number;
   districtName?: string;
   cityName?: string;
   statusName: string;
   status: boolean;
   createdAt: string;
-  password: string;
+  passWord: string;
 }
 export interface GetUsersParams {
   page?: number;
@@ -227,7 +228,7 @@ class AdminService {
           headers: this.getAuthHeader(),
           params: {
             page: params.page || 1,
-            pageSize: params.pageSize || 10,
+            pageSize: params.pageSize || 1000,
             search: params.search || "",
             sort: params.sort || "",
             roleId: params.roleId,

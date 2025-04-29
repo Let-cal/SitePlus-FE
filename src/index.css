@@ -178,3 +178,13 @@ button {
     @apply bg-background text-foreground;
   }
 }
+
+.accordion-table-container {
+  max-height: 350px;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+}
+
+.accordion-table-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

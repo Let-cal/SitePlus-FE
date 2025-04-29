@@ -66,7 +66,7 @@ export default function BrandDetail({
 }: BrandDetailProps) {
   const [storesData, setStoresData] = React.useState<SiteCategoryWithStores[]>([]);
   const [isLoadingStores, setIsLoadingStores] = React.useState<boolean>(false);
-  const [hasFetchedData, setHasFetchedData] = React.useState<boolean>(false); // State kiểm soát việc đã gọi API
+  const [hasFetchedData, setHasFetchedData] = React.useState<boolean>(false);
   const [activeTab, setActiveTab] = React.useState<"info" | "stores">("info");
   const [storeCount, setStoreCount] = React.useState<number>(0);
   const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(null);
@@ -140,7 +140,7 @@ export default function BrandDetail({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] p-0 max-h-[95vh]">
+      <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden max-h-[95vh]">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
             Chi tiết thương hiệu
@@ -185,7 +185,7 @@ export default function BrandDetail({
           </div>
 
           <TabsContent value="info" className="pt-2">
-            <ScrollArea className="h-[50vh]">
+            <ScrollArea className="max-h-[50vh] overflow-y-auto">
               <div className="px-6 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Thông tin cơ bản */}
@@ -314,8 +314,8 @@ export default function BrandDetail({
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="stores" className="pt-2">
-            <ScrollArea className="h-[50vh]">
+          <TabsContent value="stores">
+            <ScrollArea className="max-h-[50vh]">
               <div className="px-6 py-4">
                 {isLoadingStores ? (
                   <div className="flex justify-center items-center py-12">
@@ -331,7 +331,7 @@ export default function BrandDetail({
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-6 accordion-table-container">
                     <h3 className="text-lg font-semibold">
                       Danh sách cửa hàng ({storeCount})
                     </h3>
