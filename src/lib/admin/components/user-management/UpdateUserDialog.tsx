@@ -605,7 +605,7 @@ const UpdateUserDialog = ({
                     formData.status ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  {formData.status ? "Đang hoạt động" : "Đã vô hiệu hóa"}
+                  {formData.status ? "Đang hoạt động" : "Vô hiệu hóa"}
                 </span>
                 <Switch
                   checked={formData.status}

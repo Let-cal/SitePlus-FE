@@ -8,6 +8,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./index.css";
 import AdminPage from "./lib/admin/pages/AdminPage";
 import AdminUserPage from "./lib/admin/pages/AdminUserPage";
+import ScrollToTop from "./lib/all-site/ScrollToTop";
 import { ThemeProvider } from "./lib/all-site/ThemeProvider";
 import AreaManagerPage from "./lib/area-manager/pages/AreaManagerPage";
 import AreaManagerSiteCheck from "./lib/area-manager/pages/AreaManagerSiteCheck";
@@ -23,7 +24,6 @@ import InfoPage from "./lib/User/infopage/pages/InfoPage";
 import SurveyRequestsPage from "./lib/User/send-requests-page/pages/SurveyRequestsPage";
 import { AuthProvider } from "./services/AuthContext";
 import ProtectedRoute from "./services/ProtectedRoute";
-import ScrollToTop from "./lib/all-site/ScrollToTop"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -36,10 +36,10 @@ createRoot(document.getElementById("root")!).render(
       autoHideDuration={3000}
     >
       {" "}
-      <AuthProvider>
-        <ThemeProvider>
-          <BrowserRouter>
-          <ScrollToTop />
+      <BrowserRouter>
+        <AuthProvider>
+          <ThemeProvider>
+            <ScrollToTop />
             <Routes>
               {/* Redirect root to /home-page */}
 
@@ -76,9 +76,25 @@ createRoot(document.getElementById("root")!).render(
               />
 
               <Route path="/sign-up" element={<RegisterPage />} />
-              <Route path="/sign-in" element={<LoginPage />} />
-              <Route path="/contact-page" element={<ContactPage />} />
-              <Route path="/info-page" element={<InfoPage />} />
+
+              <Route
+                path="/sign-in"
+                element={
+                  <ProtectedRoute element={<LoginPage />} allowGuest={true} />
+                }
+              />
+              <Route
+                path="/contact-page"
+                element={
+                  <ProtectedRoute element={<ContactPage />} allowGuest={true} />
+                }
+              />
+              <Route
+                path="/info-page"
+                element={
+                  <ProtectedRoute element={<InfoPage />} allowGuest={true} />
+                }
+              />
 
               <Route
                 path="/manager-page"
@@ -153,9 +169,9 @@ createRoot(document.getElementById("root")!).render(
                 }
               />
             </Routes>
-          </BrowserRouter>
-        </ThemeProvider>
-      </AuthProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </SnackbarProvider>
   </StrictMode>
 );

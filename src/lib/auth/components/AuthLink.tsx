@@ -16,7 +16,7 @@ export function AuthLinks() {
           }`
         }
       >
-        <Button variant="ghost">Sign in</Button>
+        <Button variant="ghost">Đăng nhập</Button>
       </NavLink>
     </div>
   );

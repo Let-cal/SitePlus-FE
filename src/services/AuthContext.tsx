@@ -9,6 +9,8 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useNavigate } from "react-router-dom";
+
 interface AuthContextType {
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
@@ -20,7 +22,7 @@ interface AuthContextType {
   setUserName: (name: string | null) => void;
   setUserEmail: (email: string | null) => void;
   setUserId: (id: number | null) => void;
-  handleLogout: () => void;
+  handleLogout: () => Promise<void>; // Changed to async
   loading: boolean;
 }
 
@@ -46,20 +48,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userId, setUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
-  const handleLogout = useCallback(() => {
+  // Completely redesigned logout handler to ensure proper ordering
+  const handleLogout = useCallback(async () => {
+    // Set loading to true during logout to prevent ProtectedRoute from running
+    setLoading(true);
+
+    // Clear localStorage first
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("userName");
     localStorage.removeItem("email");
     localStorage.removeItem("password");
     localStorage.removeItem("hint");
+    localStorage.removeItem("name");
+
+    // Then update all state
     setIsAuthenticated(false);
     setUserRole(null);
     setUserName(null);
     setUserEmail(null);
     setUserId(null);
-    enqueueSnackbar("Logged out successfully", {
+
+    // Show notification
+    enqueueSnackbar("Đăng xuất thành công", {
       variant: "info",
       preventDuplicate: true,
       anchorOrigin: {
@@ -67,8 +80,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         vertical: "bottom",
       },
     });
-  }, [enqueueSnackbar]);
 
+    // Wait for state to be updated before navigation
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Navigate to sign-in page with replace to clear history
+    navigate("/sign-in", { replace: true });
+
+    // Give a little more time for navigation to complete
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Then set loading to false
+    setLoading(false);
+  }, [enqueueSnackbar, navigate]);
+
+  // Initialize auth state from localStorage
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -93,10 +119,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } else {
       setUserId(null);
     }
-    
+
     setLoading(false);
   }, []);
 
+  // Token expiration checker
   useEffect(() => {
     const checkTokenExpiration = () => {
       const token = localStorage.getItem("token");
@@ -105,7 +132,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const decodedToken = jwtDecode<{ exp: number }>(token);
           if (Date.now() >= decodedToken.exp * 1000) {
             enqueueSnackbar(
-              "Your session has expired. Please log in again to continue.",
+              "Phiên của bạn đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.",
               {
                 variant: "warning",
                 preventDuplicate: true,
