@@ -16,7 +16,7 @@ const StatCard = ({
   }, []);
 
   return (
-    <div className="w-full xs:w-[180px] sm:w-[200px] md:w-[220px] lg:w-[262px] h-auto min-h-[161px] bg-theme-primary-light dark:bg-theme-primary-dark rounded-lg border border-theme-border-light dark:border-theme-border-dark shadow-lg transition-colors">
+    <div className="w-full xs:w-[180px] sm:w-[240px] md:w-[240px] lg:w-[320px] h-auto min-h-[161px] bg-theme-primary-light dark:bg-theme-primary-dark rounded-lg border border-theme-border-light dark:border-theme-border-dark shadow-lg transition-colors">
       <div className="p-4 relative">
         <span className="block lg:text-2xl xs:text-base font-semibold text-theme-text-light/70 dark:text-theme-text-dark/70 tracking-tight">
           {title}

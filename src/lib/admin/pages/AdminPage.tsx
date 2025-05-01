@@ -74,14 +74,14 @@ export default function AdminPage() {
 
   // Get change text based on trend
   const getChangeText = (trend: string) => {
-    if (trend === "up") return "Up from yesterday";
-    if (trend === "down") return "Down from yesterday";
-    return "No change";
+    if (trend === "up") return "Tăng so với hôm qua";
+    if (trend === "down") return "Giảm hơn so với hôm qua";
+    return "Không thay đổi";
   };
 
   const cards = [
     {
-      title: "Total Users",
+      title: "Tổng số người dùng",
       value: stats.totalUsers.total.toString().padStart(2, "0"),
       changeValue: formatPercentage(stats.totalUsers.percentageChange),
       changeText: getChangeText(stats.totalUsers.trend),
@@ -89,7 +89,7 @@ export default function AdminPage() {
       iconUrl: "https://cdn.lordicon.com/gznfrpfp.json",
     },
     {
-      title: "Total Staff",
+      title: "Tổng số nhân viên",
       value: stats.totalStaff.total.toString().padStart(2, "0"),
       changeValue: formatPercentage(stats.totalStaff.percentageChange),
       changeText: getChangeText(stats.totalStaff.trend),
@@ -97,7 +97,7 @@ export default function AdminPage() {
       iconUrl: "https://cdn.lordicon.com/fqbvgezn.json",
     },
     {
-      title: "Total Sites",
+      title: "Tổng số mặt bằng",
       value: stats.totalSites.total.toString().padStart(2, "0"),
       changeValue: formatPercentage(stats.totalSites.percentageChange),
       changeText: getChangeText(stats.totalSites.trend),
@@ -105,7 +105,7 @@ export default function AdminPage() {
       iconUrl: "https://cdn.lordicon.com/jeuxydnh.json",
     },
     {
-      title: "Total Reports",
+      title: "Tổng số báo cáo",
       value: stats.totalReports.total.toString().padStart(2, "0"),
       changeValue: formatPercentage(stats.totalReports.percentageChange),
       changeText: getChangeText(stats.totalReports.trend),
