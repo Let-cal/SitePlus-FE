@@ -6,8 +6,9 @@ const qualificationData = {
     description:
       "Chúng tôi hỗ trợ khách hàng lựa chọn những vị trí mặt bằng phù hợp nhất. Lựa chọn một mặt bằng có thể đơn giản nhưng chọn được mặt bằng phù hợp cần có chiến lược tổng thể.",
     buttonText: "TÌM HIỂU THÊM",
+    buttonLink: "/survey-requests-page",
     backgroundImage: "/images/client/homepage/Avatar.svg",
-    onButtonClick: () => console.log("Button clicked"),
+    // onButtonClick: () => console.log("Button clicked"),
   },
   qualificationItems: [
     {

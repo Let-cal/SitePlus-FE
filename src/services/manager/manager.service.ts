@@ -519,11 +519,10 @@ class ManagerService {
     }
 
     try {
-      const endpoint =
-        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_BRAND_REQUEST_BY_ID}`.replace(
-          ":brandRequestId",
-          brandRequestId.toString()
-        );
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_BRAND_REQUEST_BY_ID.replace(
+        ":id",
+        brandRequestId.toString()
+      )}`;
       const response = await axios.get(endpoint, authHeader);
 
       console.log("API Response for Brand Request by ID:", response.data);
@@ -813,7 +812,7 @@ class ManagerService {
     try {
       const endpoint =
         `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_FAVORITES}`.replace(
-          ":requestId",
+          ":brandRequestId",
           requestId.toString()
         );
       const response = await axios.get(endpoint, authHeader);
@@ -1288,11 +1287,11 @@ class ManagerService {
     }
 
     try {
-      const response = await axios.put(
-        `${API_BASE_URL}/api/Brand/${brandId}`,
-        updateData,
-        authHeader
-      );
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.MANAGER.PUT.UPDATE_BRAND.replace(
+        ":id",
+        brandId.toString()
+      )}`;
+      const response = await axios.put(endpoint, updateData, authHeader);
 
       console.log("API Response for Update Brand:", response.data);
       return {
@@ -1322,6 +1321,7 @@ class ManagerService {
       };
     }
   }
+
   async fetchStoresByBrandId(
     brandId: number,
     page: number = 1,
@@ -1347,11 +1347,11 @@ class ManagerService {
       const queryParams = new URLSearchParams();
       queryParams.append("page", page.toString());
       queryParams.append("pageSize", pageSize.toString());
-
-      const response = await axios.get(
-        `${API_BASE_URL}/api/stores/${brandId}?${queryParams.toString()}`,
-        authHeader
-      );
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.GET_STORE_BY_BRANDID.replace(
+        ":brandId",
+        brandId.toString()
+      )}?${queryParams.toString()}`;
+      const response = await axios.get(endpoint, authHeader);
 
       console.log("API Response for Fetch Stores by Brand ID:", response.data);
       return response.data;
@@ -1389,6 +1389,7 @@ class ManagerService {
       };
     }
   }
+
   async fetchDashboardStatistics(): Promise<ManagerDashboardResponse> {
     const authHeader = this.getAuthHeader();
     if (!authHeader) {

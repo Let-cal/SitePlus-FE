@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import * as React from "react";
+import { useNavigate } from "react-router-dom"; // Thêm nếu dùng React Router
 
 interface QualificationItem {
   number: string;
@@ -52,6 +53,16 @@ export default function QualificationProbs({
   qualificationItems,
   highlight,
 }: QualificationContentProps) {
+  const navigate = useNavigate(); // Sử dụng useNavigate nếu dùng React Router
+
+  const handleButtonClick = () => {
+    if (hero.onButtonClick) {
+      hero.onButtonClick();
+    } else {
+      navigate("/info-page"); 
+    }
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-12 md:px-6 lg:px-8">
       <div className="grid grid-cols-1 lg:grid-cols-[30%_70%] gap-12 items-start">
@@ -65,7 +76,7 @@ export default function QualificationProbs({
               {hero.description}
             </p>
             <button
-              onClick={hero.onButtonClick}
+              onClick={handleButtonClick}
               className="px-8 py-3 bg-orange-500 text-white font-semibold rounded-lg 
                        hover:bg-orange-600 transition-colors duration-300 
                        transform hover:scale-105 active:scale-95"
