@@ -116,6 +116,7 @@ class ClientService {
       throw error;
     }
   }
+
   async getCustomerSegmentsByIndustry(industryId) {
     try {
       const response = await axios.get(
@@ -128,6 +129,7 @@ class ClientService {
       throw error;
     }
   }
+  
   async getAllIndustryCategories() {
     try {
       const response = await axios.get(
@@ -154,6 +156,7 @@ class ClientService {
       throw error;
     }
   }
+
   async getAllBrands() {
     try {
       const response = await axios.get(

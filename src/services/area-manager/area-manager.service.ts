@@ -383,10 +383,11 @@ class AreaManagerService {
     }
 
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_WARDS_BY_DISTRICT}/${districtId}?page=1&pageSize=12`,
-        authHeader
-      );
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_WARDS_BY_DISTRICT.replace(
+        ":districtId",
+        districtId.toString()
+      )}?page=1&pageSize=12`;
+      const response = await axios.get(endpoint, authHeader);
 
       const data: ApiResponse<Ward> = response.data;
       if (data.success) {
@@ -395,7 +396,13 @@ class AreaManagerService {
           const pages = Array.from({ length: data.data.totalPage - 1 }, (_, i) => i + 2);
           const pagePromises = pages.map((page) =>
             axios
-              .get(`${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_WARDS_BY_DISTRICT}/${districtId}?page=${page}&pageSize=12`, authHeader)
+              .get(
+                `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_WARDS_BY_DISTRICT.replace(
+                  ":districtId",
+                  districtId.toString()
+                )}?page=${page}&pageSize=12`,
+                authHeader
+              )
               .then((res) => res.data.data.listData as Ward[])
           );
           const additionalWards = (await Promise.all(pagePromises)).flat() as Ward[];
@@ -618,7 +625,7 @@ class AreaManagerService {
     }
 
     try {
-      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_TASK_BY_ID}`.replace(":taskId", taskId.toString());
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_TASK_BY_ID}`.replace(":id", taskId.toString());
       const response = await axios.get(endpoint, authHeader);
 
       const data: TaskResponse = response.data;
@@ -736,7 +743,7 @@ class AreaManagerService {
     }
 
     try {
-      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_SITE_BY_ID}`.replace(":siteId", siteId.toString());
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.GET.GET_SITE_BY_ID}`.replace(":id", siteId.toString());
       const response = await axios.get(endpoint, authHeader);
 
       const data: SiteDetailResponse = response.data;
@@ -914,7 +921,7 @@ class AreaManagerService {
     }
 
     try {
-      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.PUT.UPDATE_TASK}`.replace(":taskId", taskId.toString());
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.AREA_MANAGER.PUT.UPDATE_TASK}`.replace(":id", taskId.toString());
       const response = await axios.put(endpoint, taskData, authHeader);
 
       const data: TaskResponse = response.data;

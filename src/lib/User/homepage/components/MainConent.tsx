@@ -34,6 +34,9 @@ export default function MainContent({ className }: MainContentProps) {
                 color="orange"
                 width="40"
                 className="font-bold"
+                onClick={() => {
+                  window.location.href = "/survey-requests-page";
+                }}
               >
                 LIÊN HỆ NGAY
               </CustomButton>
