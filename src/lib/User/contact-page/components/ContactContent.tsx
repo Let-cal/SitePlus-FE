@@ -112,7 +112,12 @@ const ContactPage = () => {
         <div className="flex flex-col items-center">
           <p className="uppercase font-bold text-xs text-gray-700 tracking-wide mb-4">Rất mong được gặp bạn!</p>
           <h2 className="text-5xl font-bold text-gray-900 mb-6">Cùng trao đổi!</h2>
-          <button className="bg-orange-500 text-white px-8 py-3 rounded-md uppercase hover:bg-orange-600">
+          <button
+            className="bg-orange-500 text-white px-8 py-3 rounded-md uppercase hover:bg-orange-600"
+            onClick={() => {
+              window.location.href = "/survey-requests-page";
+            }}
+          >
             Liên hệ ngay
           </button>
         </div>

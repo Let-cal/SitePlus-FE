@@ -502,6 +502,7 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
             }
             placeholder="Nhập Email"
             className="w-full"
+            
           />
         </div>
 

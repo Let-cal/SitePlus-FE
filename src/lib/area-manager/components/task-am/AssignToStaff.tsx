@@ -45,6 +45,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Textarea } from "@/components/ui/textarea";
 import CreateTaskSheet from "./CreateTaskSheet";
 import TaskDetail from "./TaskDetail";
 import SiteDetail from "../../../manager/components/site-manager/SiteDetail";
@@ -148,10 +149,11 @@ const AssignToStaff = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isRejectReasonDialogOpen, setIsRejectReasonDialogOpen] = useState(false);
   const [dialogAction, setDialogAction] = useState<"accept" | "reject" | null>(null);
   const [dialogTaskId, setDialogTaskId] = useState<number | null>(null);
-  const itemsPerPage
-   = 10;
+  const [rejectReason, setRejectReason] = useState("");
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -184,6 +186,15 @@ const AssignToStaff = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [filterStatus, filterPriority, debouncedSearchQuery, filterDeadline]);
+
+  useEffect(() => {
+    if (isRejectReasonDialogOpen && dialogTaskId) {
+      const task = tasks.find(t => t.id === dialogTaskId);
+      if (task) {
+        setRejectReason(`${task.description}\nLý do từ chối:`);
+      }
+    }
+  }, [isRejectReasonDialogOpen, dialogTaskId, tasks]);
 
   const getFilteredData = () => {
     let data = tasks;
@@ -261,12 +272,9 @@ const AssignToStaff = () => {
     if (dialogAction === "accept") {
       await handleAccept(task);
     } else if (dialogAction === "reject") {
-      await handleReject(task);
+      setIsConfirmDialogOpen(false);
+      setIsRejectReasonDialogOpen(true);
     }
-
-    setIsConfirmDialogOpen(false);
-    setDialogTaskId(null);
-    setDialogAction(null);
   };
 
   const handleAccept = async (task: Task) => {
@@ -338,6 +346,21 @@ const AssignToStaff = () => {
         throw new Error("Failed to update task status");
       }
 
+      const updatedTask = {
+        name: task.name,
+        description: rejectReason,
+        areaId: task.location.areaId,
+        staffId: task.staffId,
+        deadline: task.deadline.split('T')[0],
+        priority: task.priority,
+        status: 2,
+      };
+
+      const descriptionUpdated = await areaManagerService.updateTask(task.id, updatedTask);
+      if (!descriptionUpdated) {
+        throw new Error("Failed to update task description");
+      }
+
       toast.success("Từ chối task thành công!", { position: "top-right", duration: 3000 });
 
       const tasksData = await areaManagerService.fetchTasks({
@@ -358,6 +381,22 @@ const AssignToStaff = () => {
       toast.error("Lỗi khi từ chối task", { position: "top-right", duration: 3000 });
     } finally {
       setIsActionLoading(false);
+      setIsRejectReasonDialogOpen(false);
+      setRejectReason("");
+    }
+  };
+
+  const handleSubmitRejectReason = () => {
+    if (!rejectReason.trim()) {
+      toast.error("Lý do từ chối không được để trống", { position: "top-right", duration: 3000 });
+      return;
+    }
+
+    if (dialogTaskId) {
+      const task = tasks.find(t => t.id === dialogTaskId);
+      if (task) {
+        handleReject(task);
+      }
     }
   };
 
@@ -661,6 +700,33 @@ const AssignToStaff = () => {
             <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={confirmAction}>
               Xác nhận
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={isRejectReasonDialogOpen}
+        onOpenChange={setIsRejectReasonDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Lý do từ chối</AlertDialogTitle>
+            <AlertDialogDescription>
+              <Textarea
+                id="rejectReason"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Nhập lý do từ chối..."
+                className="mt-2 min-h-[100px]"
+                required
+              />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSubmitRejectReason}>
+              Gửi
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -9,6 +9,7 @@ import * as React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../services/AuthContext";
+
 interface FormData {
   username: string;
   password: string;
@@ -98,22 +99,19 @@ const LoginForm: React.FC = () => {
             },
           });
 
-          // Navigate based on role
+          // Navigate based on role with replace: true
           switch (response.role) {
             case "Admin":
-              navigate("/admin-page");
+              navigate("/admin-page", { replace: true });
               break;
             case "Customer":
-              navigate("/customer-page");
+              navigate("/customer-page", { replace: true });
               break;
             case "Manager":
-              navigate("/manager-page");
+              navigate("/manager-page", { replace: true });
               break;
             case "Area-Manager":
-              navigate("/area-manager-page");
-              break;
-            case "Staff":
-              navigate("/staff-page");
+              navigate("/area-manager-page", { replace: true });
               break;
           }
         }
@@ -135,11 +133,11 @@ const LoginForm: React.FC = () => {
 
   const handleRememberMe = (checked: boolean) => {
     setChecked(checked);
-    // If unchecked, remove stored password
     if (!checked) {
       localStorage.removeItem("password");
     }
   };
+
   React.useEffect(() => {
     const storedPassword = localStorage.getItem("password");
     const storedEmail = localStorage.getItem("email");
@@ -226,7 +224,7 @@ const LoginForm: React.FC = () => {
             htmlFor="remember-me"
             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
-            Nhớ mặt khẩu
+            Nhớ mật khẩu
           </label>
         </div>
         <Button

@@ -384,21 +384,6 @@ const Step3Form = ({ form }) => {
                           </div>
                           <FormFieldGroup cols={2}>
                             <FormField
-                              label="Thời hạn cho thuê mong muốn"
-                              error={errors.rentalPeriod?.message}
-                            >
-                              <Input
-                                {...form.register("rentalPeriod")}
-                                placeholder="Ví dụ: 6 tháng hoặc 2 năm"
-                                type="text"
-                                className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
-                                onBlur={(e) =>
-                                  handleRentalPeriodChange("rentalPeriod", e)
-                                }
-                                onKeyDown={handleKeyDown}
-                              />
-                            </FormField>
-                            <FormField
                               label="Thời hạn tối thiểu"
                               error={errors.minRentalPeriod?.message}
                             >
@@ -413,6 +398,21 @@ const Step3Form = ({ form }) => {
                                 onKeyDown={handleKeyDown}
                               />
                             </FormField>
+                            <FormField
+                              label="Thời hạn cho thuê tối đa"
+                              error={errors.rentalPeriod?.message}
+                            >
+                              <Input
+                                {...form.register("rentalPeriod")}
+                                placeholder="Ví dụ: 6 tháng hoặc 2 năm"
+                                type="text"
+                                className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
+                                onBlur={(e) =>
+                                  handleRentalPeriodChange("rentalPeriod", e)
+                                }
+                                onKeyDown={handleKeyDown}
+                              />
+                            </FormField>
                           </FormFieldGroup>
                         </motion.div>
                       )}
@@ -421,10 +421,10 @@ const Step3Form = ({ form }) => {
                     <div className="pt-2">
                       <h4 className="text-md font-medium text-orange-600 mb-2 flex items-center">
                         <span className="w-2 h-5 bg-orange-500 rounded mr-2"></span>
-                        Ngân sách chi trả
+                        Ngân sách chi trả mong muốn
                       </h4>
                       <FormField
-                        label="Giá trị ngân sách mong muốn"
+                        label="Giá trị ngân sách"
                         subtitle={budgetSubtitle}
                         error={errors.defaultBudget?.message}
                       >
@@ -499,11 +499,11 @@ const Step3Form = ({ form }) => {
                     <div className="pt-2">
                       <h4 className="text-md font-medium text-orange-600 mb-2 flex items-center">
                         <span className="w-2 h-5 bg-orange-500 rounded mr-2"></span>
-                        Tiền đặt cọc
+                        Tiền đặt cọc mong muốn
                       </h4>
                       <FormFieldGroup cols={2}>
                         <FormField
-                          label="Giá trị đặt cọc mong muốn"
+                          label="Giá trị đặt cọc tối thiểu"
                           subtitle="(VNĐ)"
                           error={errors.depositDefault?.message}
                         >
