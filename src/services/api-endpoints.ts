@@ -77,7 +77,7 @@ export const API_ENDPOINTS = {
       GET_BRAND_REQUEST_BY_ID: "/api/brand-requests/:id", //done
       // GET_FAVORITES: "/api/Qdrant/brand-request/:requestId",
       GET_FAVORITES: "/api/qdrants/brand-requests/:brandRequestId/matches", //done
-      EXPORT_PDF: "/api/pdfs/brand-requests/:brandRequestId", //done
+      EXPORT_PDF: "/api/pdfs/brand-requests/:brandRequestId/pdf", //done
       GET_SITES: "/api/sites", //done
       GET_BRANDS: "/api/brands", //done
       GET_MANAGER_DASHBOARD: "/api/statistics/managers/dashboard", //done
