@@ -57,6 +57,7 @@ interface Site {
   status: number;
   siteCategoryId: number;
   siteCategoryName: string;
+  description: string; // Thêm trường description
 }
 
 // Interface cho response của API GET_SITES
@@ -107,8 +108,8 @@ export default function SiteCheck() {
           selectedCategory === "all"
             ? response.data.listData
             : response.data.listData.filter(
-                (site) => site.siteCategoryId.toString() === selectedCategory
-              );
+              (site) => site.siteCategoryId.toString() === selectedCategory
+            );
         setSites(filteredSites);
         setTotalPages(response.data.totalPage || 1);
       } else {
@@ -417,6 +418,7 @@ export default function SiteCheck() {
           onClose={handleCloseAssignTask}
           siteId={assignSiteId}
           onSubmit={handleSubmitTask}
+          description={sites.find((s) => s.id === assignSiteId)?.description || ""}
         />
       )}
 

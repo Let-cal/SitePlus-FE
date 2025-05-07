@@ -100,7 +100,7 @@ export default function UsersChart() {
   const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
-    for (let year = currentYear - 5; year <= currentYear; year++) {
+    for (let year = currentYear - 0; year <= currentYear; year++) {
       years.push(year.toString());
     }
     return years;

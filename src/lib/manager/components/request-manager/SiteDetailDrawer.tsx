@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import {
     Tabs,
@@ -14,7 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import areaManagerService from "../../../../services/area-manager/area-manager.service";
 
-// Interface cho dữ liệu chi tiết site (đã định nghĩa trong areaManagerService, import lại để sử dụng)
+// Interface cho dữ liệu chi tiết site
 interface SiteImage {
     id: number;
     url: string;
@@ -190,6 +192,16 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
         setActiveTab(value);
     };
 
+    // Xử lý description dựa trên role
+    const getProcessedDescription = () => {
+        if (!site?.description) return "Không có mô tả";
+        const userRole = localStorage.getItem("role");
+        if (userRole === "Manager") {
+            return site.description.replace("Staff Bến Thành 3 - ID#46\n", "").trim();
+        }
+        return site.description;
+    };
+
     return (
         <div className="flex flex-col h-full">
             <h2 className="text-center text-lg font-semibold mb-2">
@@ -248,7 +260,7 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                                             </p>
                                         )}
                                         <p>
-                                            <span className="font-medium">Mô tả:</span> {site.description || "Không có mô tả"}
+                                            <span className="font-medium">Mô tả:</span> {getProcessedDescription()}
                                         </p>
                                     </div>
 
@@ -282,6 +294,8 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                                                             className={
                                                                 deal.status === 1
                                                                     ? "bg-green-500 text-white"
+                                                                    : deal.status === 0
+                                                                    ? "bg-blue-500 text-white"
                                                                     : "bg-red-500 text-white"
                                                             }
                                                         >

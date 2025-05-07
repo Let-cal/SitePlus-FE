@@ -645,7 +645,7 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
                               <div className="text-base font-semibold text-foreground leading-relaxed min-h-[3rem] line-clamp-2">{project.address}</div>
                             </div>
                             {project.totalScore > 0 && (
-                              <div className="absolute top-2 right-2 bg-destructive/10 text-destructive text-xs font-semibold px-2 py-1 rounded-full">{project.totalScore}</div>
+                              <div className="absolute top-2 right-2 bg-green-100/85 text-green-500 text-base font-semibold px-2 py-1 rounded-full">{project.totalScore}</div>
                             )}
                           </div>
 
@@ -663,10 +663,6 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
                             )}
                           </div>
                           <div className="flex flex-col gap-2">
-                            <div className="flex items-center text-sm text-foreground gap-1">
-                              <span className="font-medium text-muted-foreground">Deal:</span>
-                              <span className="font-medium text-foreground">{project.siteDealId}</span>
-                            </div>
                             <div className="flex items-center text-sm text-foreground gap-1">
                               <span className="font-medium text-muted-foreground">Diện tích:</span>
                               <span className="font-medium text-foreground">{project.size} m²</span>
@@ -697,6 +693,7 @@ const RequestDetail: React.FC<RequestDetailProps> = ({ isOpen, onClose, brandReq
                               <span className="font-medium text-muted-foreground">Điều khoản bổ sung:</span>
                               <span className="font-medium text-foreground">{project.additionalTerms}</span>
                             </div>
+                            <div className="h-6"></div>
                           </div>
 
                           <div className="flex gap-2 mt-4">

@@ -32,6 +32,8 @@ interface Task {
   deadline: string;
   createdAt: string;
   updatedAt: string;
+  isDeadlineWarning: boolean;
+  daysToDeadline: number;
 }
 
 interface District {
@@ -170,7 +172,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ isOpen, onClose, taskId, onUpda
   }, []);
 
   const getTaskType = (task: Task) => {
-    return task.brandInfo && task.brandInfo.requestId > 0 ? "THEO YÊU CẦU" : "Thông thường";
+    return task.brandInfo && task.brandInfo.requestId > 0 ? "" : "";
   };
 
   const handleEdit = () => {
@@ -210,7 +212,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ isOpen, onClose, taskId, onUpda
                 isEditingMode ? (
                   `CHỈNH SỬA CÔNG VIỆC - ID ${task.id} (${getTaskType(task)})`
                 ) : (
-                  `CHI TIẾT CÔNG VIỆC - ID ${task.id} (${getTaskType(task)})`
+                  `CHI TIẾT CÔNG VIỆC - ID ${task.id}`
                 )
               ) : (
                 "Chi tiết công việc"
