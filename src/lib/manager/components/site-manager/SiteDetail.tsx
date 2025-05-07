@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import {
   Dialog,
@@ -20,7 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import areaManagerService from "../../../../services/area-manager/area-manager.service";
 
-// Interface cho dữ liệu chi tiết site (đã định nghĩa trong areaManagerService, import lại để sử dụng)
+// Interface cho dữ liệu chi tiết site
 interface SiteImage {
   id: number;
   url: string;
@@ -85,16 +87,15 @@ interface SiteDetailProps {
 export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
   const [site, setSite] = React.useState<SiteDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null); // Thêm state error
+  const [error, setError] = React.useState<string | null>(null);
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
   const [openGroups, setOpenGroups] = React.useState<string[]>([]);
   const [activeTab, setActiveTab] = React.useState("info");
 
-  // Gọi API để lấy chi tiết site
   React.useEffect(() => {
     const loadSiteDetail = async () => {
       setIsLoading(true);
-      setError(null); // Reset error
+      setError(null);
       try {
         const siteData = await areaManagerService.getSiteById(siteId);
         if (siteData) {
@@ -112,14 +113,12 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
     loadSiteDetail();
   }, [siteId]);
 
-  // Chỉ reset trạng thái mở/đóng của các group khi dialog đóng hoàn toàn
   React.useEffect(() => {
     return () => {
-      setOpenGroups([]); // Reset khi component unmount
+      setOpenGroups([]);
     };
   }, []);
 
-  // Định dạng tiền tệ
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -127,7 +126,6 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
     }).format(value);
   };
 
-  // Định dạng ngày
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
       day: "2-digit",
@@ -136,12 +134,10 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
     });
   };
 
-  // Xử lý attributeGroups: Gộp dữ liệu lặp lại
   const processAttributeGroups = (groups: AttributeGroup[]) => {
     return groups.map((group) => {
       const mergedAttributes: { [key: string]: AttributeValue[] } = {};
 
-      // Gộp các attribute có cùng name
       group.attributes.forEach((attr) => {
         if (!mergedAttributes[attr.name]) {
           mergedAttributes[attr.name] = [];
@@ -149,7 +145,6 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
         mergedAttributes[attr.name].push(...attr.values);
       });
 
-      // Gộp các value có cùng value
       const processedAttributes = Object.entries(mergedAttributes).map(([name, values]) => {
         const mergedValues: { [key: string]: string[] } = {};
         values.forEach((val) => {
@@ -175,14 +170,12 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
     });
   };
 
-  // Sắp xếp siteDeals theo createdAt (mới nhất lên trên)
   const sortedSiteDeals = site?.siteDeals
     ? [...site.siteDeals].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
     : [];
 
-  // Xử lý chuyển đổi hình ảnh trong modal
   const handleImageClick = (url: string) => {
     setSelectedImage(url);
   };
@@ -205,10 +198,19 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
     setActiveTab(value);
   };
 
+  // Xử lý description dựa trên role
+  const getProcessedDescription = () => {
+    if (!site?.description) return "Không có mô tả";
+    const userRole = localStorage.getItem("role");
+    if (userRole === "Manager") {
+      return site.description.replace("Staff Bến Thành 3 - ID#46\n", "").trim();
+    }
+    return site.description;
+  };
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl h-[90vh] flex flex-col overflow-hidden">
-        {/* Phần cố định: Tiêu đề */}
         <DialogHeader className="pr-8">
           <DialogTitle className="text-center">
             ID {siteId} - {site?.siteCategoryName || "Loading..."}
@@ -228,9 +230,7 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
               <TabsTrigger value="attributes">Thuộc tính</TabsTrigger>
             </TabsList>
 
-            {/* Container cho phép cuộn */}
             <div className="flex-1 overflow-y-auto">
-              {/* Tab 1: Thông tin mặt bằng */}
               <TabsContent
                 value="info"
                 className="mt-4 px-4 overflow-y-auto max-h-[calc(90vh-120px)]"
@@ -241,14 +241,12 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                   <div className="text-center py-4">Không có dữ liệu để hiển thị</div>
                 ) : (
                   <div className="space-y-4 pb-4">
-                    {/* Địa chỉ (gộp cityName) */}
                     <div>
                       <p className="font-semibold text-lg">
                         Địa chỉ: {site.address}, {site.areaName}, {site.districtName}, {site.cityName}
                       </p>
                     </div>
 
-                    {/* Thông tin cơ bản */}
                     <div className="grid grid-cols-2 gap-4">
                       <p>
                         <span className="font-medium">Diện tích:</span> {site.size}m²
@@ -271,11 +269,10 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                         </p>
                       )}
                       <p>
-                        <span className="font-medium">Mô tả:</span> {site.description || "Không có mô tả"}
+                        <span className="font-medium">Mô tả:</span> {getProcessedDescription()}
                       </p>
                     </div>
 
-                    {/* Hình ảnh */}
                     {site.images && site.images.length > 0 && (
                       <div>
                         <h3 className="font-semibold mb-2">Hình ảnh:</h3>
@@ -293,7 +290,6 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                       </div>
                     )}
 
-                    {/* Điều kiện thuê */}
                     {sortedSiteDeals.length > 0 && (
                       <div>
                         <h3 className="font-semibold mb-2">Điều kiện thuê:</h3>
@@ -307,6 +303,8 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                                 className={
                                   deal.status === 1
                                     ? "bg-green-500 text-white"
+                                    : deal.status === 0
+                                    ? "bg-gray-500 text-white"
                                     : "bg-red-500 text-white"
                                 }
                               >
@@ -345,7 +343,6 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
                 )}
               </TabsContent>
 
-              {/* Tab 2: Thuộc tính */}
               <TabsContent
                 value="attributes"
                 className="mt-4 px-4 overflow-y-auto max-h-[calc(90vh-120px)]"
@@ -389,7 +386,6 @@ export default function SiteDetail({ siteId, onClose }: SiteDetailProps) {
           </Tabs>
         )}
 
-        {/* Modal hiển thị hình ảnh lớn - Không có nút "X" */}
         {selectedImage && (
           <Dialog
             open={true}

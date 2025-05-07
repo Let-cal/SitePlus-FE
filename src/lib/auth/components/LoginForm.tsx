@@ -6,7 +6,7 @@ import Heading from "@/lib/all-site/Heading";
 import { authService } from "@/services/auth.service";
 import { useSnackbar } from "notistack";
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../services/AuthContext";
 
@@ -42,13 +42,40 @@ const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [checked, setChecked] = useState(false);
 
+  // Prevent browser back button
+  useEffect(() => {
+    const preventGoBack = (e: PopStateEvent) => {
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    window.addEventListener('popstate', preventGoBack);
+    window.history.pushState(null, "", window.location.href);
+
+    return () => {
+      window.removeEventListener('popstate', preventGoBack);
+    };
+  }, []);
+
+  // Load saved login data
+  useEffect(() => {
+    const storedPassword = localStorage.getItem("password");
+    const storedEmail = localStorage.getItem("email");
+    if (storedPassword && storedEmail) {
+      setFormData({
+        username: storedEmail,
+        password: storedPassword,
+      });
+      setChecked(true);
+    }
+  }, []);
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
     }
 
     setErrors(newErrors);
@@ -64,33 +91,33 @@ const LoginForm: React.FC = () => {
         const response = await authService.login(formData);
 
         if (response.success) {
+          window.history.pushState(null, "", window.location.href);
+
           localStorage.removeItem("token");
           localStorage.removeItem("role");
           localStorage.removeItem("email");
           localStorage.removeItem("hint");
           localStorage.removeItem("name");
-          // Store user data
+
           localStorage.setItem("token", response.token);
           localStorage.setItem("role", response.role);
           localStorage.setItem("email", formData.username);
           localStorage.setItem("hint", response.hint.toString());
           localStorage.setItem("name", response.name);
 
-          console.log(localStorage.getItem("token"));
-          // Store password if remember me is checked
           if (checked) {
             localStorage.setItem("password", formData.password);
           } else {
             localStorage.removeItem("password");
           }
-          // Update auth context states directly
+
           setIsAuthenticated(true);
           setUserRole(response.role);
           setUserName(response.name);
           setUserEmail(formData.username);
           setUserId(response.hint);
 
-          enqueueSnackbar("Đăng nhập thành công !", {
+          enqueueSnackbar("Đăng nhập thành công!", {
             variant: "success",
             preventDuplicate: true,
             anchorOrigin: {
@@ -99,21 +126,27 @@ const LoginForm: React.FC = () => {
             },
           });
 
-          // Navigate based on role with replace: true
+          let targetPath = "";
           switch (response.role) {
             case "Admin":
-              navigate("/admin-page", { replace: true });
-              break;
-            case "Customer":
-              navigate("/customer-page", { replace: true });
+              targetPath = "/admin-page";
               break;
             case "Manager":
-              navigate("/manager-page", { replace: true });
+              targetPath = "/manager-page";
               break;
             case "Area-Manager":
-              navigate("/area-manager-page", { replace: true });
+              targetPath = "/area-manager-page";
               break;
           }
+
+          navigate(targetPath, { replace: true });
+
+          window.addEventListener('popstate', function preventReturn() {
+            window.history.pushState(null, "", targetPath);
+            return () => {
+              window.removeEventListener('popstate', preventReturn);
+            };
+          });
         }
       } catch (error) {
         let errorMessage = "Lỗi kết nối đến máy chủ. Vui lòng thử lại sau!";
@@ -138,18 +171,6 @@ const LoginForm: React.FC = () => {
     }
   };
 
-  React.useEffect(() => {
-    const storedPassword = localStorage.getItem("password");
-    const storedEmail = localStorage.getItem("email");
-    if (storedPassword && storedEmail) {
-      setFormData({
-        username: storedEmail,
-        password: storedPassword,
-      });
-      setChecked(true);
-    }
-  }, []);
-
   return (
     <div className="w-full max-w-md space-y-6 p-6 bg-white rounded-lg shadow-lg">
       <div className="text-center">
@@ -170,51 +191,56 @@ const LoginForm: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit}>
         <div className="dark:text-theme-primary-dark">
+          <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
           <Input
-            type="username"
-            placeholder="Nhập email của bạn"
+            id="username"
+            type="email"
+            placeholder="Nhập email của bạn"
             disabled={isLoading}
-            className={errors.username ? "border-red-500" : ""}
             value={formData.username}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setFormData({ ...formData, username: e.target.value })
             }
           />
-          {errors.username && (
-            <Alert variant="destructive" className="mt-1">
-              <AlertDescription>{errors.username}</AlertDescription>
-            </Alert>
-          )}
+          {/* Reserve space for email error (if needed in the future) */}
+          <p className="text-sm h-5 mt-1 text-red-500">{errors.username || " "}</p>
         </div>
 
-        <div className="relative dark:text-theme-primary-dark">
-          <Input
-            type={showPassword ? "text" : "password"}
-            placeholder="Nhập mật khẩu của bạn"
-            disabled={isLoading}
-            className={errors.password ? "border-red-500" : ""}
-            value={formData.password}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
-          />
-          <span
-            className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            <span className="material-icons text-gray-500">
-              {showPassword ? "visibility_off" : "visibility"}
+        <div className="relative dark:text-theme-primary-dark mb-4" >
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            Mật khẩu
+          </label>
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Nhập mật khẩu của bạn"
+              disabled={isLoading}
+              className={`pr-10 ${errors.password ? "border-red-500" : ""}`}
+              value={formData.password}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+            />
+            <span
+              className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              <span className="material-icons text-gray-500">
+                {showPassword ? "visibility_off" : "visibility"}
+              </span>
             </span>
-          </span>
-          {errors.password && (
-            <Alert variant="destructive" className="mt-1">
-              <AlertDescription>{errors.password}</AlertDescription>
-            </Alert>
-          )}
+          </div>
+          {/* Reserve space for password error */}
+          <p className="text-sm h-5 mt-1 text-red-500">{errors.password || " "}</p>
         </div>
-        <div className="flex items-center space-x-2">
+
+        {/* Uncomment if remember me functionality is needed */}
+        {/* <div className="flex items-center space-x-2">
           <Checkbox
             id="remember-me"
             checked={checked}
@@ -224,15 +250,16 @@ const LoginForm: React.FC = () => {
             htmlFor="remember-me"
             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
-            Nhớ mật khẩu
+            Nhớ mật khẩu
           </label>
-        </div>
+        </div> */}
+
         <Button
           type="submit"
           disabled={isLoading}
           className="w-full bg-orange-500 hover:bg-orange-600 text-white"
         >
-          {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+          {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
         </Button>
       </form>
     </div>

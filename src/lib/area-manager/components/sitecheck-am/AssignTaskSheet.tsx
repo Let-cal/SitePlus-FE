@@ -8,7 +8,7 @@ import { CalendarIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import toast from "react-hot-toast"; // Bỏ Toaster import
+import toast from "react-hot-toast";
 import areaManagerService from "../../../../services/area-manager/area-manager.service";
 
 interface AssignTaskSheetProps {
@@ -24,6 +24,7 @@ interface AssignTaskSheetProps {
     staff: string;
     description: string;
   }) => void;
+  description?: string;
 }
 
 interface District {
@@ -87,7 +88,7 @@ const dialogStyles = {
   `
 };
 
-const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, siteId, onSubmit }) => {
+const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, siteId, onSubmit, description }) => {
   const [name, setName] = useState("");
   const [priority, setPriority] = useState("Bình thường");
   const [district, setDistrict] = useState("Chưa có thông tin");
@@ -95,7 +96,7 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
   const [ward, setWard] = useState("");
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const [selectedEmployee, setSelectedEmployee] = useState<string>("");
-  const [description, setDescription] = useState("");
+  const [descriptionState, setDescription] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [wards, setWards] = useState<Ward[]>([]);
   const [filteredWards, setFilteredWards] = useState<Ward[]>([]);
@@ -103,6 +104,56 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loadingWards, setLoadingWards] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
+
+  useEffect(() => {
+    if (isOpen && description && users.length > 0 && wards.length > 0) {
+      console.log("Running auto-select logic...");
+      console.log("Description:", description);
+      console.log("Users:", users);
+
+      const extractStaffInfo = (desc: string) => {
+        const idMatch = desc.match(/ID#(\d+)/);
+        const id = idMatch ? idMatch[1] : null;
+        const nameMatch = desc.split(" - ID#")[0].trim();
+        return { id, name: nameMatch };
+      };
+
+      const { id: staffId, name: staffName } = extractStaffInfo(description);
+      console.log("Extracted Staff ID:", staffId, "Staff Name:", staffName);
+
+      let selectedUser: User | undefined;
+
+      if (staffId) {
+        selectedUser = users.find((u) => u.id.toString() === staffId);
+        console.log("Selected user by ID:", selectedUser);
+      } else if (staffName) {
+        selectedUser = users.find((u) => u.name.toLowerCase() === staffName.toLowerCase());
+        console.log("Selected user by name:", selectedUser);
+      }
+
+      if (selectedUser) {
+        console.log("Setting selected employee:", selectedUser.id.toString());
+        setSelectedEmployee(selectedUser.id.toString());
+        setFilteredUsers([selectedUser]);
+        const matchingWard = wards.find((ward) => ward.id === selectedUser.areaId);
+        if (matchingWard) {
+          console.log("Setting ward:", matchingWard.name);
+          setFilteredWards([matchingWard]);
+          setWard(matchingWard.name);
+        } else {
+          console.log("No matching ward, resetting...");
+          setFilteredWards(wards);
+          setWard("");
+        }
+      } else {
+        console.log("No user found, resetting...");
+        setSelectedEmployee("");
+        setFilteredUsers(users);
+        setFilteredWards(wards);
+        setWard("");
+      }
+    }
+  }, [isOpen, description, users, wards]);
 
   useEffect(() => {
     const storedDistrictId = localStorage.getItem("districtId");
@@ -176,9 +227,13 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
 
   useEffect(() => {
     if (selectedEmployee && selectedEmployee !== "none") {
-      const selectedUser = users.find(user => user.id.toString() === selectedEmployee);
-      if (selectedUser && selectedUser.areaId) {
-        const matchingWard = wards.find(ward => ward.id === selectedUser.areaId);
+      console.log("Current selectedEmployee:", selectedEmployee);
+      const selectedUser = users.find((u) => u.id.toString() === selectedEmployee);
+      console.log("Selected user:", selectedUser);
+
+      if (selectedUser) {
+        setFilteredUsers([selectedUser]);
+        const matchingWard = wards.find((ward) => ward.id === selectedUser.areaId);
         if (matchingWard) {
           setFilteredWards([matchingWard]);
           setWard(matchingWard.name);
@@ -187,23 +242,27 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
           setWard("");
         }
       } else {
+        console.log("User not found, resetting...");
+        setSelectedEmployee("");
+        setFilteredUsers(users);
         setFilteredWards(wards);
         setWard("");
       }
     } else {
+      setFilteredUsers(users);
       setFilteredWards(wards);
       setWard("");
     }
-  }, [selectedEmployee, wards, users]);
+  }, [selectedEmployee, users, wards]);
 
   useEffect(() => {
     if (ward && ward !== "none") {
-      const selectedWard = wards.find(w => w.name === ward);
+      const selectedWard = wards.find((w) => w.name === ward);
       if (selectedWard) {
-        const matchingUsers = users.filter(user => user.areaId === selectedWard.id);
+        const matchingUsers = users.filter((user) => user.areaId === selectedWard.id);
         setFilteredUsers(matchingUsers);
-        if (matchingUsers.length > 0) {
-          const currentEmployeeStillValid = matchingUsers.some(user => user.id.toString() === selectedEmployee);
+        if (matchingUsers.length > 0 && selectedEmployee) {
+          const currentEmployeeStillValid = matchingUsers.some((user) => user.id.toString() === selectedEmployee);
           if (!currentEmployeeStillValid) {
             setSelectedEmployee("");
           }
@@ -213,12 +272,15 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
       } else {
         setFilteredUsers(users);
         setSelectedEmployee("");
+        setWard("");
       }
     } else {
       setFilteredUsers(users);
-      setSelectedEmployee("");
+      if (selectedEmployee && !users.some((user) => user.id.toString() === selectedEmployee)) {
+        setSelectedEmployee("");
+      }
     }
-  }, [ward, wards, users]);
+  }, [ward, wards, users, selectedEmployee]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,7 +295,7 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
       return;
     }
 
-    if (!description) {
+    if (!descriptionState) {
       toast.error("Vui lòng nhập mô tả công việc", { position: "top-right", duration: 3000 });
       return;
     }
@@ -259,7 +321,7 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
     const taskData = {
       siteId,
       name,
-      description,
+      description: descriptionState,
       areaId,
       staffId: Number(selectedEmployee),
       deadline: formattedDeadline,
@@ -273,7 +335,7 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
       ward,
       deadline: format(deadline, "dd/MM/yyyy"),
       staff: employeeName,
-      description,
+      description: descriptionState,
     };
 
     try {
@@ -410,22 +472,19 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
               </div>
               <div className="flex-1 space-y-1">
                 <Label htmlFor="ward" className="text-sm">Phường</Label>
-                <Select value={ward} onValueChange={setWard} disabled={loadingWards || !districtId}>
+                <Select value={ward} onValueChange={() => {}} disabled={true}>
                   <SelectTrigger id="ward" className="text-sm h-10">
                     <SelectValue placeholder={
-                      loadingWards 
-                        ? "Đang tải..." 
-                        : !districtId 
-                          ? "Không có quận được chọn" 
-                          : filteredWards.length === 0 
-                            ? "Không có phường" 
-                            : "Chọn phường"
+                      loadingWards
+                        ? "Đang tải..."
+                        : !districtId
+                          ? "Không có quận được chọn"
+                          : filteredWards.length === 0
+                            ? "Không có phường"
+                            : ward || "Chọn phường"
                     } />
                   </SelectTrigger>
                   <SelectContent className="max-h-[250px] overflow-y-auto no-scrollbar">
-                    <SelectItem value="none" className="text-sm">
-                      Chọn phường
-                    </SelectItem>
                     {filteredWards.map((wardOption) => (
                       <SelectItem key={wardOption.id} value={wardOption.name} className="text-sm">
                         {wardOption.name}
@@ -439,14 +498,16 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
             <div className="flex space-x-4">
               <div className="flex-1 space-y-1">
                 <Label htmlFor="employee" className="text-sm">Nhân viên</Label>
-                <Select value={selectedEmployee} onValueChange={setSelectedEmployee} disabled={loadingUsers}>
+                <Select
+                  key={filteredUsers.length}
+                  value={selectedEmployee}
+                  onValueChange={() => {}}
+                  disabled={true}
+                >
                   <SelectTrigger id="employee" className="text-sm h-10">
-                    <SelectValue placeholder={loadingUsers ? "Đang tải..." : "Chọn nhân viên"} />
+                    <SelectValue placeholder={loadingUsers ? "Đang tải..." : filteredUsers.length > 0 ? filteredUsers[0].name : "Chọn nhân viên"} />
                   </SelectTrigger>
                   <SelectContent className="max-h-[250px] overflow-y-auto no-scrollbar">
-                    <SelectItem value="none" className="text-sm">
-                      Chọn nhân viên
-                    </SelectItem>
                     {filteredUsers.map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()} className="text-sm">
                         {user.name}
@@ -476,7 +537,7 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
               <Label htmlFor="description" className="text-sm">Mô tả công việc</Label>
               <textarea
                 id="description"
-                value={description}
+                value={descriptionState}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Nhập mô tả công việc"
                 required
@@ -496,7 +557,6 @@ const AssignTaskSheet: React.FC<AssignTaskSheetProps> = ({ isOpen, onClose, site
           </form>
         </DialogContent>
       </Dialog>
-      {/* Bỏ <Toaster /> vì sẽ đặt ở SiteCheck.tsx */}
     </>
   );
 };

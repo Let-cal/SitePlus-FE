@@ -8,10 +8,11 @@ import {
 } from "@/components/ui/sheet";
 import { Bell, Menu } from "lucide-react";
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { AuthLinks } from "../auth/components/AuthLink";
 import { Divider } from "./divider";
 import logo from "/images/logo-site-plus/logo.png";
+
 export function MobileNavigationMenu() {
   return (
     <Sheet>
@@ -23,17 +24,17 @@ export function MobileNavigationMenu() {
       <SheetContent side="left" className="w-[300px] sm:w-[350px]">
         <SheetHeader>
           <SheetTitle>
-            <Link to="/" className="flex items-center w-24 h-10">
+            <NavLink to="/" className="flex items-center w-24 h-10">
               <img src={logo} alt="SitePlus Logo" className="h-auto w-full" />
-            </Link>
+            </NavLink>
           </SheetTitle>
         </SheetHeader>
         <div className="flex flex-col gap-6 mt-6">
           {/* Notifications */}
           <div className="flex flex-row items-center gap-2">
-            <Button variant="ghost" size="icon">
+            {/* <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5 text-gray-600" />
-            </Button>
+            </Button> */}
 
             {/* Auth Links */}
             <div className="flex flex-col gap-2">
@@ -42,32 +43,56 @@ export function MobileNavigationMenu() {
           </div>
           {/* Navigation Links */}
           <nav className="flex flex-col gap-2">
-            <Link
+            <NavLink
               to="/"
-              className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
+              className={({ isActive }) =>
+                `px-4 py-2 rounded-md transition-colors ${
+                  isActive
+                    ? "text-orange-500 "
+                    : "text-gray-600 hover:text-orange-500"
+                }`
+              }
             >
               Trang chủ
-            </Link>
+            </NavLink>
 
-            <Link
+            <NavLink
               to="/survey-requests-page"
-              className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
+              className={({ isActive }) =>
+                `px-4 py-2 rounded-md transition-colors ${
+                  isActive
+                    ? "text-orange-500 "
+                    : "text-gray-600 hover:text-orange-500"
+                }`
+              }
             >
               Khảo sát tìm mặt bằng
-            </Link>
+            </NavLink>
             <Divider />
-            <Link
+            <NavLink
               to="/info-page"
-              className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
+              className={({ isActive }) =>
+                `px-4 py-2 rounded-md transition-colors ${
+                  isActive
+                    ? "text-orange-500 "
+                    : "text-gray-600 hover:text-orange-500"
+                }`
+              }
             >
               Giới Thiệu
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/contact-page"
-              className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
+              className={({ isActive }) =>
+                `px-4 py-2 rounded-md transition-colors ${
+                  isActive
+                    ? "text-orange-500 "
+                    : "text-gray-600 hover:text-orange-500"
+                }`
+              }
             >
               Liên Hệ
-            </Link>
+            </NavLink>
           </nav>
         </div>
       </SheetContent>

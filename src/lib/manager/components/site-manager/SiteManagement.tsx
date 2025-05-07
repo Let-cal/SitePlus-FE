@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -27,16 +29,17 @@ import * as React from "react";
 import managerService from "../../../../services/manager/manager.service";
 import SiteDetail from "./SiteDetail";
 
-// Interface cho site (đơn giản hóa từ API)
+// Interface cho site
 interface Site {
   id: number;
   address: string;
-  areaName?: string; // Tùy chọn
-  districtName?: string; // Tùy chọn
+  areaName?: string;
+  districtName?: string;
   size: number;
   status: number;
-  siteCategoryId: number; // Thêm siteCategoryId
+  siteCategoryId: number;
   siteCategoryName: string;
+  taskId?: number;
 }
 
 // Interface cho response của API GET_SITES
@@ -54,54 +57,74 @@ interface SitesApiResponse {
 }
 
 export default function SiteManagement() {
-  const [sites, setSites] = React.useState<Site[]>([]); // State để lưu danh sách site
-  const [currentPage, setCurrentPage] = React.useState(1); // Trang hiện tại
-  const [totalPages, setTotalPages] = React.useState(1); // Tổng số trang
-  const [isLoading, setIsLoading] = React.useState(false); // Trạng thái loading
-  const [selectedCategory, setSelectedCategory] = React.useState<string>("all"); // State để lọc theo siteCategoryId
-  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(
-    null
-  ); // State để lưu siteId khi bấm "Xem chi tiết"
-  const [activeTab, setActiveTab] = React.useState<"KHẢ DỤNG" | "ĐÃ CHỐT">(
-    "KHẢ DỤNG"
-  ); // State cho tab
-  const itemsPerPage = 10; // Số lượng site trên mỗi trang
+  const [allSites, setAllSites] = React.useState<Site[]>([]);
+  const [filteredSites, setFilteredSites] = React.useState<Site[]>([]);
+  const [displayedSites, setDisplayedSites] = React.useState<Site[]>([]);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [totalPages, setTotalPages] = React.useState(1);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
+  const [selectedSiteId, setSelectedSiteId] = React.useState<number | null>(null);
+  const [activeTab, setActiveTab] = React.useState<"KHẢ DỤNG" | "ĐÃ CHỐT">("KHẢ DỤNG");
+  const [searchSiteId, setSearchSiteId] = React.useState<string>("");
+  const itemsPerPage = 10;
+  const pageSize = 100;
 
-  // Danh sách các category để hiển thị trong dropdown
   const categories = [
     { id: "all", name: "Tất cả" },
-    { id: "1", name: "Mặt bằng nội khu" }, // siteCategoryId: 1
-    { id: "2", name: "Mặt bằng độc lập" }, // siteCategoryId: 2
+    { id: "1", name: "Mặt bằng nội khu" },
+    { id: "2", name: "Mặt bằng độc lập" },
   ];
 
-  // Gọi API fetchSites khi currentPage, selectedCategory hoặc activeTab thay đổi
+  // Gọi API để lấy toàn bộ dữ liệu
   React.useEffect(() => {
     const loadSites = async () => {
       setIsLoading(true);
       try {
-        const response: SitesApiResponse = await managerService.fetchSites(
-          currentPage,
-          itemsPerPage,
-          activeTab === "KHẢ DỤNG" ? 1 : 10 // Dùng status theo tab
+        const siteIdToSearch = searchSiteId.trim() !== "" ? parseInt(searchSiteId) : null;
+        let allData: Site[] = [];
+
+        // Gọi API lần đầu để lấy tổng số trang và dữ liệu trang 1
+        const firstResponse: SitesApiResponse = await managerService.fetchSites(
+          1,
+          pageSize,
+          activeTab === "KHẢ DỤNG" ? 1 : 10,
+          siteIdToSearch
         );
-        if (response.success) {
-          // Lọc site theo selectedCategory
-          const filteredSites =
-            selectedCategory === "all"
-              ? response.data.listData
-              : response.data.listData.filter(
-                  (site) => site.siteCategoryId.toString() === selectedCategory
-                );
-          setSites(filteredSites);
-          setTotalPages(response.data.totalPage || 1); // Lấy totalPage từ API response
+
+        if (firstResponse.success) {
+          allData = [...firstResponse.data.listData];
+          const totalPagesFromApi = firstResponse.data.totalPage;
+
+          // Nếu có nhiều hơn 1 trang, gọi API cho các trang còn lại
+          if (totalPagesFromApi > 1) {
+            const pagePromises = Array.from(
+              { length: totalPagesFromApi - 1 },
+              (_, i) => i + 2
+            ).map((pageNum) =>
+              managerService.fetchSites(
+                pageNum,
+                pageSize,
+                activeTab === "KHẢ DỤNG" ? 1 : 10,
+                siteIdToSearch
+              )
+            );
+
+            const additionalResponses = await Promise.all(pagePromises);
+            additionalResponses.forEach((response) => {
+              if (response.success) {
+                allData = allData.concat(response.data.listData);
+              }
+            });
+          }
+
+          setAllSites(allData);
         } else {
-          setSites([]);
-          setTotalPages(1);
+          setAllSites([]);
         }
       } catch (error) {
         console.error("Error loading sites:", error);
-        setSites([]);
-        setTotalPages(1);
+        setAllSites([]);
       } finally {
         setIsLoading(false);
       }
@@ -111,10 +134,27 @@ export default function SiteManagement() {
     const siteIdParam = searchParams.get("siteId");
 
     if (!siteIdParam) {
-      // Nếu không có siteId trong URL, load bình thường
       loadSites();
     }
-  }, [currentPage, selectedCategory, activeTab]);
+  }, [activeTab, searchSiteId]);
+
+  // Lọc dữ liệu khi selectedCategory hoặc allSites thay đổi
+  React.useEffect(() => {
+    const filtered = selectedCategory === "all"
+      ? allSites
+      : allSites.filter((site) => site.siteCategoryId.toString() === selectedCategory);
+    setFilteredSites(filtered);
+    setCurrentPage(1); // Reset về trang 1 khi thay đổi bộ lọc
+  }, [selectedCategory, allSites]);
+
+  // Phân trang dữ liệu đã lọc
+  React.useEffect(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedSites = filteredSites.slice(startIndex, endIndex);
+    setDisplayedSites(paginatedSites);
+    setTotalPages(Math.ceil(filteredSites.length / itemsPerPage) || 1);
+  }, [filteredSites, currentPage]);
 
   return (
     <div className="space-y-4">
@@ -124,7 +164,7 @@ export default function SiteManagement() {
             variant={activeTab === "KHẢ DỤNG" ? "default" : "outline"}
             onClick={() => {
               setActiveTab("KHẢ DỤNG");
-              setCurrentPage(1); // Reset về trang 1 khi đổi tab
+              setCurrentPage(1);
             }}
           >
             KHẢ DỤNG
@@ -133,39 +173,55 @@ export default function SiteManagement() {
             variant={activeTab === "ĐÃ CHỐT" ? "default" : "outline"}
             onClick={() => {
               setActiveTab("ĐÃ CHỐT");
-              setCurrentPage(1); // Reset về trang 1 khi đổi tab
+              setCurrentPage(1);
             }}
           >
             ĐÃ CHỐT
           </Button>
         </div>
-        <Select
-          value={selectedCategory}
-          onValueChange={(value) => {
-            setSelectedCategory(value);
-            setCurrentPage(1); // Reset về trang 1 khi thay đổi bộ lọc
-          }}
-        >
-          <SelectTrigger className="w-[180px] border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
-            <SelectValue placeholder="Lọc theo loại mặt bằng" />
-          </SelectTrigger>
-          <SelectContent className="border border-gray-300 rounded-md shadow-sm">
-            {categories.map((category) => (
-              <SelectItem
-                key={category.id}
-                value={category.id}
-                className="hover:bg-gray-100"
-              >
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex gap-4">
+          <div className="relative w-[350px]">
+            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            <Input
+              placeholder="Tìm kiếm theo Site ID"
+              value={searchSiteId}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "" || /^\d+$/.test(value)) {
+                  setSearchSiteId(value);
+                  setCurrentPage(1);
+                }
+              }}
+              className="pl-10"
+            />
+          </div>
+          <Select
+            value={selectedCategory}
+            onValueChange={(value) => {
+              setSelectedCategory(value);
+            }}
+          >
+            <SelectTrigger className="w-[180px] border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500">
+              <SelectValue placeholder="Lọc theo loại mặt bằng" />
+            </SelectTrigger>
+            <SelectContent className="border border-gray-300 rounded-md shadow-sm">
+              {categories.map((category) => (
+                <SelectItem
+                  key={category.id}
+                  value={category.id}
+                  className="hover:bg-gray-100"
+                >
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {isLoading ? (
         <div className="text-center py-4">Đang tải...</div>
-      ) : sites.length === 0 ? (
+      ) : displayedSites.length === 0 ? (
         <div className="text-center py-4">Không có dữ liệu để hiển thị</div>
       ) : (
         <>
@@ -176,12 +232,13 @@ export default function SiteManagement() {
                 <TableHead className="w-[30%]">Địa chỉ</TableHead>
                 <TableHead className="w-[15%]">Quận</TableHead>
                 <TableHead className="w-[10%]">Diện tích</TableHead>
+                <TableHead className="w-[10%]">Task ID</TableHead>
                 <TableHead className="w-[15%]">Loại</TableHead>
                 <TableHead className="w-[8%]">Xem chi tiết</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sites.map((site) => (
+              {displayedSites.map((site) => (
                 <TableRow key={site.id}>
                   <TableCell>{site.id}</TableCell>
                   <TableCell>{`${site.address}${
@@ -189,6 +246,7 @@ export default function SiteManagement() {
                   }`}</TableCell>
                   <TableCell>{site.districtName || "Không xác định"}</TableCell>
                   <TableCell>{`${site.size}m²`}</TableCell>
+                  <TableCell>{site.taskId ?? "N/A"}</TableCell>
                   <TableCell>
                     <Badge
                       className={
@@ -204,7 +262,7 @@ export default function SiteManagement() {
                     <Button
                       variant="link"
                       className="text-blue-500 p-0 underline hover:text-blue-700"
-                      onClick={() => setSelectedSiteId(site.id)} // Mở modal khi bấm "Xem chi tiết"
+                      onClick={() => setSelectedSiteId(site.id)}
                     >
                       Xem chi tiết
                     </Button>
@@ -252,11 +310,10 @@ export default function SiteManagement() {
         </>
       )}
 
-      {/* Hiển thị modal SiteDetail khi có siteId được chọn */}
       {selectedSiteId && (
         <SiteDetail
           siteId={selectedSiteId}
-          onClose={() => setSelectedSiteId(null)} // Đóng modal
+          onClose={() => setSelectedSiteId(null)}
         />
       )}
     </div>

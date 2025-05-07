@@ -109,17 +109,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       !roles.includes(userRole)
     ) {
       // This is the unauthorized role case
-      if (!showNotification) {
-        enqueueSnackbar("You do not have permission to access this page.", {
-          variant: "error",
-          preventDuplicate: true,
-          anchorOrigin: {
-            horizontal: "left",
-            vertical: "bottom",
-          },
-        });
-        setShowNotification(true);
-      }
+      // if (!showNotification) {
+      //   enqueueSnackbar("You do not have permission to access this page.", {
+      //     variant: "error",
+      //     preventDuplicate: true,
+      //     anchorOrigin: {
+      //       horizontal: "left",
+      //       vertical: "bottom",
+      //     },
+      //   });
+      //   setShowNotification(true);
+      // }
 
       // Navigate based on userRole
       switch (userRole) {

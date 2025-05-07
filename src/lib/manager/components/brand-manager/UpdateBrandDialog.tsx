@@ -11,27 +11,39 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
 import * as React from "react"
 import { useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
 import managerService from "../../../../services/manager/manager.service"
-import type { Brand } from "./BrandTable"
+import type { Brand, CustomerSegment, IndustryCategory } from "./BrandTable"
 
 interface UpdateBrandDialogProps {
   brand: Brand | null
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+  allIndustryCategories: IndustryCategory[]
+  allCustomerSegments: CustomerSegment[]
 }
 
-export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }: UpdateBrandDialogProps) {
+export default function UpdateBrandDialog({
+  brand,
+  isOpen,
+  onClose,
+  onSuccess,
+  allIndustryCategories,
+  allCustomerSegments,
+}: UpdateBrandDialogProps) {
   const [formData, setFormData] = useState({
     id: 0,
     name: "",
     status: 0,
     updatedAt: new Date().toISOString(),
+    customerSegmentId: [] as number[],
+    industryCategoryId: 0,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isFormModified, setIsFormModified] = useState(false)
@@ -39,15 +51,42 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
   // Reset form data when brand changes
   useEffect(() => {
     if (brand) {
+      console.log("Brand data in UpdateBrandDialog:", brand);
+
+      // Ánh xạ name sang id cho customerSegments
+      const initialCustomerSegments = brand.customerSegments
+        ? brand.customerSegments
+            .map(segment => {
+              const matchedSegment = allCustomerSegments.find(
+                s => s.name === segment.name
+              );
+              return matchedSegment ? Number(matchedSegment.id) : undefined;
+            })
+            .filter(id => id !== undefined) as number[]
+        : [];
+
+      // Ánh xạ name sang id cho industryCategories
+      const initialIndustryCategory =
+        brand.industryCategories && brand.industryCategories.length > 0
+          ? allIndustryCategories.find(
+              cat => cat.name === brand.industryCategories[0].name
+            )?.id || 0
+          : 0;
+
+      console.log("Initial customerSegmentId:", initialCustomerSegments);
+      console.log("Initial industryCategoryId:", initialIndustryCategory);
+
       setFormData({
-        id: brand.id,
-        name: brand.name,
-        status: brand.status,
+        id: Number(brand.id),
+        name: brand.name || "",
+        status: Number(brand.status) || 0,
         updatedAt: new Date().toISOString(),
-      })
-      setIsFormModified(false)
+        customerSegmentId: initialCustomerSegments,
+        industryCategoryId: initialIndustryCategory,
+      });
+      setIsFormModified(false);
     }
-  }, [brand])
+  }, [brand, allCustomerSegments, allIndustryCategories]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -66,6 +105,27 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
     setIsFormModified(true)
   }
 
+  const toggleCustomerSegment = (segmentId: number) => {
+    setFormData((prev) => {
+      const segmentIdNum = Number(segmentId);
+      const updatedSegments = prev.customerSegmentId.includes(segmentIdNum)
+        ? prev.customerSegmentId.filter(id => id !== segmentIdNum)
+        : [...prev.customerSegmentId, segmentIdNum];
+      
+      console.log("Toggling segment:", segmentIdNum, "New segments:", updatedSegments);
+      return { ...prev, customerSegmentId: updatedSegments };
+    })
+    setIsFormModified(true)
+  }
+
+  const handleIndustryCategoryChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      industryCategoryId: Number.parseInt(value, 10),
+    }))
+    setIsFormModified(true)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -77,11 +137,31 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
       return
     }
 
+    if (!formData.industryCategoryId) {
+      toast.error("Vui lòng chọn một phân loại ngành nghề", {
+        position: "top-right",
+        duration: 3000,
+      })
+      return
+    }
+
+    if (!formData.customerSegmentId.length) {
+      toast.error("Vui lòng chọn ít nhất một mô hình khách hàng", {
+        position: "top-right",
+        duration: 3000,
+      })
+      return
+    }
+
     setIsLoading(true)
     try {
       const updateData = {
-        ...formData,
+        id: formData.id,
+        name: formData.name,
+        status: formData.status,
         updatedAt: new Date().toISOString(),
+        customerSegmentId: formData.customerSegmentId,
+        industryCategoryId: formData.industryCategoryId,
       }
 
       const result = await managerService.updateBrand(brand?.id || 0, updateData)
@@ -91,13 +171,8 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
           position: "top-right",
           duration: 3000,
         })
-
-        // Gọi onSuccess trước khi đóng dialog
         onSuccess()
-
-        // Đặt timeout để đảm bảo các styles được reset sau khi dialog đóng
         setTimeout(() => {
-          // Reset body styles trước khi đóng dialog
           document.body.style.pointerEvents = "auto"
           document.body.style.overflow = "auto"
           onClose()
@@ -119,12 +194,9 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
     }
   }
 
-  // Xử lý đóng dialog
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      // Đặt timeout để đảm bảo các styles được reset sau khi dialog đóng
       setTimeout(() => {
-        // Reset body styles trước khi đóng dialog
         document.body.style.pointerEvents = "auto"
         document.body.style.overflow = "auto"
         onClose()
@@ -132,7 +204,6 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
     }
   }
 
-  // Đảm bảo reset body styles khi component unmount
   useEffect(() => {
     return () => {
       document.body.style.pointerEvents = "auto"
@@ -144,7 +215,7 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Cập nhật thương hiệu</DialogTitle>
           <DialogDescription>Chỉnh sửa thông tin thương hiệu {brand?.name || ""}.</DialogDescription>
@@ -155,7 +226,7 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
               <Label htmlFor="brand-id" className="text-sm font-medium">
                 ID
               </Label>
-              <Input id="brand-id" value={formData.id} disabled className="bg-gray-100" />
+              <Input id="brand-id" value={formData.id} disabled  />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="brand-name" className="text-sm font-medium">
@@ -168,7 +239,6 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
                 onChange={handleInputChange}
                 placeholder="Nhập tên thương hiệu"
                 required
-                className="focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="grid gap-2">
@@ -176,7 +246,7 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
                 Trạng thái <span className="text-red-500">*</span>
               </Label>
               <Select value={formData.status.toString()} onValueChange={handleStatusChange}>
-                <SelectTrigger id="brand-status" className="focus:ring-2 focus:ring-blue-500">
+                <SelectTrigger id="brand-status">
                   <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
@@ -185,15 +255,63 @@ export default function UpdateBrandDialog({ brand, isOpen, onClose, onSuccess }:
                 </SelectContent>
               </Select>
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="industryCategoryId" className="text-sm font-medium">
+                Phân loại ngành nghề <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.industryCategoryId ? formData.industryCategoryId.toString() : ""}
+                onValueChange={handleIndustryCategoryChange}
+              >
+                <SelectTrigger id="industryCategoryId">
+                  <SelectValue placeholder="Chọn phân loại ngành nghề" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allIndustryCategories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="customerSegmentId" className="text-sm font-medium">
+                Mô hình khách hàng đang nhắm tới <span className="text-red-500">*</span>
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 border rounded-lg p-4">
+                {allCustomerSegments.map((segment) => {
+                  const segmentIdNum = Number(segment.id);
+                  const isChecked = formData.customerSegmentId.includes(segmentIdNum);
+                  
+                  return (
+                    <div
+                      key={segment.id}
+                      className="flex items-center space-x-2 p-2 rounded"
+                    >
+                      <Checkbox
+                        id={`update-customer-${segment.id}`}
+                        onCheckedChange={() => toggleCustomerSegment(segmentIdNum)}
+                        checked={isChecked}
+                      />
+                      <Label
+                        htmlFor={`update-customer-${segment.id}`}
+                        className="text-sm font-medium cursor-pointer"
+                      >
+                        {segment.name}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
           <DialogFooter className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => {
-                // Đặt timeout để đảm bảo các styles được reset sau khi dialog đóng
                 setTimeout(() => {
-                  // Reset body styles trước khi đóng dialog
                   document.body.style.pointerEvents = "auto"
                   document.body.style.overflow = "auto"
                   onClose()
