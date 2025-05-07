@@ -286,7 +286,7 @@ const Step3Form = ({ form }) => {
                       </div>
                       <div className="relative flex justify-center">
                         <span className="bg-white px-2 text-xs text-gray-500">
-                          Hoặc chỉ định khoảng diện tích
+                          Và chỉ định khoảng diện tích
                         </span>
                       </div>
                     </div>
@@ -299,7 +299,7 @@ const Step3Form = ({ form }) => {
                       >
                         <Input
                           {...form.register("minArea")}
-                          placeholder="30"
+                          placeholder="Ví dụ: 30m²"
                           type="number"
                           min="0"
                           className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
@@ -324,7 +324,7 @@ const Step3Form = ({ form }) => {
                       >
                         <Input
                           {...form.register("maxArea")}
-                          placeholder="100"
+                          placeholder="Ví dụ: 100m²"
                           type="number"
                           min="0"
                           className="focus-visible:ring-orange-400 focus-visible:ring-offset-0"
@@ -430,7 +430,7 @@ const Step3Form = ({ form }) => {
                       >
                         <Input
                           {...form.register("defaultBudget")}
-                          placeholder="20,000,000"
+                          placeholder="Ví dụ: 20,000,000"
                           type="text"
                           defaultValue={
                             watch("defaultBudget")
@@ -462,7 +462,7 @@ const Step3Form = ({ form }) => {
                         >
                           <Input
                             {...form.register("minBudget")}
-                            placeholder="10,000,000"
+                            placeholder="Ví dụ: 10,000,000"
                             type="text"
                             defaultValue={
                               watch("minBudget")
@@ -481,7 +481,7 @@ const Step3Form = ({ form }) => {
                         >
                           <Input
                             {...form.register("maxBudget")}
-                            placeholder="30,000,000"
+                            placeholder="Ví dụ: 30,000,000"
                             type="text"
                             defaultValue={
                               watch("maxBudget")
@@ -509,7 +509,7 @@ const Step3Form = ({ form }) => {
                         >
                           <Input
                             {...form.register("depositDefault")}
-                            placeholder="10,000,000"
+                            placeholder="Ví dụ: 10,000,000"
                             type="text"
                             defaultValue={
                               watch("depositDefault")
@@ -532,7 +532,7 @@ const Step3Form = ({ form }) => {
                         >
                           <Input
                             {...form.register("depositMax")}
-                            placeholder="20,000,000"
+                            placeholder="Ví dụ: 20,000,000"
                             type="text"
                             defaultValue={
                               watch("depositMax")
