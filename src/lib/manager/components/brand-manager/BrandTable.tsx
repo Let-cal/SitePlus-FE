@@ -34,16 +34,18 @@ import { Edit, Eye, MoreHorizontal, MoreVertical, Search, Store } from "lucide-r
 import * as React from "react";
 import { Toaster } from "react-hot-toast";
 import managerService from "../../../../services/manager/manager.service";
+import { clientService } from "../../../../services/client-role/client.service";
 import BrandDetail from "./BrandDetail";
 import UpdateBrandDialog from "./UpdateBrandDialog";
 import { useDialogState } from "../../../all-site/UseDialogState";
 
-// Interface cho Brand
-interface CustomerSegment {
+export interface CustomerSegment {
+  id: number;
   name: string;
 }
 
-interface IndustryCategory {
+export interface IndustryCategory {
+  id: number;
   name: string;
 }
 
@@ -79,6 +81,8 @@ export default function BrandManagement() {
   const [filterStatus, setFilterStatus] = React.useState<"all" | "active" | "pending">("all");
   const [selectedBrand, setSelectedBrand] = React.useState<Brand | null>(null);
   const [updateBrand, setUpdateBrand] = React.useState<Brand | null>(null);
+  const [allIndustryCategories, setAllIndustryCategories] = React.useState<IndustryCategory[]>([]);
+  const [allCustomerSegments, setAllCustomerSegments] = React.useState<CustomerSegment[]>([]);
 
   const updateDialog = useDialogState(false);
   const detailDialog = useDialogState(false);
@@ -91,7 +95,24 @@ export default function BrandManagement() {
     pending: "Chờ xử lý",
   };
 
-  // Tải toàn bộ dữ liệu thương hiệu từ tất cả các trang
+  // Tải danh sách Industry Categories và Customer Segments từ clientService
+  React.useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const categoriesResponse = await clientService.getAllIndustryCategories();
+        const segmentsResponse = await clientService.getAllCustomerSegments();
+        setAllIndustryCategories(categoriesResponse || []);
+        setAllCustomerSegments(segmentsResponse || []);
+      } catch (error) {
+        console.error("Error loading initial data:", error);
+        setAllIndustryCategories([]);
+        setAllCustomerSegments([]);
+      }
+    };
+    loadInitialData();
+  }, []);
+
+  // Tải toàn bộ dữ liệu thương hiệu từ tất cả các trang từ managerService
   const loadAllBrands = React.useCallback(async () => {
     setIsLoading(true);
     try {
@@ -348,7 +369,7 @@ export default function BrandManagement() {
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="p-1 rounded-md hover:bg-gray-100">
+                        <button className="p-1 rounded-md">
                           <MoreVertical className="h-4 w-4" />
                         </button>
                       </DropdownMenuTrigger>
@@ -430,6 +451,8 @@ export default function BrandManagement() {
         isOpen={updateDialog.isOpen}
         onClose={handleCloseUpdateDialog}
         onSuccess={handleUpdateSuccess}
+        allIndustryCategories={allIndustryCategories}
+        allCustomerSegments={allCustomerSegments}
       />
     </div>
   );

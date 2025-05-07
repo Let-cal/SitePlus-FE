@@ -140,7 +140,7 @@ interface FetchFavoritesResponse {
   data: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     closedSites: any[];
-    matchedSites: FavoriteSiteResponse[]; // Sửa từ SearchAIProject[] thành FavoriteSiteResponse[]
+    matchedSites: FavoriteSiteResponse[];
   };
   success: boolean;
   message: string;
@@ -182,6 +182,7 @@ interface Site {
   areaId: number;
   areaName?: string;
   districtName?: string;
+  taskId?: number;
   building?: SiteBuilding;
   images: SiteImage[];
   createdAt: string;
@@ -239,15 +240,17 @@ interface BrandsApiResponse {
 }
 
 interface UpdateBrandData {
-  id: number;
   name: string;
   status: number;
   updatedAt: string;
+  brandCustomerSegment: { customerSegmentId: number }[];
+  brandIndustryCategory: { industryCategoryId: number };
 }
+
 interface UpdateBrandResponse {
   success: boolean;
   message: string;
-  data?: UpdateBrandData;
+  data?: Brand;
 }
 
 interface StoreResponse {
@@ -286,7 +289,7 @@ export interface Store {
 
 // Interface cho monthlySiteSurveys
 interface MonthlySiteSurvey {
-  month: string; // Ví dụ: "02/2025"
+  month: string;
   count: number;
 }
 
@@ -309,7 +312,7 @@ interface ManagerDashboardResponse {
 
 // Interface cho monthlyRequests
 interface MonthlyRequest {
-  month: string; // Ví dụ: "03/2025"
+  month: string;
   count: number;
 }
 
@@ -889,39 +892,51 @@ class ManagerService {
     if (!authHeader) {
       return null;
     }
-
+  
     try {
-      const endpoint =
-        `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.EXPORT_PDF}`.replace(
-          ":brandRequestId",
-          brandRequestId.toString()
-        );
+      const endpoint = `${API_BASE_URL}${API_ENDPOINTS.MANAGER.GET.EXPORT_PDF}`.replace(
+        ":brandRequestId",
+        brandRequestId.toString()
+      );
       const response = await axios.get(endpoint, {
         ...authHeader,
         responseType: "blob",
       });
-
+  
       console.log("API Response for Export PDF:", response);
       return response.data;
     } catch (error) {
-      console.error(
-        "API Error for Export PDF:",
-        error.response ? error.response.data : error.message
-      );
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", {
+            position: "top-left",
+            duration: 3000,
+          });
+          localStorage.removeItem("token");
+        } else {
+          try {
+            // Chuyển đổi Blob thành JSON
+            const errorData = await new Response(error.response?.data).json();
+            const errorMessage = errorData.message || "Lỗi không xác định";
+            toast.error(`Lỗi khi xuất PDF: ${errorMessage}`, {
+              position: "top-left",
+              duration: 3000,
+            });
+          } catch (parseError) {
+            // Nếu không parse được thành JSON, hiển thị lỗi mặc định
+            console.error("Failed to parse error response:", parseError);
+            toast.error("Lỗi khi xuất PDF: Không xác định", {
+              position: "top-left",
+              duration: 3000,
+            });
+          }
+        }
+      } else {
+        console.error("Non-Axios error:", error);
+        toast.error("Lỗi khi xuất PDF: Không xác định", {
           position: "top-left",
           duration: 3000,
         });
-        localStorage.removeItem("token");
-      } else {
-        toast.error(
-          "Lỗi khi xuất PDF: " +
-          (axios.isAxiosError(error)
-            ? error.response?.data?.message || error.message
-            : "Không xác định"),
-          { position: "top-left", duration: 3000 }
-        );
       }
       return null;
     }
@@ -1019,15 +1034,13 @@ class ManagerService {
     }
 
     try {
-      // Sửa cách tạo URL: Bỏ "/" trong phần thay thế
-      const baseEndpoint = API_ENDPOINTS.MANAGER.PUT.UPDATE_BRAND_STATUS; // "/api/Brand/StatusBrand/:id"
+      const baseEndpoint = API_ENDPOINTS.MANAGER.PUT.UPDATE_BRAND_STATUS;
       const endpoint = `${API_BASE_URL}${baseEndpoint.replace(
         ":id",
         brandId.toString()
       )}`;
-      console.log("Generated endpoint:", endpoint); // Log để kiểm tra URL
+      console.log("Generated endpoint:", endpoint);
 
-      // Chỉ gửi status trong body
       const body = {
         status: status,
       };
@@ -1210,6 +1223,7 @@ class ManagerService {
       };
     }
   }
+
   async fetchBrands(
     page: number = 1,
     pageSize: number = 10,
@@ -1276,9 +1290,9 @@ class ManagerService {
 
   async updateBrand(
     brandId: number,
-    updateData: UpdateBrandData
+    updateData: any
   ): Promise<UpdateBrandResponse> {
-    const authHeader = this.getAuthHeader(true);
+    const authHeader = this.getAuthHeader();
     if (!authHeader) {
       return {
         success: false,
@@ -1287,17 +1301,30 @@ class ManagerService {
     }
 
     try {
+      // Chuyển đổi dữ liệu để gửi đúng định dạng API
+      const payload: UpdateBrandData = {
+        name: updateData.name,
+        status: updateData.status,
+        updatedAt: updateData.updatedAt,
+        brandCustomerSegment: Array.isArray(updateData.customerSegmentId)
+          ? updateData.customerSegmentId.map((id: number) => ({ customerSegmentId: id }))
+          : [],
+        brandIndustryCategory: {
+          industryCategoryId: updateData.industryCategoryId || 0,
+        },
+      };
+
       const endpoint = `${API_BASE_URL}${API_ENDPOINTS.MANAGER.PUT.UPDATE_BRAND.replace(
         ":id",
         brandId.toString()
       )}`;
-      const response = await axios.put(endpoint, updateData, authHeader);
+      const response = await axios.put(endpoint, payload, authHeader);
 
       console.log("API Response for Update Brand:", response.data);
       return {
-        success: true,
-        data: response.data,
-        message: "Cập nhật thương hiệu thành công",
+        success: response.data.success,
+        message: response.data.message || "Cập nhật thương hiệu thành công",
+        data: response.data.data,
       };
     } catch (error) {
       console.error(
@@ -1540,5 +1567,6 @@ class ManagerService {
     }
   }
 }
+
 const managerService = new ManagerService();
 export default managerService;

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import {
   NavigationMenu,
@@ -11,41 +11,65 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import HomePageNav from "./HomePageNav";
+
 export function NavigationMenuDemo() {
   return (
     <NavigationMenu>
-      <NavigationMenuList className="grid  gap-4 sm:grid-cols-1 md:grid-cols-5 md:gap-4 lg:flex lg:space-x-4 ">
+      <NavigationMenuList className="grid gap-4 sm:grid-cols-1 md:grid-cols-5 md:gap-4 lg:flex lg:space-x-4">
         <NavigationMenuItem>
-          <Link to="/">
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              <HomePageNav />
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-        {/* Tư Vấn Chiến Lược với dropdown */}
-
-        <NavigationMenuItem>
-          <Link to="/survey-requests-page">
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Khảo sát tìm mặt bằng
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-        {/* Các liên kết khác */}
-        <NavigationMenuItem>
-          <Link to="/info-page">
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Giới Thiệu
-            </NavigationMenuLink>
-          </Link>
+          <NavLink to="/">
+            {({ isActive }) => (
+              <NavigationMenuLink
+                className={`${navigationMenuTriggerStyle()} ${
+                  isActive ? "text-orange-500 " : "text-gray-600 hover:text-orange-500"
+                }`}
+              >
+                <HomePageNav />
+              </NavigationMenuLink>
+            )}
+          </NavLink>
         </NavigationMenuItem>
 
         <NavigationMenuItem>
-          <Link to="/contact-page">
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Liên Hệ
-            </NavigationMenuLink>
-          </Link>
+          <NavLink to="/survey-requests-page">
+            {({ isActive }) => (
+              <NavigationMenuLink
+                className={`${navigationMenuTriggerStyle()} ${
+                  isActive ? "text-orange-500 " : "text-gray-600 hover:text-orange-500"
+                }`}
+              >
+                Khảo sát tìm mặt bằng
+              </NavigationMenuLink>
+            )}
+          </NavLink>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavLink to="/info-page">
+            {({ isActive }) => (
+              <NavigationMenuLink
+                className={`${navigationMenuTriggerStyle()} ${
+                  isActive ? "text-orange-500 " : "text-gray-600 hover:text-orange-500"
+                }`}
+              >
+                Giới Thiệu
+              </NavigationMenuLink>
+            )}
+          </NavLink>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavLink to="/contact-page">
+            {({ isActive }) => (
+              <NavigationMenuLink
+                className={`${navigationMenuTriggerStyle()} ${
+                  isActive ? "text-orange-500 " : "text-gray-600 hover:text-orange-500"
+                }`}
+              >
+                Liên Hệ
+              </NavigationMenuLink>
+            )}
+          </NavLink>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>

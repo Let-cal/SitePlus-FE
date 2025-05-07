@@ -128,9 +128,8 @@ export default function UsageChart() {
   const generateYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
-    // Tạo các tùy chọn cho 5 năm trước và 1 năm sau
-    for (let i = currentYear - 5; i <= currentYear + 1; i++) {
-      years.push(i.toString());
+    for (let year = currentYear - 0; year <= currentYear; year++) {
+      years.push(year.toString());
     }
     return years;
   };
@@ -174,6 +173,7 @@ export default function UsageChart() {
                       {year}
                     </SelectItem>
                   ))}
+                  {/* <SelectItem value="2025">2025</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>

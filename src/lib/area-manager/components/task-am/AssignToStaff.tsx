@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, MoreVertical, Eye, Trash, Search, Check, FileBarChart, XCircle, Clock, AlertTriangle, Loader2 } from "lucide-react";
+import { Plus, MoreVertical, Eye, Trash, Search, Check, FileBarChart, XCircle, Clock, AlertTriangle, Loader2, Edit } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -75,6 +75,7 @@ interface Task {
   siteDeals: {
     siteDealId: number;
     createdAt: string;
+
   }[];
   deadline: string;
   createdAt: string;
@@ -150,10 +151,12 @@ const AssignToStaff = () => {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isRejectReasonDialogOpen, setIsRejectReasonDialogOpen] = useState(false);
-  const [dialogAction, setDialogAction] = useState<"accept" | "reject" | null>(null);
+  const [dialogAction, setDialogAction] = useState<"accept" | "reject" | "edit" | null>(null);
   const [dialogTaskId, setDialogTaskId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const itemsPerPage = 10;
+  const [isEditReasonDialogOpen, setIsEditReasonDialogOpen] = useState(false);
+  const [editReason, setEditReason] = useState("");
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -195,6 +198,15 @@ const AssignToStaff = () => {
       }
     }
   }, [isRejectReasonDialogOpen, dialogTaskId, tasks]);
+
+  useEffect(() => {
+    if (isEditReasonDialogOpen && dialogTaskId) {
+      const task = tasks.find(t => t.id === dialogTaskId);
+      if (task) {
+        setEditReason(`${task.description}\nLý do chỉnh sửa:`);
+      }
+    }
+  }, [isEditReasonDialogOpen, dialogTaskId, tasks]);
 
   const getFilteredData = () => {
     let data = tasks;
@@ -254,7 +266,7 @@ const AssignToStaff = () => {
     console.log(`Xóa task ID: ${taskId}`);
   };
 
-  const handleAction = (taskId: number, action: "accept" | "reject") => {
+  const handleAction = (taskId: number, action: "accept" | "reject" | "edit") => {
     setDialogTaskId(taskId);
     setDialogAction(action);
     setIsConfirmDialogOpen(true);
@@ -274,6 +286,10 @@ const AssignToStaff = () => {
     } else if (dialogAction === "reject") {
       setIsConfirmDialogOpen(false);
       setIsRejectReasonDialogOpen(true);
+    }
+    else if (dialogAction === "edit") {
+      setIsConfirmDialogOpen(false);
+      setIsEditReasonDialogOpen(true);
     }
   };
 
@@ -396,6 +412,92 @@ const AssignToStaff = () => {
       const task = tasks.find(t => t.id === dialogTaskId);
       if (task) {
         handleReject(task);
+      }
+    }
+  };
+
+  const handleEditReport = async (task: Task) => {
+    setIsActionLoading(true);
+    try {
+      const siteId = task.location.siteId;
+      if (siteId) {
+        const siteUpdated = await areaManagerService.updateSiteStatus({ siteId, status: 7 });
+        if (!siteUpdated) {
+          throw new Error("Failed to update site status");
+        }
+      }
+
+      const taskUpdated = await areaManagerService.updateTaskStatus({ taskId: task.id, status: 2 });
+      if (!taskUpdated) {
+        throw new Error("Failed to update task status");
+      }
+
+      if (task.siteDeals && task.siteDeals.length > 0) {
+        // Sắp xếp siteDeals theo createdAt (gần nhất đến xa nhất)
+        const latestSiteDeal = task.siteDeals.sort((a, b) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        })[0]; // Lấy deal gần nhất
+
+        // Cập nhật status của deal gần nhất thành 0
+        const siteDealUpdated = await areaManagerService.updateSiteDealStatus({
+          id: latestSiteDeal.siteDealId,
+          status: 0,
+        });
+        if (!siteDealUpdated) {
+          throw new Error(`Failed to update site deal ${latestSiteDeal.siteDealId} status`);
+        }
+      }
+
+      const updatedTask = {
+        name: task.name,
+        description: editReason,
+        areaId: task.location.areaId,
+        staffId: task.staffId,
+        deadline: task.deadline.split('T')[0],
+        priority: task.priority,
+        status: 2,
+      };
+
+      const descriptionUpdated = await areaManagerService.updateTask(task.id, updatedTask);
+      if (!descriptionUpdated) {
+        throw new Error("Failed to update task description");
+      }
+
+      toast.success("Yêu cầu chỉnh sửa báo cáo thành công!", { position: "top-right", duration: 3000 });
+
+      const tasksData = await areaManagerService.fetchTasks({
+        search: debouncedSearchQuery || undefined,
+        status: filterStatus !== "all" ? parseInt(filterStatus) : undefined,
+        priority: filterPriority !== "all" ? parseInt(filterPriority) : undefined,
+      });
+      let filteredTasks = tasksData;
+      if (filterStatus !== "all") {
+        filteredTasks = filteredTasks.filter(task => task.status === parseInt(filterStatus));
+      }
+      if (filterPriority !== "all") {
+        filteredTasks = filteredTasks.filter(task => task.priority === parseInt(filterPriority));
+      }
+      setTasks(() => filteredTasks);
+    } catch (error) {
+      console.error("Error editing report:", error);
+      toast.error("Lỗi khi yêu cầu chỉnh sửa báo cáo", { position: "top-right", duration: 3000 });
+    } finally {
+      setIsActionLoading(false);
+      setIsEditReasonDialogOpen(false);
+      setEditReason("");
+    }
+  };
+
+  const handleSubmitEditReason = () => {
+    if (!editReason.trim()) {
+      toast.error("Lý do chỉnh sửa không được để trống", { position: "top-right", duration: 3000 });
+      return;
+    }
+
+    if (dialogTaskId) {
+      const task = tasks.find(t => t.id === dialogTaskId);
+      if (task) {
+        handleEditReport(task);
       }
     }
   };
@@ -606,6 +708,12 @@ const AssignToStaff = () => {
                                   </DropdownMenuItem>
                                 </>
                               )}
+                              {task.status === 4 && (
+                                <DropdownMenuItem onClick={() => handleAction(task.id, "edit")}>
+                                  <Edit size={16} className="mr-2" />
+                                  Sửa báo cáo
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -691,7 +799,7 @@ const AssignToStaff = () => {
             <AlertDialogDescription>
               Bạn có chắc chắn muốn{" "}
               <strong>
-                {dialogAction === "accept" ? "chấp nhận" : "từ chối"}
+                {dialogAction === "accept" ? "chấp nhận" : dialogAction === "reject" ? "từ chối" : "yêu cầu chỉnh sửa"}
               </strong>{" "}
               task ID: {dialogTaskId} không?
             </AlertDialogDescription>
@@ -726,6 +834,33 @@ const AssignToStaff = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={handleSubmitRejectReason}>
+              Gửi
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={isEditReasonDialogOpen}
+        onOpenChange={setIsEditReasonDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Lý do chỉnh sửa</AlertDialogTitle>
+            <AlertDialogDescription>
+              <Textarea
+                id="editReason"
+                value={editReason}
+                onChange={(e) => setEditReason(e.target.value)}
+                placeholder="Nhập lý do chỉnh sửa..."
+                className="mt-2 min-h-[100px]"
+                required
+              />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSubmitEditReason}>
               Gửi
             </AlertDialogAction>
           </AlertDialogFooter>
