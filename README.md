@@ -1,51 +1,64 @@
-# React + TypeScript + Vite
+# SitePlus — web front end
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Web front end of SitePlus, a platform that helps F&B and retail brands request site surveys and choose a location for a new store.
 
-Currently, two official plugins are available:
+**Status:** Graduation project, FPT University, 2025 — archived. The backend is offline, so the live demo loads but cannot sign in or load data.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Related: [SitePlus-MB](https://github.com/Let-cal/SitePlus-MB) (Flutter app for field staff). The backend repository is private.
 
-## Expanding the ESLint configuration
+## Screenshots
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Captured from a local build with mocked API responses (the backend is offline). All names and numbers in the images are sample data.
 
-- Configure the top-level `parserOptions` property like this:
+| | |
+| --- | --- |
+| ![Manager dashboard](docs/images/01-manager-dashboard.png) | ![Survey requests received by a manager](docs/images/02-brand-requests.png) |
+| ![Site inventory](docs/images/03-site-inventory.png) | |
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## My role
+
+Team Lead of a team of 5, and front-end developer. In this repository I built:
+
+- **Sign-in and routing:** login page, auth context, JWT decoding and role-based protected routes.
+- **Shared layout:** header, sidebar, light/dark theme toggle, navigation used by every role.
+- **Brand (client) pages:** home page, about and contact pages, the 4-step survey request form with brand selection and creation, request status and reports, profile editing.
+- **Admin pages:** dashboard with statistics and charts, user management (create and update users, assign area and district).
+- **Manager brand tab:** brand table, brand detail and update dialog.
+- **Deployment:** Vite build and routing fixes for Vercel.
+
+The other manager and area-manager pages (dashboards, requests, tasks, site checks, matching, PDF export, email) were mainly built by [@giabao25](https://github.com/giabao25).
+
+## Team
+
+Team of 5. Commits in this repository: [@Let-cal](https://github.com/Let-cal) and [@giabao25](https://github.com/giabao25).
+
+## Stack
+
+React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui (Radix UI), React Router, React Hook Form, Zod, Axios, Recharts, Chart.js, Leaflet.
+
+## Features
+
+- Four roles with separate pages: brand (client), admin, manager, area manager.
+- Brands send a survey request in 4 steps and follow its status and reports.
+- Admin dashboard with request statistics; user management by area and district.
+- Manager and area-manager pages for requests, survey tasks, sites and partner brands.
+- Light and dark themes; Vietnamese interface.
+
+## How to run
+
+Requires Node.js 20.
+
+```sh
+npm ci
+npm run dev        # development server
+npm run build      # type check and production build
+npm run preview    # serve the production build
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+The API base URL is hard-coded in `src/services/api-config.ts`. It points to the old Azure backend, which no longer exists.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Known limitations
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
-"# SitePlus-FE" 
+- The backend is offline, so sign-in and all data screens fail outside a mocked setup.
+- No automated tests.
+- The interface text is in Vietnamese only.
