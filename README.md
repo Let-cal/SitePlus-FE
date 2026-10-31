@@ -21,7 +21,7 @@ Team Lead of a team of 5, and front-end developer. In this repository I built:
 
 - **Sign-in and routing:** login page, auth context, JWT decoding and role-based protected routes.
 - **Shared layout:** header, sidebar, light/dark theme toggle, navigation used by every role.
-- **Brand (client) pages:** home page, about and contact pages, the 4-step survey request form with brand selection and creation, request status and reports, profile editing.
+- **Brand (client) pages:** home page, about and contact pages, and the 4-step survey request form with brand selection and creation. Brands do not sign in; they hear back by email.
 - **Admin pages:** dashboard with statistics and charts, user management (create and update users, assign area and district).
 - **Manager brand tab:** brand table, brand detail and update dialog.
 - **Deployment:** Vite build and routing fixes for Vercel.
@@ -38,10 +38,11 @@ React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui (Radix UI), React Router, Re
 
 ## Features
 
-- Four roles with separate pages: brand (client), admin, manager, area manager.
-- Brands send a survey request in 4 steps and follow its status and reports.
+- Public pages for brands (no sign-in) and signed-in pages for three roles: admin, manager, area manager. Field staff use the mobile app.
+- Brands send a survey request in 4 steps; the manager accepts or declines it by email.
 - Admin dashboard with request statistics; user management by area and district.
 - Manager and area-manager pages for requests, survey tasks, sites and partner brands.
+- "Search by AI" on a request (manager): the backend filters site deals by the brand's size, rent, lease and deposit ranges, then ranks them by similarity of Cohere embeddings stored in Qdrant. No language model generates text.
 - Light and dark themes; Vietnamese interface.
 
 ## How to run
